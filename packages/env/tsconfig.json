@@ -1,0 +1,3 @@
+{
+  "extends": "@openbooklm/config/tsconfig.base.json"
+}
