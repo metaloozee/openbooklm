@@ -67,8 +67,11 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
             />
-            {field.state.meta.errors.map((error) => (
-              <p key={error?.message} className="text-xs/relaxed text-destructive">
+            {field.state.meta.errors.map((error, index) => (
+              <p
+                key={`${field.name}-${error?.message ?? "error"}-${index}`}
+                className="text-xs/relaxed text-destructive"
+              >
                 {error?.message}
               </p>
             ))}
@@ -88,8 +91,11 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
             />
-            {field.state.meta.errors.map((error) => (
-              <p key={error?.message} className="text-xs/relaxed text-destructive">
+            {field.state.meta.errors.map((error, index) => (
+              <p
+                key={`${field.name}-${error?.message ?? "error"}-${index}`}
+                className="text-xs/relaxed text-destructive"
+              >
                 {error?.message}
               </p>
             ))}
@@ -109,8 +115,11 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
               onBlur={field.handleBlur}
               onChange={(e) => field.handleChange(e.target.value)}
             />
-            {field.state.meta.errors.map((error) => (
-              <p key={error?.message} className="text-xs/relaxed text-destructive">
+            {field.state.meta.errors.map((error, index) => (
+              <p
+                key={`${field.name}-${error?.message ?? "error"}-${index}`}
+                className="text-xs/relaxed text-destructive"
+              >
                 {error?.message}
               </p>
             ))}
