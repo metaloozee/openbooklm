@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@openbooklm/ui/components/button";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
@@ -8,11 +10,8 @@ import z from "zod";
 
 import { authClient } from "@/lib/auth-client";
 
-import Loader from "./loader";
-
 export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
   const router = useRouter();
-  const { isPending } = authClient.useSession();
 
   const form = useForm({
     defaultValues: {
@@ -44,88 +43,77 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
     },
   });
 
-  if (isPending) {
-    return <Loader />;
-  }
-
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Welcome Back</h1>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}
+      noValidate
+      className="flex flex-col gap-4"
+    >
+      <form.Field name="email">
+        {(field) => (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={field.name}>Email</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              type="email"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((error, index) => (
+              <p
+                key={`${field.name}-${error?.message ?? "error"}-${index}`}
+                className="text-xs/relaxed text-destructive"
+              >
+                {error?.message}
+              </p>
+            ))}
+          </div>
+        )}
+      </form.Field>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          form.handleSubmit();
-        }}
-        className="space-y-4"
+      <form.Field name="password">
+        {(field) => (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor={field.name}>Password</Label>
+            <Input
+              id={field.name}
+              name={field.name}
+              type="password"
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+            />
+            {field.state.meta.errors.map((error, index) => (
+              <p
+                key={`${field.name}-${error?.message ?? "error"}-${index}`}
+                className="text-xs/relaxed text-destructive"
+              >
+                {error?.message}
+              </p>
+            ))}
+          </div>
+        )}
+      </form.Field>
+
+      <form.Subscribe
+        selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}
       >
-        <div>
-          <form.Field name="email">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Email</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="email"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
+        {({ canSubmit, isSubmitting }) => (
+          <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
+            {isSubmitting ? "Signing in..." : "Sign In"}
+          </Button>
+        )}
+      </form.Subscribe>
 
-        <div>
-          <form.Field name="password">
-            {(field) => (
-              <div className="space-y-2">
-                <Label htmlFor={field.name}>Password</Label>
-                <Input
-                  id={field.name}
-                  name={field.name}
-                  type="password"
-                  value={field.state.value}
-                  onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                />
-                {field.state.meta.errors.map((error) => (
-                  <p key={error?.message} className="text-red-500">
-                    {error?.message}
-                  </p>
-                ))}
-              </div>
-            )}
-          </form.Field>
-        </div>
-
-        <form.Subscribe
-          selector={(state) => ({ canSubmit: state.canSubmit, isSubmitting: state.isSubmitting })}
-        >
-          {({ canSubmit, isSubmitting }) => (
-            <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
-              {isSubmitting ? "Submitting..." : "Sign In"}
-            </Button>
-          )}
-        </form.Subscribe>
-      </form>
-
-      <div className="mt-4 text-center">
-        <Button
-          variant="link"
-          onClick={onSwitchToSignUp}
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          Need an account? Sign Up
-        </Button>
-      </div>
-    </div>
+      <Button type="button" variant="link" onClick={onSwitchToSignUp}>
+        Need an account? Sign Up
+      </Button>
+    </form>
   );
 }
