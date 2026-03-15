@@ -7,7 +7,7 @@ import { flushSync } from "react-dom";
 import { cn } from "@openbooklm/ui/lib/utils";
 import { Button } from "./button";
 
-interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<"button"> {
+interface AnimatedThemeTogglerProps extends React.ComponentPropsWithoutRef<typeof Button> {
 	duration?: number;
 }
 
@@ -91,7 +91,6 @@ export const AnimatedThemeToggler = ({
 			ref={buttonRef}
 			onClick={toggleTheme}
 			className={cn(className)}
-			variant={"outline"}
 			size={"icon"}
 			{...props}
 		>

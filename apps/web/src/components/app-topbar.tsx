@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatedThemeToggler } from "@openbooklm/ui/components/animated-theme-toggler";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -13,6 +14,7 @@ import { SidebarTrigger } from "@openbooklm/ui/components/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
+import type { UrlObject } from "url";
 
 function formatSegment(segment: string): string {
 	return segment
@@ -27,10 +29,10 @@ export function AppTopbar() {
 	const segments = pathname.split("/").filter(Boolean);
 
 	return (
-		<header className="flex h-12 shrink-0 items-center gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[variant=inset]/sidebar-wrapper:min-h-[calc(3rem+1px)]">
-			<div className="flex items-center gap-2">
+		<header className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-4 transition-[width,height] ease-linear group-has-data-[variant=inset]/sidebar-wrapper:min-h-[calc(3rem+1px)]">
+			<div className="flex items-center justify-center gap-2">
 				<SidebarTrigger className="-ml-1" />
-				<Separator orientation="vertical" className="mr-2 data-vertical:h-4" />
+				<Separator orientation="vertical" className="mr-2" />
 				<Breadcrumb>
 					<BreadcrumbList>
 						{segments.map((segment, index) => {
@@ -47,7 +49,9 @@ export function AppTopbar() {
 											</BreadcrumbPage>
 										) : (
 											<BreadcrumbLink asChild>
-												<Link href={href}>{formatSegment(segment)}</Link>
+												<Link href={href as unknown as UrlObject}>
+													{formatSegment(segment)}
+												</Link>
 											</BreadcrumbLink>
 										)}
 									</BreadcrumbItem>
@@ -57,6 +61,7 @@ export function AppTopbar() {
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
+			<AnimatedThemeToggler variant={"ghost"} />
 		</header>
 	);
 }
