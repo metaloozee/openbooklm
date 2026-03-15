@@ -7,13 +7,34 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
+function getAllowedOrigins() {
+	const origins = new Set([env.CORS_ORIGIN]);
+
+	if (env.NODE_ENV === "development") {
+		const configuredOrigin = new URL(env.CORS_ORIGIN);
+		const siblingHost = configuredOrigin.hostname === "localhost" ? "127.0.0.1" : "localhost";
+		origins.add(
+			`${configuredOrigin.protocol}//${siblingHost}${configuredOrigin.port ? `:${configuredOrigin.port}` : ""}`,
+		);
+	}
+
+	return [...origins];
+}
+
+const allowedOrigins = getAllowedOrigins();
 const app = new Hono();
 
 app.use(logger());
 app.use(
 	"/*",
 	cors({
-		origin: env.CORS_ORIGIN,
+		origin: (origin) => {
+			if (!origin) {
+				return allowedOrigins[0];
+			}
+
+			return allowedOrigins.includes(origin) ? origin : null;
+		},
 		allowMethods: ["GET", "POST", "OPTIONS"],
 		allowHeaders: ["Content-Type", "Authorization"],
 		credentials: true,
