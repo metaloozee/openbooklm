@@ -11,21 +11,38 @@ import {
 } from "@openbooklm/ui/components/breadcrumb";
 import { Separator } from "@openbooklm/ui/components/separator";
 import { SidebarTrigger } from "@openbooklm/ui/components/sidebar";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 import type { UrlObject } from "url";
 
+import { trpc } from "@/utils/trpc";
+
 function formatSegment(segment: string): string {
+	if (segment === "dashboard") {
+		return "Dashboard";
+	}
+
+	if (segment === "new") {
+		return "New";
+	}
+
 	return segment
 		.split("-")
 		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
 		.join(" ");
 }
 
+function getProjectIdFromPathname(pathname: string) {
+	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
+	return match?.[1] ?? null;
+}
+
 export function AppTopbar() {
 	const pathname = usePathname();
-
+	const currentProjectId = getProjectIdFromPathname(pathname);
+	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
 	const segments = pathname.split("/").filter(Boolean);
 
 	return (
@@ -38,6 +55,11 @@ export function AppTopbar() {
 						{segments.map((segment, index) => {
 							const href = `/${segments.slice(0, index + 1).join("/")}`;
 							const isLast = index === segments.length - 1;
+							const label =
+								index === 2 && currentProjectId && segment === currentProjectId
+									? (projectsQuery.data?.find((project) => project.id === currentProjectId)?.name ??
+										formatSegment(segment))
+									: formatSegment(segment);
 
 							return (
 								<Fragment key={href}>
@@ -45,12 +67,12 @@ export function AppTopbar() {
 									<BreadcrumbItem>
 										{isLast ? (
 											<BreadcrumbPage>
-												{formatSegment(segment)}
+												{label}
 											</BreadcrumbPage>
 										) : (
 											<BreadcrumbLink asChild>
 												<Link href={href as unknown as UrlObject}>
-													{formatSegment(segment)}
+													{label}
 												</Link>
 											</BreadcrumbLink>
 										)}

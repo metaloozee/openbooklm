@@ -4,27 +4,252 @@ import {
 	Sidebar,
 	SidebarContent,
 	SidebarFooter,
+	SidebarGroup,
+	SidebarGroupContent,
+	SidebarGroupLabel,
 	SidebarHeader,
+	SidebarMenu,
+	SidebarMenuButton,
+	SidebarMenuItem,
+	SidebarMenuSkeleton,
 	SidebarRail,
 } from "@openbooklm/ui/components/sidebar";
-import { BookOpenIcon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+	ArrowLeftIcon,
+	BookOpenIcon,
+	FilesIcon,
+	FolderOpenIcon,
+	LayoutDashboardIcon,
+	MessageSquareIcon,
+	PlusIcon,
+	SettingsIcon,
+	SparklesIcon,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { NavUser } from "./nav-user";
+import { trpc } from "@/utils/trpc";
+
+function getProjectIdFromPathname(pathname: string) {
+	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
+	return match?.[1] ?? null;
+}
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+	const pathname = usePathname();
+	const projectId = getProjectIdFromPathname(pathname);
+	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
+	const currentProject = projectsQuery.data?.find((project) => project.id === projectId);
+	const isProjectRoute = Boolean(projectId);
+
+	const globalItems = [
+		{
+			href: "/dashboard",
+			label: "Dashboard",
+			icon: LayoutDashboardIcon,
+		},
+		{
+			href: "/dashboard/projects/new",
+			label: "New Project",
+			icon: PlusIcon,
+		},
+		{
+			href: "/dashboard/settings",
+			label: "Settings",
+			icon: SettingsIcon,
+		},
+	];
+
+	const projectItems = projectId
+		? [
+				{
+					href: `/dashboard/projects/${projectId}`,
+					label: "Overview",
+					icon: LayoutDashboardIcon,
+				},
+				{
+					href: `/dashboard/projects/${projectId}/sources`,
+					label: "Sources",
+					icon: FolderOpenIcon,
+				},
+				{
+					href: `/dashboard/projects/${projectId}/chat`,
+					label: "Chat",
+					icon: MessageSquareIcon,
+				},
+				{
+					href: `/dashboard/projects/${projectId}/artifacts`,
+					label: "Artifacts",
+					icon: SparklesIcon,
+				},
+				{
+					href: `/dashboard/projects/${projectId}/files`,
+					label: "Files",
+					icon: FilesIcon,
+				},
+				{
+					href: `/dashboard/projects/${projectId}/settings`,
+					label: "Settings",
+					icon: SettingsIcon,
+				},
+			]
+		: [];
+
 	return (
 		<Sidebar collapsible="icon" variant={"inset"} {...props}>
 			<SidebarHeader>
-				<div className="flex items-center justify-center mx-auto gap-2 p-1">
+				<Link href="/" className="flex items-center justify-center mx-auto gap-2 p-1">
 					<div className="flex size-7  shrink-0 items-center justify-center rounded-md bg-foreground text-background">
 						<BookOpenIcon className="size-3.5" />
 					</div>
 					<span className="truncate text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
 						OpenBookLM
 					</span>
-				</div>
+				</Link>
 			</SidebarHeader>
-			<SidebarContent />
+			<SidebarContent>
+				{projectsQuery.isPending ? (
+					<SidebarGroup>
+						<SidebarGroupLabel>Loading</SidebarGroupLabel>
+						<SidebarGroupContent>
+							<SidebarMenu>
+								{Array.from({ length: 6 }).map((_, index) => (
+									<SidebarMenuItem key={index}>
+										<SidebarMenuSkeleton showIcon />
+									</SidebarMenuItem>
+								))}
+							</SidebarMenu>
+						</SidebarGroupContent>
+					</SidebarGroup>
+				) : isProjectRoute ? (
+					<>
+						<SidebarGroup>
+							<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									<SidebarMenuItem>
+										<SidebarMenuButton
+											asChild
+											isActive={pathname === "/dashboard"}
+											tooltip="Back to dashboard"
+										>
+											<Link href="/dashboard">
+												<ArrowLeftIcon />
+												<span>Back to dashboard</span>
+											</Link>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+									{projectItems.map((item) => (
+										<SidebarMenuItem key={item.href}>
+											<SidebarMenuButton
+												asChild
+												isActive={
+													item.href === `/dashboard/projects/${projectId}`
+														? pathname === item.href
+														: pathname.startsWith(item.href)
+												}
+												tooltip={item.label}
+											>
+												<Link href={item.href}>
+													<item.icon />
+													<span>{item.label}</span>
+												</Link>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									))}
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+
+						{projectsQuery.data?.length ? (
+							<SidebarGroup>
+								<SidebarGroupLabel>Switch project</SidebarGroupLabel>
+								<SidebarGroupContent>
+									<SidebarMenu>
+										{projectsQuery.data.map((project) => (
+											<SidebarMenuItem key={project.id}>
+												<SidebarMenuButton
+													asChild
+													isActive={project.id === projectId}
+													tooltip={project.name}
+												>
+													<Link href={`/dashboard/projects/${project.id}`}>
+														<FolderOpenIcon />
+														<span>{project.name}</span>
+													</Link>
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										))}
+									</SidebarMenu>
+								</SidebarGroupContent>
+							</SidebarGroup>
+						) : null}
+					</>
+				) : (
+					<>
+						<SidebarGroup>
+							<SidebarGroupLabel>Global</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									{globalItems.map((item) => (
+										<SidebarMenuItem key={item.href}>
+											<SidebarMenuButton
+												asChild
+												isActive={
+													item.href === "/dashboard"
+														? pathname === item.href
+														: pathname.startsWith(item.href)
+												}
+												tooltip={item.label}
+											>
+												<Link href={item.href}>
+													<item.icon />
+													<span>{item.label}</span>
+												</Link>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									))}
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+
+						<SidebarGroup>
+							<SidebarGroupLabel>Projects</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									{projectsQuery.data?.length ? (
+										projectsQuery.data.map((project) => (
+											<SidebarMenuItem key={project.id}>
+												<SidebarMenuButton
+													asChild
+													isActive={pathname.startsWith(`/dashboard/projects/${project.id}`)}
+													tooltip={project.name}
+												>
+													<Link href={`/dashboard/projects/${project.id}`}>
+														<FolderOpenIcon />
+														<span>{project.name}</span>
+													</Link>
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										))
+									) : (
+										<SidebarMenuItem>
+											<SidebarMenuButton asChild tooltip="Create your first project">
+												<Link href="/dashboard/projects/new">
+													<PlusIcon />
+													<span>Create project</span>
+												</Link>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									)}
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					</>
+				)}
+			</SidebarContent>
 			<SidebarFooter>
 				<NavUser />
 			</SidebarFooter>

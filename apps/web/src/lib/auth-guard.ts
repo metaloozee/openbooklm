@@ -1,3 +1,5 @@
+import { project, db } from "@openbooklm/db";
+import { and, eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -16,4 +18,21 @@ export async function assertAuthenticated() {
 	}
 
 	return session;
+}
+
+export async function assertProjectAccess(projectId: string) {
+	const session = await assertAuthenticated();
+
+	const currentProject = await db.query.project.findFirst({
+		where: and(eq(project.id, projectId), eq(project.ownerId, session.user.id)),
+	});
+
+	if (!currentProject) {
+		redirect("/dashboard");
+	}
+
+	return {
+		session,
+		project: currentProject,
+	};
 }
