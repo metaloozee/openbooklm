@@ -1,46 +1,27 @@
-"use client";
-import { useQuery } from "@tanstack/react-query";
-
-import { trpc } from "@/utils/trpc";
-
-const TITLE_TEXT = `
- ██████╗ ███████╗████████╗████████╗███████╗██████╗
- ██╔══██╗██╔════╝╚══██╔══╝╚══██╔══╝██╔════╝██╔══██╗
- ██████╔╝█████╗     ██║      ██║   █████╗  ██████╔╝
- ██╔══██╗██╔══╝     ██║      ██║   ██╔══╝  ██╔══██╗
- ██████╔╝███████╗   ██║      ██║   ███████╗██║  ██║
- ╚═════╝ ╚══════╝   ╚═╝      ╚═╝   ╚══════╝╚═╝  ╚═╝
-
- ████████╗    ███████╗████████╗ █████╗  ██████╗██╗  ██╗
- ╚══██╔══╝    ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
-    ██║       ███████╗   ██║   ███████║██║     █████╔╝
-    ██║       ╚════██║   ██║   ██╔══██║██║     ██╔═██╗
-    ██║       ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
-    ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
- `;
+import { Button } from "@openbooklm/ui/components/button";
+import { BookOpenIcon } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
-	const healthCheck = useQuery(trpc.healthCheck.queryOptions());
-
 	return (
-		<div className="container mx-auto max-w-3xl px-4 py-2">
-			<pre className="overflow-x-auto font-mono text-sm">{TITLE_TEXT}</pre>
-			<div className="grid gap-6">
-				<section className="rounded-lg border p-4">
-					<h2 className="mb-2 font-medium">API Status</h2>
-					<div className="flex items-center gap-2">
-						<div
-							className={`h-2 w-2 rounded-full ${healthCheck.data ? "bg-green-500" : "bg-red-500"}`}
-						/>
-						<span className="text-sm text-muted-foreground">
-							{healthCheck.isLoading
-								? "Checking..."
-								: healthCheck.data
-									? "Connected"
-									: "Disconnected"}
-						</span>
-					</div>
-				</section>
+		<div className="flex min-h-svh flex-col items-center justify-center px-6">
+			<div className="mx-auto max-w-lg text-center">
+				<div className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-foreground text-background">
+					<BookOpenIcon className="size-7" />
+				</div>
+				<h1 className="text-2xl font-bold tracking-tight">OpenBookLM</h1>
+				<p className="mt-2 text-sm text-muted-foreground">
+					An open-source, model-agnostic AI research environment. Upload sources, get
+					grounded answers, and generate rich artifacts — all through conversation.
+				</p>
+				<div className="mt-6 flex items-center justify-center gap-3">
+					<Button asChild>
+						<Link href="/dashboard">Get Started</Link>
+					</Button>
+					<Button asChild variant="outline">
+						<Link href="/login">Sign In</Link>
+					</Button>
+				</div>
 			</div>
 		</div>
 	);

@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import GoogleAuthButton from "@/components/google-auth-button";
-import Loader from "@/components/loader";
+import Spinner from "@/components/spinner";
 import { authClient } from "@/lib/auth-client";
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
@@ -28,11 +28,11 @@ export default function LoginPage() {
 	}, [router, session?.user]);
 
 	if (isPending || session?.user) {
-		return <Loader />;
+		return <Spinner />;
 	}
 
 	return (
-		<div className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md items-center px-6 py-10">
+		<div className="mx-auto flex min-h-svh w-full max-w-md items-center px-6 py-10">
 			<Card className="w-full">
 				<CardHeader>
 					<CardTitle>{showSignIn ? "Welcome Back" : "Create Account"}</CardTitle>
