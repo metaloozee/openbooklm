@@ -101,12 +101,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  // Auth, redirects, rewrites, etc.
-  return NextResponse.next();
+	// Auth, redirects, rewrites, etc.
+	return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+	matcher: ["/dashboard/:path*", "/api/:path*"],
 };
 ```
 
@@ -120,12 +120,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
-  // Same logic as middleware
-  return NextResponse.next();
+	// Same logic as middleware
+	return NextResponse.next();
 }
 
 export const proxyConfig = {
-  matcher: ["/dashboard/:path*", "/api/:path*"],
+	matcher: ["/dashboard/:path*", "/api/:path*"],
 };
 ```
 

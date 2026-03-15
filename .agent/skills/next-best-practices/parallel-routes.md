@@ -25,20 +25,20 @@ app/
 ```tsx
 // app/layout.tsx
 export default function RootLayout({
-  children,
-  modal,
+	children,
+	modal,
 }: {
-  children: React.ReactNode;
-  modal: React.ReactNode;
+	children: React.ReactNode;
+	modal: React.ReactNode;
 }) {
-  return (
-    <html>
-      <body>
-        {children}
-        {modal}
-      </body>
-    </html>
-  );
+	return (
+		<html>
+			<body>
+				{children}
+				{modal}
+			</body>
+		</html>
+	);
 }
 ```
 
@@ -49,7 +49,7 @@ export default function RootLayout({
 ```tsx
 // app/@modal/default.tsx
 export default function Default() {
-  return null;
+	return null;
 }
 ```
 
@@ -64,14 +64,14 @@ The `(.)` prefix intercepts routes at the same level.
 import { Modal } from "@/components/modal";
 
 export default async function PhotoModal({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const photo = await getPhoto(id);
+	const { id } = await params;
+	const photo = await getPhoto(id);
 
-  return (
-    <Modal>
-      <img src={photo.url} alt={photo.title} />
-    </Modal>
-  );
+	return (
+		<Modal>
+			<img src={photo.url} alt={photo.title} />
+		</Modal>
+	);
 }
 ```
 
@@ -80,15 +80,15 @@ export default async function PhotoModal({ params }: { params: Promise<{ id: str
 ```tsx
 // app/photos/[id]/page.tsx
 export default async function PhotoPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const photo = await getPhoto(id);
+	const { id } = await params;
+	const photo = await getPhoto(id);
 
-  return (
-    <div className="full-page">
-      <img src={photo.url} alt={photo.title} />
-      <h1>{photo.title}</h1>
-    </div>
-  );
+	return (
+		<div className="full-page">
+			<img src={photo.url} alt={photo.title} />
+			<h1>{photo.title}</h1>
+		</div>
+	);
 }
 ```
 
@@ -104,47 +104,47 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef } from "react";
 
 export function Modal({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const overlayRef = useRef<HTMLDivElement>(null);
+	const router = useRouter();
+	const overlayRef = useRef<HTMLDivElement>(null);
 
-  // Close on escape key
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        router.back(); // Correct
-      }
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [router]);
+	// Close on escape key
+	useEffect(() => {
+		function onKeyDown(e: KeyboardEvent) {
+			if (e.key === "Escape") {
+				router.back(); // Correct
+			}
+		}
+		document.addEventListener("keydown", onKeyDown);
+		return () => document.removeEventListener("keydown", onKeyDown);
+	}, [router]);
 
-  // Close on overlay click
-  const handleOverlayClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === overlayRef.current) {
-        router.back(); // Correct
-      }
-    },
-    [router],
-  );
+	// Close on overlay click
+	const handleOverlayClick = useCallback(
+		(e: React.MouseEvent) => {
+			if (e.target === overlayRef.current) {
+				router.back(); // Correct
+			}
+		},
+		[router],
+	);
 
-  return (
-    <div
-      ref={overlayRef}
-      onClick={handleOverlayClick}
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
-    >
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
-        <button
-          onClick={() => router.back()} // Correct!
-          className="absolute top-4 right-4"
-        >
-          Close
-        </button>
-        {children}
-      </div>
-    </div>
-  );
+	return (
+		<div
+			ref={overlayRef}
+			onClick={handleOverlayClick}
+			className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+		>
+			<div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4">
+				<button
+					onClick={() => router.back()} // Correct!
+					className="absolute top-4 right-4"
+				>
+					Close
+				</button>
+				{children}
+			</div>
+		</div>
+	);
 }
 ```
 
@@ -190,15 +190,15 @@ If you want the modal to appear on direct access too, you need additional logic:
 import { Modal } from "@/components/modal";
 
 export default async function PhotoPage({ params }) {
-  const { id } = await params;
-  const photo = await getPhoto(id);
+	const { id } = await params;
+	const photo = await getPhoto(id);
 
-  // Option: Render as modal on direct access too
-  return (
-    <Modal>
-      <img src={photo.url} alt={photo.title} />
-    </Modal>
-  );
+	// Option: Render as modal on direct access too
+	return (
+		<Modal>
+			<img src={photo.url} alt={photo.title} />
+		</Modal>
+	);
 }
 ```
 
@@ -239,7 +239,7 @@ In Next.js 15+, `params` is a Promise:
 ```tsx
 // Correct
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+	const { id } = await params;
 }
 ```
 
@@ -267,17 +267,17 @@ Links in the gallery:
 import Link from "next/link";
 
 export default async function Gallery() {
-  const photos = await getPhotos();
+	const photos = await getPhotos();
 
-  return (
-    <div className="grid grid-cols-3 gap-4">
-      {photos.map((photo) => (
-        <Link key={photo.id} href={`/photos/${photo.id}`}>
-          <img src={photo.thumbnail} alt={photo.title} />
-        </Link>
-      ))}
-    </div>
-  );
+	return (
+		<div className="grid grid-cols-3 gap-4">
+			{photos.map((photo) => (
+				<Link key={photo.id} href={`/photos/${photo.id}`}>
+					<img src={photo.thumbnail} alt={photo.title} />
+				</Link>
+			))}
+		</div>
+	);
 }
 ```
 

@@ -1,28 +1,28 @@
 {
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "radix-mira",
-  "rsc": true,
-  "tsx": true,
-  "tailwind": {
-    "config": "",
-    "css": "src/styles/globals.css",
-    "baseColor": "neutral",
-    "cssVariables": true,
-    "prefix": ""
-  },
-  "iconLibrary": "lucide",
-  "rtl": false,
-  "menuColor": "default-translucent",
-  "menuAccent": "subtle",
-  "aliases": {
-    "components": "@openbooklm/ui/components",
-    "utils": "@openbooklm/ui/lib/utils",
-    "ui": "@openbooklm/ui/components",
-    "lib": "@openbooklm/ui/lib",
-    "hooks": "@openbooklm/ui/hooks"
-  },
-  "registries": {
-    "@spell": "https://spell.sh/r/{name}.json",
-    "@magicui": "https://magicui.design/r/{name}"
-  }
+	"$schema": "https://ui.shadcn.com/schema.json",
+	"style": "radix-mira",
+	"rsc": true,
+	"tsx": true,
+	"tailwind": {
+		"config": "",
+		"css": "src/styles/globals.css",
+		"baseColor": "neutral",
+		"cssVariables": true,
+		"prefix": ""
+	},
+	"iconLibrary": "lucide",
+	"rtl": false,
+	"menuColor": "default-translucent",
+	"menuAccent": "subtle",
+	"aliases": {
+		"components": "@openbooklm/ui/components",
+		"utils": "@openbooklm/ui/lib/utils",
+		"ui": "@openbooklm/ui/components",
+		"lib": "@openbooklm/ui/lib",
+		"hooks": "@openbooklm/ui/hooks"
+	},
+	"registries": {
+		"@spell": "https://spell.sh/r/{name}.json",
+		"@magicui": "https://magicui.design/r/{name}"
+	}
 }

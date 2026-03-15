@@ -1,25 +1,25 @@
 {
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "radix-mira",
-  "rsc": true,
-  "tsx": true,
-  "tailwind": {
-    "config": "",
-    "css": "../../packages/ui/src/styles/globals.css",
-    "baseColor": "neutral",
-    "cssVariables": true,
-    "prefix": ""
-  },
-  "iconLibrary": "lucide",
-  "aliases": {
-    "components": "@/components",
-    "utils": "@openbooklm/ui/lib/utils",
-    "ui": "@openbooklm/ui/components",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
-  },
-  "menuColor": "default-translucent",
-  "menuAccent": "subtle",
-  "registries": {},
-  "rtl": false
+	"$schema": "https://ui.shadcn.com/schema.json",
+	"style": "radix-mira",
+	"rsc": true,
+	"tsx": true,
+	"tailwind": {
+		"config": "",
+		"css": "../../packages/ui/src/styles/globals.css",
+		"baseColor": "neutral",
+		"cssVariables": true,
+		"prefix": ""
+	},
+	"iconLibrary": "lucide",
+	"aliases": {
+		"components": "@/components",
+		"utils": "@openbooklm/ui/lib/utils",
+		"ui": "@openbooklm/ui/components",
+		"lib": "@/lib",
+		"hooks": "@/hooks"
+	},
+	"menuColor": "default-translucent",
+	"menuAccent": "subtle",
+	"registries": {},
+	"rtl": false
 }

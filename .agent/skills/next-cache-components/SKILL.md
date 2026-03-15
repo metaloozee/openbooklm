@@ -14,7 +14,7 @@ Cache Components enable Partial Prerendering (PPR) - mix static, cached, and dyn
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
+	cacheComponents: true,
 };
 
 export default nextConfig;
@@ -34,12 +34,12 @@ Synchronous code, imports, pure computations - prerendered at build time:
 
 ```tsx
 export default function Page() {
-  return (
-    <header>
-      <h1>Our Blog</h1> {/* Static - instant */}
-      <nav>...</nav>
-    </header>
-  );
+	return (
+		<header>
+			<h1>Our Blog</h1> {/* Static - instant */}
+			<nav>...</nav>
+		</header>
+	);
 }
 ```
 
@@ -49,11 +49,11 @@ Async data that doesn't need fresh fetches every request:
 
 ```tsx
 async function BlogPosts() {
-  "use cache";
-  cacheLife("hours");
+	"use cache";
+	cacheLife("hours");
 
-  const posts = await db.posts.findMany();
-  return <PostList posts={posts} />;
+	const posts = await db.posts.findMany();
+	return <PostList posts={posts} />;
 }
 ```
 
@@ -65,19 +65,19 @@ Runtime data that must be fresh - wrap in Suspense:
 import { Suspense } from "react";
 
 export default function Page() {
-  return (
-    <>
-      <BlogPosts /> {/* Cached */}
-      <Suspense fallback={<p>Loading...</p>}>
-        <UserPreferences /> {/* Dynamic - streams in */}
-      </Suspense>
-    </>
-  );
+	return (
+		<>
+			<BlogPosts /> {/* Cached */}
+			<Suspense fallback={<p>Loading...</p>}>
+				<UserPreferences /> {/* Dynamic - streams in */}
+			</Suspense>
+		</>
+	);
 }
 
 async function UserPreferences() {
-  const theme = (await cookies()).get("theme")?.value;
-  return <p>Theme: {theme}</p>;
+	const theme = (await cookies()).get("theme")?.value;
+	return <p>Theme: {theme}</p>;
 }
 ```
 
@@ -91,9 +91,9 @@ async function UserPreferences() {
 "use cache";
 
 export default async function Page() {
-  // Entire page is cached
-  const data = await fetchData();
-  return <div>{data}</div>;
+	// Entire page is cached
+	const data = await fetchData();
+	return <div>{data}</div>;
 }
 ```
 
@@ -101,9 +101,9 @@ export default async function Page() {
 
 ```tsx
 export async function CachedComponent() {
-  "use cache";
-  const data = await fetchData();
-  return <div>{data}</div>;
+	"use cache";
+	const data = await fetchData();
+	return <div>{data}</div>;
 }
 ```
 
@@ -111,8 +111,8 @@ export async function CachedComponent() {
 
 ```tsx
 export async function getData() {
-  "use cache";
-  return db.query("SELECT * FROM posts");
+	"use cache";
+	return db.query("SELECT * FROM posts");
 }
 ```
 
@@ -140,9 +140,9 @@ export async function getData() {
 import { cacheLife } from "next/cache";
 
 async function getData() {
-  "use cache";
-  cacheLife("hours"); // Built-in profile
-  return fetch("/api/data");
+	"use cache";
+	cacheLife("hours"); // Built-in profile
+	return fetch("/api/data");
 }
 ```
 
@@ -152,13 +152,13 @@ Built-in profiles: `'default'`, `'minutes'`, `'hours'`, `'days'`, `'weeks'`, `'m
 
 ```tsx
 async function getData() {
-  "use cache";
-  cacheLife({
-    stale: 3600, // 1 hour - serve stale while revalidating
-    revalidate: 7200, // 2 hours - background revalidation interval
-    expire: 86400, // 1 day - hard expiration
-  });
-  return fetch("/api/data");
+	"use cache";
+	cacheLife({
+		stale: 3600, // 1 hour - serve stale while revalidating
+		revalidate: 7200, // 2 hours - background revalidation interval
+		expire: 86400, // 1 day - hard expiration
+	});
+	return fetch("/api/data");
 }
 ```
 
@@ -172,15 +172,15 @@ async function getData() {
 import { cacheTag } from "next/cache";
 
 async function getProducts() {
-  "use cache";
-  cacheTag("products");
-  return db.products.findMany();
+	"use cache";
+	cacheTag("products");
+	return db.products.findMany();
 }
 
 async function getProduct(id: string) {
-  "use cache";
-  cacheTag("products", `product-${id}`);
-  return db.products.findUnique({ where: { id } });
+	"use cache";
+	cacheTag("products", `product-${id}`);
+	return db.products.findUnique({ where: { id } });
 }
 ```
 
@@ -194,8 +194,8 @@ Use when you need the cache refreshed within the same request:
 import { updateTag } from "next/cache";
 
 export async function updateProduct(id: string, data: FormData) {
-  await db.products.update({ where: { id }, data });
-  updateTag(`product-${id}`); // Immediate - same request sees fresh data
+	await db.products.update({ where: { id }, data });
+	updateTag(`product-${id}`); // Immediate - same request sees fresh data
 }
 ```
 
@@ -209,8 +209,8 @@ Use for stale-while-revalidate behavior:
 import { revalidateTag } from "next/cache";
 
 export async function createPost(data: FormData) {
-  await db.posts.create({ data });
-  revalidateTag("posts"); // Background - next request sees fresh data
+	await db.posts.create({ data });
+	revalidateTag("posts"); // Background - next request sees fresh data
 }
 ```
 
@@ -225,22 +225,22 @@ export async function createPost(data: FormData) {
 ```tsx
 // Wrong - runtime API inside use cache
 async function CachedProfile() {
-  "use cache";
-  const session = (await cookies()).get("session")?.value; // Error!
-  return <div>{session}</div>;
+	"use cache";
+	const session = (await cookies()).get("session")?.value; // Error!
+	return <div>{session}</div>;
 }
 
 // Correct - extract outside, pass as argument
 async function ProfilePage() {
-  const session = (await cookies()).get("session")?.value;
-  return <CachedProfile sessionId={session} />;
+	const session = (await cookies()).get("session")?.value;
+	return <CachedProfile sessionId={session} />;
 }
 
 async function CachedProfile({ sessionId }: { sessionId: string }) {
-  "use cache";
-  // sessionId becomes part of cache key automatically
-  const data = await fetchUserData(sessionId);
-  return <div>{data.name}</div>;
+	"use cache";
+	// sessionId becomes part of cache key automatically
+	const data = await fetchUserData(sessionId);
+	return <div>{data.name}</div>;
 }
 ```
 
@@ -250,9 +250,9 @@ For compliance requirements when you can't refactor:
 
 ```tsx
 async function getData() {
-  "use cache: private";
-  const session = (await cookies()).get("session")?.value; // Allowed
-  return fetchData(session);
+	"use cache: private";
+	const session = (await cookies()).get("session")?.value; // Allowed
+	return fetchData(session);
 }
 ```
 
@@ -269,12 +269,12 @@ Cache keys are automatic based on:
 
 ```tsx
 async function Component({ userId }: { userId: string }) {
-  const getData = async (filter: string) => {
-    "use cache";
-    // Cache key = userId (closure) + filter (argument)
-    return fetch(`/api/users/${userId}?filter=${filter}`);
-  };
-  return getData("active");
+	const getData = async (filter: string) => {
+		"use cache";
+		// Cache key = userId (closure) + filter (argument)
+		return fetch(`/api/users/${userId}?filter=${filter}`);
+	};
+	return getData("active");
 }
 ```
 
@@ -288,40 +288,40 @@ import { cookies } from "next/headers";
 import { cacheLife, cacheTag } from "next/cache";
 
 export default function DashboardPage() {
-  return (
-    <>
-      {/* Static shell - instant from CDN */}
-      <header>
-        <h1>Dashboard</h1>
-      </header>
-      <nav>...</nav>
+	return (
+		<>
+			{/* Static shell - instant from CDN */}
+			<header>
+				<h1>Dashboard</h1>
+			</header>
+			<nav>...</nav>
 
-      {/* Cached - fast, revalidates hourly */}
-      <Stats />
+			{/* Cached - fast, revalidates hourly */}
+			<Stats />
 
-      {/* Dynamic - streams in with fresh data */}
-      <Suspense fallback={<NotificationsSkeleton />}>
-        <Notifications />
-      </Suspense>
-    </>
-  );
+			{/* Dynamic - streams in with fresh data */}
+			<Suspense fallback={<NotificationsSkeleton />}>
+				<Notifications />
+			</Suspense>
+		</>
+	);
 }
 
 async function Stats() {
-  "use cache";
-  cacheLife("hours");
-  cacheTag("dashboard-stats");
+	"use cache";
+	cacheLife("hours");
+	cacheTag("dashboard-stats");
 
-  const stats = await db.stats.aggregate();
-  return <StatsDisplay stats={stats} />;
+	const stats = await db.stats.aggregate();
+	return <StatsDisplay stats={stats} />;
 }
 
 async function Notifications() {
-  const userId = (await cookies()).get("userId")?.value;
-  const notifications = await db.notifications.findMany({
-    where: { userId, read: false },
-  });
-  return <NotificationList items={notifications} />;
+	const userId = (await cookies()).get("userId")?.value;
+	const notifications = await db.notifications.findMany({
+		where: { userId, read: false },
+	});
+	return <NotificationList items={notifications} />;
 }
 ```
 
@@ -347,14 +347,14 @@ async function Notifications() {
 import { unstable_cache } from "next/cache";
 
 const getCachedUser = unstable_cache(async (id) => getUser(id), ["my-app-user"], {
-  tags: ["users"],
-  revalidate: 60,
+	tags: ["users"],
+	revalidate: 60,
 });
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const user = await getCachedUser(id);
-  return <div>{user.name}</div>;
+	const { id } = await params;
+	const user = await getCachedUser(id);
+	return <div>{user.name}</div>;
 }
 ```
 
@@ -364,16 +364,16 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 import { cacheLife, cacheTag } from "next/cache";
 
 async function getCachedUser(id: string) {
-  "use cache";
-  cacheTag("users");
-  cacheLife({ revalidate: 60 });
-  return getUser(id);
+	"use cache";
+	cacheTag("users");
+	cacheLife({ revalidate: 60 });
+	return getUser(id);
 }
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const user = await getCachedUser(id);
-  return <div>{user.name}</div>;
+	const { id } = await params;
+	const user = await getCachedUser(id);
+	return <div>{user.name}</div>;
 }
 ```
 
@@ -398,9 +398,9 @@ For request-time randomness outside cache:
 import { connection } from "next/server";
 
 async function DynamicContent() {
-  await connection(); // Defer to request time
-  const id = crypto.randomUUID(); // Different per request
-  return <div>{id}</div>;
+	await connection(); // Defer to request time
+	const id = crypto.randomUUID(); // Different per request
+	return <div>{id}</div>;
 }
 ```
 

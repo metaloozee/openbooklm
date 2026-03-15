@@ -71,13 +71,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function NavLink({ href, children }) {
-  const pathname = usePathname();
+	const pathname = usePathname();
 
-  return (
-    <Link href={href} className={pathname === href ? "active" : ""}>
-      {children}
-    </Link>
-  );
+	return (
+		<Link href={href} className={pathname === href ? "active" : ""}>
+			{children}
+		</Link>
+	);
 }
 ```
 
@@ -86,8 +86,8 @@ export function NavLink({ href, children }) {
 ```tsx
 // app/blog/[slug]/page.tsx
 export async function generateStaticParams() {
-  const posts = await getPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+	const posts = await getPosts();
+	return posts.map((post) => ({ slug: post.slug }));
 }
 ```
 
@@ -97,12 +97,12 @@ export async function generateStaticParams() {
 import { after } from "next/server";
 
 export async function POST(request: Request) {
-  const data = await processRequest(request);
+	const data = await processRequest(request);
 
-  after(async () => {
-    await logAnalytics(data);
-  });
+	after(async () => {
+		await logAnalytics(data);
+	});
 
-  return Response.json({ success: true });
+	return Response.json({ success: true });
 }
 ```

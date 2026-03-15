@@ -12,7 +12,7 @@ Always type them as `Promise<...>` and await them.
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function Page({ params }: Props) {
-  const { slug } = await params;
+	const { slug } = await params;
 }
 ```
 
@@ -20,7 +20,7 @@ export default async function Page({ params }: Props) {
 
 ```tsx
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+	const { id } = await params;
 }
 ```
 
@@ -28,13 +28,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
 
 ```tsx
 type Props = {
-  params: Promise<{ slug: string }>;
-  searchParams: Promise<{ query?: string }>;
+	params: Promise<{ slug: string }>;
+	searchParams: Promise<{ query?: string }>;
 };
 
 export default async function Page({ params, searchParams }: Props) {
-  const { slug } = await params;
-  const { query } = await searchParams;
+	const { slug } = await params;
+	const { query } = await searchParams;
 }
 ```
 
@@ -48,7 +48,7 @@ import { use } from "react";
 type Props = { params: Promise<{ slug: string }> };
 
 export default function Page({ params }: Props) {
-  const { slug } = use(params);
+	const { slug } = use(params);
 }
 ```
 
@@ -58,8 +58,8 @@ export default function Page({ params }: Props) {
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  return { title: slug };
+	const { slug } = await params;
+	return { title: slug };
 }
 ```
 
@@ -69,11 +69,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 import { cookies, headers } from "next/headers";
 
 export default async function Page() {
-  const cookieStore = await cookies();
-  const headersList = await headers();
+	const cookieStore = await cookies();
+	const headersList = await headers();
 
-  const theme = cookieStore.get("theme");
-  const userAgent = headersList.get("user-agent");
+	const theme = cookieStore.get("theme");
+	const userAgent = headersList.get("user-agent");
 }
 ```
 

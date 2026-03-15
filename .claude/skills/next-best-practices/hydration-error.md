@@ -24,9 +24,9 @@ In development, click the hydration error to see the server/client diff.
 import { useState, useEffect } from "react";
 
 export function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  return mounted ? children : null;
+	const [mounted, setMounted] = useState(false);
+	useEffect(() => setMounted(true), []);
+	return mounted ? children : null;
 }
 ```
 
@@ -81,6 +81,6 @@ Scripts that modify DOM during hydration.
 import Script from "next/script";
 
 export default function Page() {
-  return <Script src="https://example.com/script.js" strategy="afterInteractive" />;
+	return <Script src="https://example.com/script.js" strategy="afterInteractive" />;
 }
 ```

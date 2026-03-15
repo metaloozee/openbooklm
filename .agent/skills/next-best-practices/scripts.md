@@ -103,12 +103,12 @@ export default function Layout({ children }) {
 import { GoogleTagManager } from "@next/third-parties/google";
 
 export default function Layout({ children }) {
-  return (
-    <html>
-      <GoogleTagManager gtmId="GTM-XXXXX" />
-      <body>{children}</body>
-    </html>
-  );
+	return (
+		<html>
+			<GoogleTagManager gtmId="GTM-XXXXX" />
+			<body>{children}</body>
+		</html>
+	);
 }
 ```
 

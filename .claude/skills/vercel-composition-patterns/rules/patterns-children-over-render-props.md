@@ -15,36 +15,36 @@ signatures.
 
 ```tsx
 function Composer({
-  renderHeader,
-  renderFooter,
-  renderActions,
+	renderHeader,
+	renderFooter,
+	renderActions,
 }: {
-  renderHeader?: () => React.ReactNode;
-  renderFooter?: () => React.ReactNode;
-  renderActions?: () => React.ReactNode;
+	renderHeader?: () => React.ReactNode;
+	renderFooter?: () => React.ReactNode;
+	renderActions?: () => React.ReactNode;
 }) {
-  return (
-    <form>
-      {renderHeader?.()}
-      <Input />
-      {renderFooter ? renderFooter() : <DefaultFooter />}
-      {renderActions?.()}
-    </form>
-  );
+	return (
+		<form>
+			{renderHeader?.()}
+			<Input />
+			{renderFooter ? renderFooter() : <DefaultFooter />}
+			{renderActions?.()}
+		</form>
+	);
 }
 
 // Usage is awkward and inflexible
 return (
-  <Composer
-    renderHeader={() => <CustomHeader />}
-    renderFooter={() => (
-      <>
-        <Formatting />
-        <Emojis />
-      </>
-    )}
-    renderActions={() => <SubmitButton />}
-  />
+	<Composer
+		renderHeader={() => <CustomHeader />}
+		renderFooter={() => (
+			<>
+				<Formatting />
+				<Emojis />
+			</>
+		)}
+		renderActions={() => <SubmitButton />}
+	/>
 );
 ```
 
@@ -52,24 +52,24 @@ return (
 
 ```tsx
 function ComposerFrame({ children }: { children: React.ReactNode }) {
-  return <form>{children}</form>;
+	return <form>{children}</form>;
 }
 
 function ComposerFooter({ children }: { children: React.ReactNode }) {
-  return <footer className="flex">{children}</footer>;
+	return <footer className="flex">{children}</footer>;
 }
 
 // Usage is flexible
 return (
-  <Composer.Frame>
-    <CustomHeader />
-    <Composer.Input />
-    <Composer.Footer>
-      <Composer.Formatting />
-      <Composer.Emojis />
-      <SubmitButton />
-    </Composer.Footer>
-  </Composer.Frame>
+	<Composer.Frame>
+		<CustomHeader />
+		<Composer.Input />
+		<Composer.Footer>
+			<Composer.Formatting />
+			<Composer.Emojis />
+			<SubmitButton />
+		</Composer.Footer>
+	</Composer.Frame>
 );
 ```
 

@@ -9,7 +9,7 @@ For Docker or any containerized deployment, use standalone output:
 ```js
 // next.config.js
 module.exports = {
-  output: "standalone",
+	output: "standalone",
 };
 ```
 
@@ -74,18 +74,18 @@ CMD ["node", "server.js"]
 version: "3.8"
 
 services:
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+    web:
+        build: .
+        ports:
+            - "3000:3000"
+        environment:
+            - NODE_ENV=production
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "wget", "-q", "--spider", "http://localhost:3000/api/health"]
+            interval: 30s
+            timeout: 10s
+            retries: 3
 ```
 
 ## PM2 Deployment
@@ -95,18 +95,18 @@ For traditional server deployments:
 ```js
 // ecosystem.config.js
 module.exports = {
-  apps: [
-    {
-      name: "nextjs",
-      script: ".next/standalone/server.js",
-      instances: "max",
-      exec_mode: "cluster",
-      env: {
-        NODE_ENV: "production",
-        PORT: 3000,
-      },
-    },
-  ],
+	apps: [
+		{
+			name: "nextjs",
+			script: ".next/standalone/server.js",
+			instances: "max",
+			exec_mode: "cluster",
+			env: {
+				NODE_ENV: "production",
+				PORT: 3000,
+			},
+		},
+	],
 };
 ```
 
@@ -132,8 +132,8 @@ Next.js 14+ supports custom cache handlers for shared storage:
 ```js
 // next.config.js
 module.exports = {
-  cacheHandler: require.resolve("./cache-handler.js"),
-  cacheMaxMemorySize: 0, // Disable in-memory cache
+	cacheHandler: require.resolve("./cache-handler.js"),
+	cacheMaxMemorySize: 0, // Disable in-memory cache
 };
 ```
 
@@ -147,39 +147,39 @@ const redis = new Redis(process.env.REDIS_URL);
 const CACHE_PREFIX = "nextjs:";
 
 module.exports = class CacheHandler {
-  constructor(options) {
-    this.options = options;
-  }
+	constructor(options) {
+		this.options = options;
+	}
 
-  async get(key) {
-    const data = await redis.get(CACHE_PREFIX + key);
-    if (!data) return null;
+	async get(key) {
+		const data = await redis.get(CACHE_PREFIX + key);
+		if (!data) return null;
 
-    const parsed = JSON.parse(data);
-    return {
-      value: parsed.value,
-      lastModified: parsed.lastModified,
-    };
-  }
+		const parsed = JSON.parse(data);
+		return {
+			value: parsed.value,
+			lastModified: parsed.lastModified,
+		};
+	}
 
-  async set(key, data, ctx) {
-    const cacheData = {
-      value: data,
-      lastModified: Date.now(),
-    };
+	async set(key, data, ctx) {
+		const cacheData = {
+			value: data,
+			lastModified: Date.now(),
+		};
 
-    // Set TTL based on revalidate option
-    if (ctx?.revalidate) {
-      await redis.setex(CACHE_PREFIX + key, ctx.revalidate, JSON.stringify(cacheData));
-    } else {
-      await redis.set(CACHE_PREFIX + key, JSON.stringify(cacheData));
-    }
-  }
+		// Set TTL based on revalidate option
+		if (ctx?.revalidate) {
+			await redis.setex(CACHE_PREFIX + key, ctx.revalidate, JSON.stringify(cacheData));
+		} else {
+			await redis.set(CACHE_PREFIX + key, JSON.stringify(cacheData));
+		}
+	}
 
-  async revalidateTag(tags) {
-    // Implement tag-based invalidation
-    // This requires tracking which keys have which tags
-  }
+	async revalidateTag(tags) {
+		// Implement tag-based invalidation
+		// This requires tracking which keys have which tags
+	}
 };
 ```
 
@@ -193,35 +193,35 @@ const s3 = new S3Client({ region: process.env.AWS_REGION });
 const BUCKET = process.env.CACHE_BUCKET;
 
 module.exports = class CacheHandler {
-  async get(key) {
-    try {
-      const response = await s3.send(
-        new GetObjectCommand({
-          Bucket: BUCKET,
-          Key: `cache/${key}`,
-        }),
-      );
-      const body = await response.Body.transformToString();
-      return JSON.parse(body);
-    } catch (err) {
-      if (err.name === "NoSuchKey") return null;
-      throw err;
-    }
-  }
+	async get(key) {
+		try {
+			const response = await s3.send(
+				new GetObjectCommand({
+					Bucket: BUCKET,
+					Key: `cache/${key}`,
+				}),
+			);
+			const body = await response.Body.transformToString();
+			return JSON.parse(body);
+		} catch (err) {
+			if (err.name === "NoSuchKey") return null;
+			throw err;
+		}
+	}
 
-  async set(key, data, ctx) {
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: BUCKET,
-        Key: `cache/${key}`,
-        Body: JSON.stringify({
-          value: data,
-          lastModified: Date.now(),
-        }),
-        ContentType: "application/json",
-      }),
-    );
-  }
+	async set(key, data, ctx) {
+		await s3.send(
+			new PutObjectCommand({
+				Bucket: BUCKET,
+				Key: `cache/${key}`,
+				Body: JSON.stringify({
+					value: data,
+					lastModified: Date.now(),
+				}),
+				ContentType: "application/json",
+			}),
+		);
+	}
 };
 ```
 
@@ -253,10 +253,10 @@ Works automatically, but consider:
 ```js
 // next.config.js
 module.exports = {
-  images: {
-    minimumCacheTTL: 60 * 60 * 24, // 24 hours
-    deviceSizes: [640, 750, 1080, 1920], // Limit sizes
-  },
+	images: {
+		minimumCacheTTL: 60 * 60 * 24, // 24 hours
+		deviceSizes: [640, 750, 1080, 1920], // Limit sizes
+	},
 };
 ```
 
@@ -267,18 +267,18 @@ Offload to Cloudinary, Imgix, or similar:
 ```js
 // next.config.js
 module.exports = {
-  images: {
-    loader: "custom",
-    loaderFile: "./lib/image-loader.js",
-  },
+	images: {
+		loader: "custom",
+		loaderFile: "./lib/image-loader.js",
+	},
 };
 ```
 
 ```js
 // lib/image-loader.js
 export default function cloudinaryLoader({ src, width, quality }) {
-  const params = ["f_auto", "c_limit", `w_${width}`, `q_${quality || "auto"}`];
-  return `https://res.cloudinary.com/demo/image/upload/${params.join(",")}${src}`;
+	const params = ["f_auto", "c_limit", `w_${width}`, `q_${quality || "auto"}`];
+	return `https://res.cloudinary.com/demo/image/upload/${params.join(",")}${src}`;
 }
 ```
 
@@ -302,10 +302,10 @@ For truly dynamic config, don't use `NEXT_PUBLIC_*`. Instead:
 ```tsx
 // app/api/config/route.ts
 export async function GET() {
-  return Response.json({
-    apiUrl: process.env.API_URL,
-    features: process.env.FEATURES?.split(","),
-  });
+	return Response.json({
+		apiUrl: process.env.API_URL,
+		features: process.env.FEATURES?.split(","),
+	});
 }
 ```
 
@@ -333,14 +333,14 @@ Always include a health check for load balancers:
 ```tsx
 // app/api/health/route.ts
 export async function GET() {
-  try {
-    // Optional: check database connection
-    // await db.$queryRaw`SELECT 1`;
+	try {
+		// Optional: check database connection
+		// await db.$queryRaw`SELECT 1`;
 
-    return Response.json({ status: "healthy" }, { status: 200 });
-  } catch (error) {
-    return Response.json({ status: "unhealthy" }, { status: 503 });
-  }
+		return Response.json({ status: "healthy" }, { status: 200 });
+	} catch (error) {
+		return Response.json({ status: "unhealthy" }, { status: 503 });
+	}
 }
 ```
 

@@ -1,27 +1,27 @@
 {
-  "name": "@openbooklm/api",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "dependencies": {
-    "@openbooklm/auth": "workspace:*",
-    "@openbooklm/db": "workspace:*",
-    "@openbooklm/env": "workspace:*",
-    "@trpc/client": "catalog:",
-    "@trpc/server": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@openbooklm/config": "workspace:*",
-    "hono": "catalog:",
-    "typescript": "^5"
-  }
+	"name": "@openbooklm/api",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@openbooklm/auth": "workspace:*",
+		"@openbooklm/db": "workspace:*",
+		"@openbooklm/env": "workspace:*",
+		"@trpc/client": "catalog:",
+		"@trpc/server": "catalog:",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@openbooklm/config": "workspace:*",
+		"hono": "catalog:",
+		"typescript": "^5"
+	}
 }

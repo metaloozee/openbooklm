@@ -1,24 +1,24 @@
 {
-  "name": "@openbooklm/auth",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {},
-  "dependencies": {
-    "@openbooklm/db": "workspace:*",
-    "@openbooklm/env": "workspace:*",
-    "better-auth": "catalog:",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@openbooklm/config": "workspace:*",
-    "typescript": "^5"
-  }
+	"name": "@openbooklm/auth",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {},
+	"dependencies": {
+		"@openbooklm/db": "workspace:*",
+		"@openbooklm/env": "workspace:*",
+		"better-auth": "catalog:",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@openbooklm/config": "workspace:*",
+		"typescript": "^5"
+	}
 }

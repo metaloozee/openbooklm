@@ -18,8 +18,8 @@ If the target page has `'use client'`:
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Page Title",
-  description: "Page description for search engines",
+	title: "Page Title",
+	description: "Page description for search engines",
 };
 ```
 
@@ -31,9 +31,9 @@ import type { Metadata } from "next";
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
-  const post = await getPost(slug);
-  return { title: post.title, description: post.description };
+	const { slug } = await params;
+	const post = await getPost(slug);
+	return { title: post.title, description: post.description };
 }
 ```
 
@@ -45,7 +45,7 @@ Use React `cache()` when the same data is needed for both metadata and page:
 import { cache } from "react";
 
 export const getPost = cache(async (slug: string) => {
-  return await db.posts.findFirst({ where: { slug } });
+	return await db.posts.findFirst({ where: { slug } });
 });
 ```
 
@@ -57,14 +57,14 @@ Separate from metadata for streaming support:
 import type { Viewport } from "next";
 
 export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  themeColor: "#000000",
+	width: "device-width",
+	initialScale: 1,
+	themeColor: "#000000",
 };
 
 // Or dynamic
 export function generateViewport({ params }): Viewport {
-  return { themeColor: getThemeColor(params) };
+	return { themeColor: getThemeColor(params) };
 }
 ```
 
@@ -74,7 +74,7 @@ In root layout for consistent naming:
 
 ```tsx
 export const metadata: Metadata = {
-  title: { default: "Site Name", template: "%s | Site Name" },
+	title: { default: "Site Name", template: "%s | Site Name" },
 };
 ```
 
@@ -146,22 +146,22 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export default function Image() {
-  return new ImageResponse(
-    <div
-      style={{
-        fontSize: 128,
-        background: "white",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      Hello World
-    </div>,
-    { ...size },
-  );
+	return new ImageResponse(
+		<div
+			style={{
+				fontSize: 128,
+				background: "white",
+				width: "100%",
+				height: "100%",
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+			}}
+		>
+			Hello World
+		</div>,
+		{ ...size },
+	);
 }
 ```
 
@@ -178,29 +178,29 @@ export const contentType = "image/png";
 type Props = { params: Promise<{ slug: string }> };
 
 export default async function Image({ params }: Props) {
-  const { slug } = await params;
-  const post = await getPost(slug);
+	const { slug } = await params;
+	const post = await getPost(slug);
 
-  return new ImageResponse(
-    <div
-      style={{
-        fontSize: 48,
-        background: "linear-gradient(to bottom, #1a1a1a, #333)",
-        color: "white",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 48,
-      }}
-    >
-      <div style={{ fontSize: 64, fontWeight: "bold" }}>{post.title}</div>
-      <div style={{ marginTop: 24, opacity: 0.8 }}>{post.description}</div>
-    </div>,
-    { ...size },
-  );
+	return new ImageResponse(
+		<div
+			style={{
+				fontSize: 48,
+				background: "linear-gradient(to bottom, #1a1a1a, #333)",
+				color: "white",
+				width: "100%",
+				height: "100%",
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center",
+				justifyContent: "center",
+				padding: 48,
+			}}
+		>
+			<div style={{ fontSize: 64, fontWeight: "bold" }}>{post.title}</div>
+			<div style={{ marginTop: 24, opacity: 0.8 }}>{post.description}</div>
+		</div>,
+		{ ...size },
+	);
 }
 ```
 
@@ -212,17 +212,17 @@ import { join } from "path";
 import { readFile } from "fs/promises";
 
 export default async function Image() {
-  const fontPath = join(process.cwd(), "assets/fonts/Inter-Bold.ttf");
-  const fontData = await readFile(fontPath);
+	const fontPath = join(process.cwd(), "assets/fonts/Inter-Bold.ttf");
+	const fontData = await readFile(fontPath);
 
-  return new ImageResponse(
-    <div style={{ fontFamily: "Inter", fontSize: 64 }}>Custom Font Text</div>,
-    {
-      width: 1200,
-      height: 630,
-      fonts: [{ name: "Inter", data: fontData, style: "normal" }],
-    },
-  );
+	return new ImageResponse(
+		<div style={{ fontFamily: "Inter", fontSize: 64 }}>Custom Font Text</div>,
+		{
+			width: 1200,
+			height: 630,
+			fonts: [{ name: "Inter", data: fontData, style: "normal" }],
+		},
+	);
 }
 ```
 
@@ -248,19 +248,19 @@ Use `generateImageMetadata` for multiple images per route:
 import { ImageResponse } from "next/og";
 
 export async function generateImageMetadata({ params }) {
-  const images = await getPostImages(params.slug);
-  return images.map((img, idx) => ({
-    id: idx,
-    alt: img.alt,
-    size: { width: 1200, height: 630 },
-    contentType: "image/png",
-  }));
+	const images = await getPostImages(params.slug);
+	return images.map((img, idx) => ({
+		id: idx,
+		alt: img.alt,
+		size: { width: 1200, height: 630 },
+		contentType: "image/png",
+	}));
 }
 
 export default async function Image({ params, id }) {
-  const images = await getPostImages(params.slug);
-  const image = images[id];
-  return new ImageResponse(/* ... */);
+	const images = await getPostImages(params.slug);
+	const image = images[id];
+	return new ImageResponse(/* ... */);
 }
 ```
 
@@ -273,19 +273,19 @@ Use `generateSitemaps` for large sites:
 import type { MetadataRoute } from "next";
 
 export async function generateSitemaps() {
-  // Return array of sitemap IDs
-  return [{ id: 0 }, { id: 1 }, { id: 2 }];
+	// Return array of sitemap IDs
+	return [{ id: 0 }, { id: 1 }, { id: 2 }];
 }
 
 export default async function sitemap({ id }: { id: number }): Promise<MetadataRoute.Sitemap> {
-  const start = id * 50000;
-  const end = start + 50000;
-  const products = await getProducts(start, end);
+	const start = id * 50000;
+	const end = start + 50000;
+	const products = await getProducts(start, end);
 
-  return products.map((product) => ({
-    url: `https://example.com/product/${product.id}`,
-    lastModified: product.updatedAt,
-  }));
+	return products.map((product) => ({
+		url: `https://example.com/product/${product.id}`,
+		lastModified: product.updatedAt,
+	}));
 }
 ```
 

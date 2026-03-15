@@ -14,18 +14,18 @@ Catches errors in a route segment and its children:
 "use client";
 
 export default function Error({
-  error,
-  reset,
+	error,
+	reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+	error: Error & { digest?: string };
+	reset: () => void;
 }) {
-  return (
-    <div>
-      <h2>Something went wrong!</h2>
-      <button onClick={() => reset()}>Try again</button>
-    </div>
-  );
+	return (
+		<div>
+			<h2>Something went wrong!</h2>
+			<button onClick={() => reset()}>Try again</button>
+		</div>
+	);
 }
 ```
 
@@ -39,20 +39,20 @@ Catches errors in root layout:
 "use client";
 
 export default function GlobalError({
-  error,
-  reset,
+	error,
+	reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+	error: Error & { digest?: string };
+	reset: () => void;
 }) {
-  return (
-    <html>
-      <body>
-        <h2>Something went wrong!</h2>
-        <button onClick={() => reset()}>Try again</button>
-      </body>
-    </html>
-  );
+	return (
+		<html>
+			<body>
+				<h2>Something went wrong!</h2>
+				<button onClick={() => reset()}>Try again</button>
+			</body>
+		</html>
+	);
 }
 ```
 
@@ -120,13 +120,13 @@ Use `unstable_rethrow()` to re-throw these errors in catch blocks:
 import { unstable_rethrow } from "next/navigation";
 
 async function action() {
-  try {
-    // ...
-    redirect("/success");
-  } catch (error) {
-    unstable_rethrow(error); // Re-throws Next.js internal errors
-    return { error: "Something went wrong" };
-  }
+	try {
+		// ...
+		redirect("/success");
+	} catch (error) {
+		unstable_rethrow(error); // Re-throws Next.js internal errors
+		return { error: "Something went wrong" };
+	}
 }
 ```
 
@@ -150,17 +150,17 @@ Trigger auth-related error pages:
 import { forbidden, unauthorized } from "next/navigation";
 
 async function Page() {
-  const session = await getSession();
+	const session = await getSession();
 
-  if (!session) {
-    unauthorized(); // Renders unauthorized.tsx (401)
-  }
+	if (!session) {
+		unauthorized(); // Renders unauthorized.tsx (401)
+	}
 
-  if (!session.hasAccess) {
-    forbidden(); // Renders forbidden.tsx (403)
-  }
+	if (!session.hasAccess) {
+		forbidden(); // Renders forbidden.tsx (403)
+	}
 
-  return <Dashboard />;
+	return <Dashboard />;
 }
 ```
 
@@ -169,12 +169,12 @@ Create corresponding error pages:
 ```tsx
 // app/forbidden.tsx
 export default function Forbidden() {
-  return <div>You don't have access to this resource</div>;
+	return <div>You don't have access to this resource</div>;
 }
 
 // app/unauthorized.tsx
 export default function Unauthorized() {
-  return <div>Please log in to continue</div>;
+	return <div>Please log in to continue</div>;
 }
 ```
 
@@ -186,12 +186,12 @@ Custom 404 page for a route segment:
 
 ```tsx
 export default function NotFound() {
-  return (
-    <div>
-      <h2>Not Found</h2>
-      <p>Could not find the requested resource</p>
-    </div>
-  );
+	return (
+		<div>
+			<h2>Not Found</h2>
+			<p>Could not find the requested resource</p>
+		</div>
+	);
 }
 ```
 
@@ -201,14 +201,14 @@ export default function NotFound() {
 import { notFound } from "next/navigation";
 
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const post = await getPost(id);
+	const { id } = await params;
+	const post = await getPost(id);
 
-  if (!post) {
-    notFound(); // Renders closest not-found.tsx
-  }
+	if (!post) {
+		notFound(); // Renders closest not-found.tsx
+	}
 
-  return <div>{post.title}</div>;
+	return <div>{post.title}</div>;
 }
 ```
 

@@ -11,11 +11,11 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={inter.className}>
-      <body>{children}</body>
-    </html>
-  );
+	return (
+		<html lang="en" className={inter.className}>
+			<body>{children}</body>
+		</html>
+	);
 }
 ```
 
@@ -25,21 +25,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 import { Inter, Roboto_Mono } from "next/font/google";
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+	subsets: ["latin"],
+	variable: "--font-inter",
 });
 
 const robotoMono = Roboto_Mono({
-  subsets: ["latin"],
-  variable: "--font-roboto-mono",
+	subsets: ["latin"],
+	variable: "--font-roboto-mono",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en" className={`${inter.variable} ${robotoMono.variable}`}>
-      <body>{children}</body>
-    </html>
-  );
+	return (
+		<html lang="en" className={`${inter.variable} ${robotoMono.variable}`}>
+			<body>{children}</body>
+		</html>
+	);
 }
 ```
 
@@ -47,11 +47,11 @@ Use in CSS:
 
 ```css
 body {
-  font-family: var(--font-inter);
+	font-family: var(--font-inter);
 }
 
 code {
-  font-family: var(--font-roboto-mono);
+	font-family: var(--font-roboto-mono);
 }
 ```
 
@@ -60,26 +60,26 @@ code {
 ```tsx
 // Single weight
 const inter = Inter({
-  subsets: ["latin"],
-  weight: "400",
+	subsets: ["latin"],
+	weight: "400",
 });
 
 // Multiple weights
 const inter = Inter({
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
+	subsets: ["latin"],
+	weight: ["400", "500", "700"],
 });
 
 // Variable font (recommended) - includes all weights
 const inter = Inter({
-  subsets: ["latin"],
-  // No weight needed - variable fonts support all weights
+	subsets: ["latin"],
+	// No weight needed - variable fonts support all weights
 });
 
 // With italic
 const inter = Inter({
-  subsets: ["latin"],
-  style: ["normal", "italic"],
+	subsets: ["latin"],
+	style: ["normal", "italic"],
 });
 ```
 
@@ -89,29 +89,29 @@ const inter = Inter({
 import localFont from "next/font/local";
 
 const myFont = localFont({
-  src: "./fonts/MyFont.woff2",
+	src: "./fonts/MyFont.woff2",
 });
 
 // Multiple files for different weights
 const myFont = localFont({
-  src: [
-    {
-      path: "./fonts/MyFont-Regular.woff2",
-      weight: "400",
-      style: "normal",
-    },
-    {
-      path: "./fonts/MyFont-Bold.woff2",
-      weight: "700",
-      style: "normal",
-    },
-  ],
+	src: [
+		{
+			path: "./fonts/MyFont-Regular.woff2",
+			weight: "400",
+			style: "normal",
+		},
+		{
+			path: "./fonts/MyFont-Bold.woff2",
+			weight: "700",
+			style: "normal",
+		},
+	],
 });
 
 // Variable font
 const myFont = localFont({
-  src: "./fonts/MyFont-Variable.woff2",
-  variable: "--font-my-font",
+	src: "./fonts/MyFont-Variable.woff2",
+	variable: "--font-my-font",
 });
 ```
 
@@ -122,29 +122,29 @@ const myFont = localFont({
 import { Inter } from "next/font/google";
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+	subsets: ["latin"],
+	variable: "--font-inter",
 });
 
 export default function RootLayout({ children }) {
-  return (
-    <html lang="en" className={inter.variable}>
-      <body>{children}</body>
-    </html>
-  );
+	return (
+		<html lang="en" className={inter.variable}>
+			<body>{children}</body>
+		</html>
+	);
 }
 ```
 
 ```js
 // tailwind.config.js
 module.exports = {
-  theme: {
-    extend: {
-      fontFamily: {
-        sans: ["var(--font-inter)"],
-      },
-    },
-  },
+	theme: {
+		extend: {
+			fontFamily: {
+				sans: ["var(--font-inter)"],
+			},
+		},
+	},
 };
 ```
 
@@ -166,8 +166,8 @@ Control font loading behavior:
 
 ```tsx
 const inter = Inter({
-  subsets: ["latin"],
-  display: "swap", // Default - shows fallback, swaps when loaded
+	subsets: ["latin"],
+	display: "swap", // Default - shows fallback, swaps when loaded
 });
 
 // Options:
@@ -241,6 +241,6 @@ export const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font
 import { playfair } from "@/lib/fonts";
 
 export function Heading({ children }) {
-  return <h1 className={playfair.className}>{children}</h1>;
+	return <h1 className={playfair.className}>{children}</h1>;
 }
 ```

@@ -13,8 +13,8 @@ Always requires Suspense boundary in static routes. Without it, the entire page 
 import { useSearchParams } from "next/navigation";
 
 export default function SearchBar() {
-  const searchParams = useSearchParams();
-  return <div>Query: {searchParams.get("q")}</div>;
+	const searchParams = useSearchParams();
+	return <div>Query: {searchParams.get("q")}</div>;
 }
 ```
 
@@ -24,11 +24,11 @@ import { Suspense } from "react";
 import SearchBar from "./search-bar";
 
 export default function Page() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SearchBar />
-    </Suspense>
-  );
+	return (
+		<Suspense fallback={<div>Loading...</div>}>
+			<SearchBar />
+		</Suspense>
+	);
 }
 ```
 
@@ -43,15 +43,15 @@ Requires Suspense boundary when route has dynamic parameters.
 import { usePathname } from "next/navigation";
 
 export function Breadcrumb() {
-  const pathname = usePathname();
-  return <nav>{pathname}</nav>;
+	const pathname = usePathname();
+	return <nav>{pathname}</nav>;
 }
 ```
 
 ```tsx
 // Good: Wrap in Suspense
 <Suspense fallback={<BreadcrumbSkeleton />}>
-  <Breadcrumb />
+	<Breadcrumb />
 </Suspense>
 ```
 
