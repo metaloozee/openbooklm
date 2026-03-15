@@ -50,6 +50,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         e.stopPropagation();
         form.handleSubmit();
       }}
+      noValidate
       className="flex flex-col gap-4"
     >
       <form.Field name="email">
