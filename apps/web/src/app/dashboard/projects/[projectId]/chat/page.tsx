@@ -1,11 +1,9 @@
 import { assertAuthenticated } from "@/lib/auth-guard";
 
-export default async function ChatPage({
-	params: _params,
-}: {
-	params: Promise<{ projectId: string }>;
-}) {
+export default async function ChatPage({ params }: { params: Promise<{ projectId: string }> }) {
 	await assertAuthenticated();
+	const { projectId: _projectId } = await params;
+	// TODO: verify the authenticated user has access to this project
 
 	return (
 		<div className="space-y-4">

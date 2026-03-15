@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
 
@@ -12,7 +12,7 @@ export async function assertAuthenticated() {
 	});
 
 	if (!session?.user) {
-		notFound();
+		redirect("/login");
 	}
 
 	return session;

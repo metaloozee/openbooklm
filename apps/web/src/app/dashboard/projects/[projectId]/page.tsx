@@ -1,11 +1,13 @@
 import { assertAuthenticated } from "@/lib/auth-guard";
 
 export default async function ProjectOverviewPage({
-	params: _params,
+	params,
 }: {
 	params: Promise<{ projectId: string }>;
 }) {
 	await assertAuthenticated();
+	const { projectId: _projectId } = await params;
+	// TODO: verify the authenticated user has access to this project
 
 	return (
 		<div className="space-y-4">

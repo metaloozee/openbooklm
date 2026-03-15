@@ -26,7 +26,9 @@ bun install
 
 ### Environment
 
-Create `apps/server/.env` with your database connection string, auth secret (min 32 chars), auth URL pointing to the server origin, and CORS origin pointing to the web origin. Create `apps/web/.env` with `NEXT_PUBLIC_SERVER_URL` pointing to the server origin. See `packages/env/src/server.ts` and `packages/env/src/web.ts` for the full list of required variables.
+- Create `apps/server/.env` with `DATABASE_URL`, `BETTER_AUTH_SECRET` (min 32 chars), `BETTER_AUTH_URL` (server origin), and `CORS_ORIGIN` (web origin).
+- Create `apps/web/.env` with `NEXT_PUBLIC_SERVER_URL` (server origin).
+- See `packages/env/src/server.ts` and `packages/env/src/web.ts` for the full variable list.
 
 ### Database
 
@@ -76,11 +78,15 @@ openbooklm/
 
 ## UI Customization
 
-Shared components live in `packages/ui`. Add new shadcn primitives:
+Shared shadcn primitives live in `packages/ui`. The `components.json` in `apps/web` routes UI components to the shared package automatically via the `ui` alias.
+
+Add new primitives (run from the repo root):
 
 ```bash
 bunx --bun shadcn@latest add <component> -c apps/web
 ```
+
+Components land in `packages/ui/src/components/`. Hooks land in `apps/web/src/hooks/` — if a shared UI component imports the hook via `@openbooklm/ui/hooks/...`, move the generated hook file to `packages/ui/src/hooks/` manually.
 
 Import shared components:
 
