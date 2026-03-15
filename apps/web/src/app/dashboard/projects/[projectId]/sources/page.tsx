@@ -1,8 +1,12 @@
-export default function SourcesPage({
+import { assertAuthenticated } from "@/lib/auth-guard";
+
+export default async function SourcesPage({
 	params: _params,
 }: {
 	params: Promise<{ projectId: string }>;
 }) {
+	await assertAuthenticated();
+
 	return (
 		<div className="space-y-4">
 			<div>

@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@openbooklm/ui/components/button";
 import { BookOpenIcon } from "lucide-react";
 import Link from "next/link";

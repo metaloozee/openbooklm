@@ -10,6 +10,7 @@ import {
 } from "@openbooklm/ui/components/breadcrumb";
 import { Separator } from "@openbooklm/ui/components/separator";
 import { SidebarTrigger } from "@openbooklm/ui/components/sidebar";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Fragment } from "react";
 
@@ -45,8 +46,8 @@ export function AppTopbar() {
 												{formatSegment(segment)}
 											</BreadcrumbPage>
 										) : (
-											<BreadcrumbLink href={href}>
-												{formatSegment(segment)}
+											<BreadcrumbLink asChild>
+												<Link href={href}>{formatSegment(segment)}</Link>
 											</BreadcrumbLink>
 										)}
 									</BreadcrumbItem>

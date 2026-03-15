@@ -80,7 +80,7 @@ An ephemeral compute runtime associated with a project. Tracks the runtime ident
 
 ### Entity Relationships
 
-```
+```text
 User ──1:N──▶ Project
 Project ──1:N──▶ Source
 Project ──1:N──▶ Conversation
@@ -99,7 +99,7 @@ Artifact ──N:N──▶ Source (derived from)
 
 ### Repository Structure
 
-```
+```text
 openbooklm/
 ├── apps/
 │   ├── web/                 # Next.js 16 frontend (UI, routes, components)
@@ -132,7 +132,7 @@ openbooklm/
 
 ### Frontend Route Map
 
-```
+```text
 /                                             → Landing page (public)
 /login                                        → Authentication (public)
 

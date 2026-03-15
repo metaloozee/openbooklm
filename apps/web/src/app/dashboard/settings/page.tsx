@@ -1,4 +1,8 @@
-export default function UserSettingsPage() {
+import { assertAuthenticated } from "@/lib/auth-guard";
+
+export default async function UserSettingsPage() {
+	await assertAuthenticated();
+
 	return (
 		<div className="space-y-4">
 			<div>

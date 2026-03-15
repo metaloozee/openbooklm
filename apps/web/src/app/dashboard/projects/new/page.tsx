@@ -1,4 +1,8 @@
-export default function NewProjectPage() {
+import { assertAuthenticated } from "@/lib/auth-guard";
+
+export default async function NewProjectPage() {
+	await assertAuthenticated();
+
 	return (
 		<div className="space-y-4">
 			<div>

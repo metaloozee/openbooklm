@@ -44,7 +44,7 @@ Frontend runs on port 3001, backend on port 3000.
 
 ## Project Structure
 
-```
+```text
 openbooklm/
 ├── apps/
 │   ├── web/             # Next.js 16 frontend
