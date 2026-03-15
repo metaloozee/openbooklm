@@ -40,15 +40,22 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 						</CardHeader>
 						<CardContent className="space-y-2">
 							{filesQuery.data.folders.map((folder) => (
-								<div key={folder.path} className="flex items-center justify-between rounded-md border p-3">
+								<div
+									key={folder.path}
+									className="flex items-center justify-between rounded-md border p-3"
+								>
 									<div className="flex items-center gap-2">
 										<FolderIcon className="size-4 text-muted-foreground" />
 										<div>
 											<p className="font-medium">{folder.label}</p>
-											<p className="text-xs/relaxed text-muted-foreground">{folder.path}</p>
+											<p className="text-xs/relaxed text-muted-foreground">
+												{folder.path}
+											</p>
 										</div>
 									</div>
-									<p className="text-xs/relaxed text-muted-foreground">{folder.itemCount}</p>
+									<p className="text-xs/relaxed text-muted-foreground">
+										{folder.itemCount}
+									</p>
 								</div>
 							))}
 						</CardContent>
@@ -73,7 +80,9 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 											</p>
 										</div>
 									</div>
-									<p className="text-xs/relaxed text-muted-foreground">{item.type}</p>
+									<p className="text-xs/relaxed text-muted-foreground">
+										{item.type}
+									</p>
 									<StatusBadge status={item.status} />
 									<div className="text-xs/relaxed text-muted-foreground">
 										<p>{formatBytes(item.sizeBytes)}</p>

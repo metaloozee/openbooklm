@@ -27,6 +27,7 @@ import {
 	SparklesIcon,
 } from "lucide-react";
 import Link from "next/link";
+import type { Route } from "next";
 import { usePathname } from "next/navigation";
 
 import { NavUser } from "./nav-user";
@@ -46,17 +47,17 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
 	const globalItems = [
 		{
-			href: "/dashboard",
+			href: "/dashboard" as Route,
 			label: "Dashboard",
 			icon: LayoutDashboardIcon,
 		},
 		{
-			href: "/dashboard/projects/new",
+			href: "/dashboard/projects/new" as Route,
 			label: "New Project",
 			icon: PlusIcon,
 		},
 		{
-			href: "/dashboard/settings",
+			href: "/dashboard/settings" as Route,
 			label: "Settings",
 			icon: SettingsIcon,
 		},
@@ -65,32 +66,32 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 	const projectItems = projectId
 		? [
 				{
-					href: `/dashboard/projects/${projectId}`,
+					href: `/dashboard/projects/${projectId}` as Route,
 					label: "Overview",
 					icon: LayoutDashboardIcon,
 				},
 				{
-					href: `/dashboard/projects/${projectId}/sources`,
+					href: `/dashboard/projects/${projectId}/sources` as Route,
 					label: "Sources",
 					icon: FolderOpenIcon,
 				},
 				{
-					href: `/dashboard/projects/${projectId}/chat`,
+					href: `/dashboard/projects/${projectId}/chat` as Route,
 					label: "Chat",
 					icon: MessageSquareIcon,
 				},
 				{
-					href: `/dashboard/projects/${projectId}/artifacts`,
+					href: `/dashboard/projects/${projectId}/artifacts` as Route,
 					label: "Artifacts",
 					icon: SparklesIcon,
 				},
 				{
-					href: `/dashboard/projects/${projectId}/files`,
+					href: `/dashboard/projects/${projectId}/files` as Route,
 					label: "Files",
 					icon: FilesIcon,
 				},
 				{
-					href: `/dashboard/projects/${projectId}/settings`,
+					href: `/dashboard/projects/${projectId}/settings` as Route,
 					label: "Settings",
 					icon: SettingsIcon,
 				},
@@ -126,7 +127,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 				) : isProjectRoute ? (
 					<>
 						<SidebarGroup>
-							<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
+							<SidebarGroupLabel>
+								{currentProject?.name ?? "Project"}
+							</SidebarGroupLabel>
 							<SidebarGroupContent>
 								<SidebarMenu>
 									<SidebarMenuItem>
@@ -175,7 +178,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 													isActive={project.id === projectId}
 													tooltip={project.name}
 												>
-													<Link href={`/dashboard/projects/${project.id}`}>
+													<Link
+														href={`/dashboard/projects/${project.id}` as Route}
+													>
 														<FolderOpenIcon />
 														<span>{project.name}</span>
 													</Link>
@@ -224,10 +229,14 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 											<SidebarMenuItem key={project.id}>
 												<SidebarMenuButton
 													asChild
-													isActive={pathname.startsWith(`/dashboard/projects/${project.id}`)}
+													isActive={pathname.startsWith(
+														`/dashboard/projects/${project.id}`,
+													)}
 													tooltip={project.name}
 												>
-													<Link href={`/dashboard/projects/${project.id}`}>
+													<Link
+														href={`/dashboard/projects/${project.id}` as Route}
+													>
 														<FolderOpenIcon />
 														<span>{project.name}</span>
 													</Link>
@@ -236,7 +245,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 										))
 									) : (
 										<SidebarMenuItem>
-											<SidebarMenuButton asChild tooltip="Create your first project">
+											<SidebarMenuButton
+												asChild
+												tooltip="Create your first project"
+											>
 												<Link href="/dashboard/projects/new">
 													<PlusIcon />
 													<span>Create project</span>

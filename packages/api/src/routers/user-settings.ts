@@ -49,6 +49,11 @@ export const userSettingsRouter = router({
 		);
 	}),
 	update: protectedProcedure.input(userSettingsUpdateSchema).mutation(async ({ ctx, input }) => {
+		const openAIApiKey = input.openAIApiKey.trim();
+		const anthropicApiKey = input.anthropicApiKey.trim();
+		const googleApiKey = input.googleApiKey.trim();
+		const ollamaBaseUrl = input.ollamaBaseUrl.trim();
+
 		await ctx.db
 			.update(user)
 			.set({
@@ -73,14 +78,14 @@ export const userSettingsRouter = router({
 				defaultArtifactType: input.defaultArtifactType,
 				openAIApiKey: input.clearOpenAIApiKey
 					? null
-					: (input.openAIApiKey ?? existingSettings?.openAIApiKey ?? null),
+					: (openAIApiKey || existingSettings?.openAIApiKey || null),
 				anthropicApiKey: input.clearAnthropicApiKey
 					? null
-					: (input.anthropicApiKey ?? existingSettings?.anthropicApiKey ?? null),
+					: (anthropicApiKey || existingSettings?.anthropicApiKey || null),
 				googleApiKey: input.clearGoogleApiKey
 					? null
-					: (input.googleApiKey ?? existingSettings?.googleApiKey ?? null),
-				ollamaBaseUrl: input.ollamaBaseUrl ?? null,
+					: (googleApiKey || existingSettings?.googleApiKey || null),
+				ollamaBaseUrl: ollamaBaseUrl || null,
 				updatedAt: new Date(),
 			})
 			.onConflictDoUpdate({
@@ -94,14 +99,14 @@ export const userSettingsRouter = router({
 					defaultArtifactType: input.defaultArtifactType,
 					openAIApiKey: input.clearOpenAIApiKey
 						? null
-						: (input.openAIApiKey ?? existingSettings?.openAIApiKey ?? null),
+						: (openAIApiKey || existingSettings?.openAIApiKey || null),
 					anthropicApiKey: input.clearAnthropicApiKey
 						? null
-						: (input.anthropicApiKey ?? existingSettings?.anthropicApiKey ?? null),
+						: (anthropicApiKey || existingSettings?.anthropicApiKey || null),
 					googleApiKey: input.clearGoogleApiKey
 						? null
-						: (input.googleApiKey ?? existingSettings?.googleApiKey ?? null),
-					ollamaBaseUrl: input.ollamaBaseUrl ?? null,
+						: (googleApiKey || existingSettings?.googleApiKey || null),
+					ollamaBaseUrl: ollamaBaseUrl || null,
 					updatedAt: new Date(),
 				},
 			});

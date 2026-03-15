@@ -72,6 +72,13 @@ export const artifactsRouter = router({
 			})
 			.returning({ id: artifact.id });
 
+		if (!createdArtifact) {
+			throw new TRPCError({
+				code: "INTERNAL_SERVER_ERROR",
+				message: "Artifact creation failed",
+			});
+		}
+
 		if (input.sourceIds.length > 0) {
 			await ctx.db.insert(artifactSource).values(
 				input.sourceIds.map((sourceId) => ({

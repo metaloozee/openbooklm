@@ -47,8 +47,8 @@ export function NewProjectForm() {
 			name: "",
 			description: "",
 			icon: "📚",
-			visibility: "private" as const,
-			defaultModelProvider: "openai" as const,
+			visibility: "private" as (typeof PROJECT_VISIBILITY_OPTIONS)[number],
+			defaultModelProvider: "openai" as (typeof MODEL_PROVIDER_OPTIONS)[number],
 			defaultModel: "gpt-4.1-mini",
 		},
 		validators: {
@@ -73,8 +73,8 @@ export function NewProjectForm() {
 				<CardHeader>
 					<CardTitle>Project details</CardTitle>
 					<CardDescription>
-						Start with the basic workspace metadata. You can fine-tune indexing and model
-						settings later.
+						Start with the basic workspace metadata. You can fine-tune indexing and
+						model settings later.
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
@@ -97,7 +97,9 @@ export function NewProjectForm() {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											placeholder="AI research workspace"
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
@@ -114,7 +116,9 @@ export function NewProjectForm() {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											maxLength={8}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
@@ -152,7 +156,8 @@ export function NewProjectForm() {
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof PROJECT_VISIBILITY_OPTIONS)[number],
+													event.target
+														.value as (typeof PROJECT_VISIBILITY_OPTIONS)[number],
 												)
 											}
 										>
@@ -178,7 +183,8 @@ export function NewProjectForm() {
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
+													event.target
+														.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
 												)
 											}
 										>
@@ -202,7 +208,9 @@ export function NewProjectForm() {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -223,7 +231,11 @@ export function NewProjectForm() {
 									</Button>
 									<Button
 										type="submit"
-										disabled={!canSubmit || isSubmitting || createProjectMutation.isPending}
+										disabled={
+											!canSubmit ||
+											isSubmitting ||
+											createProjectMutation.isPending
+										}
 									>
 										{isSubmitting || createProjectMutation.isPending
 											? "Creating..."

@@ -13,6 +13,7 @@ import { Input } from "@openbooklm/ui/components/input";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import type { Route } from "next";
 import { useMemo, useState } from "react";
 
 import { EmptyState, StatusBadge, formatDate } from "@/components/workspace/primitives";
@@ -77,7 +78,11 @@ export function DashboardProjectsView() {
 				</div>
 			) : filteredProjects.length === 0 ? (
 				<EmptyState
-					title={projectsQuery.data?.length ? "No matching projects" : "Create your first project"}
+					title={
+						projectsQuery.data?.length
+							? "No matching projects"
+							: "Create your first project"
+					}
 					description={
 						projectsQuery.data?.length
 							? "Adjust the search term or create a new workspace."
@@ -101,7 +106,11 @@ export function DashboardProjectsView() {
 											{project.description || "No description yet."}
 										</CardDescription>
 									</div>
-									<StatusBadge status={project.pendingSourceCount > 0 ? "pending" : "ready"} />
+									<StatusBadge
+										status={
+											project.pendingSourceCount > 0 ? "pending" : "ready"
+										}
+									/>
 								</div>
 							</CardHeader>
 							<CardContent className="grid grid-cols-2 gap-3 text-xs/relaxed">
@@ -126,10 +135,14 @@ export function DashboardProjectsView() {
 							</CardContent>
 							<CardFooter className="justify-between gap-2">
 								<Button variant="outline" asChild>
-									<Link href={`/dashboard/projects/${project.id}/settings`}>Settings</Link>
+									<Link href={`/dashboard/projects/${project.id}/settings` as Route}>
+										Settings
+									</Link>
 								</Button>
 								<Button asChild>
-									<Link href={`/dashboard/projects/${project.id}`}>Open workspace</Link>
+									<Link href={`/dashboard/projects/${project.id}` as Route}>
+										Open workspace
+									</Link>
 								</Button>
 							</CardFooter>
 						</Card>

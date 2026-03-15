@@ -10,13 +10,14 @@ export const DENSITY_PREFERENCE_OPTIONS = ["comfortable", "compact"] as const;
 const requiredText = (label: string, max = 200) =>
 	z.string().trim().min(1, `${label} is required`).max(max, `${label} is too long`);
 
-const optionalText = (max = 4000) =>
+const shortText = (max = 4000) => z.string().trim().max(max, `Must be ${max} characters or fewer`);
+const urlOrEmpty = (message: string) =>
 	z
 		.string()
 		.trim()
-		.max(max, `Must be ${max} characters or fewer`)
-		.optional()
-		.transform((value) => (value && value.length > 0 ? value : undefined));
+		.refine((value) => value.length === 0 || z.url(message).safeParse(value).success, {
+			message,
+		});
 
 export const projectIdSchema = z.object({
 	projectId: z.string().trim().min(1, "Project id is required"),
@@ -24,45 +25,44 @@ export const projectIdSchema = z.object({
 
 export const projectCreateSchema = z.object({
 	name: requiredText("Project name", 120),
-	description: optionalText(2000),
-	icon: optionalText(32),
-	visibility: z.enum(PROJECT_VISIBILITY_OPTIONS).default("private"),
-	defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS).default("openai"),
+	description: shortText(2000),
+	icon: shortText(32),
+	visibility: z.enum(PROJECT_VISIBILITY_OPTIONS),
+	defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS),
 	defaultModel: requiredText("Default model", 120),
 });
 
 export const projectUpdateSchema = projectIdSchema.extend({
 	name: requiredText("Project name", 120),
-	description: optionalText(2000),
-	icon: optionalText(32),
+	description: shortText(2000),
+	icon: shortText(32),
 	visibility: z.enum(PROJECT_VISIBILITY_OPTIONS),
 	defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS),
 	defaultModel: requiredText("Default model", 120),
 	embeddingProvider: z.enum(MODEL_PROVIDER_OPTIONS),
 	embeddingModel: requiredText("Embedding model", 120),
-	chunkSize: z.coerce.number().int().min(200).max(4000),
-	chunkOverlap: z.coerce.number().int().min(0).max(1000),
+	chunkSize: z.number().int().min(200).max(4000),
+	chunkOverlap: z.number().int().min(0).max(1000),
 	refreshOnSourceChange: z.boolean(),
 });
 
-export const sourceCreateSchema = projectIdSchema.extend({
-	title: requiredText("Source title", 160),
-	type: z.enum(SOURCE_TYPE_OPTIONS),
-	url: z.url("Enter a valid URL").optional().or(z.literal("")).transform((value) => {
-		const trimmed = value?.trim();
-		return trimmed ? trimmed : undefined;
-	}),
-	content: optionalText(20000),
-	indexNow: z.boolean().default(true),
-}).superRefine((value, ctx) => {
-	if (value.type === "url" && !value.url) {
-		ctx.addIssue({
-			code: z.ZodIssueCode.custom,
-			path: ["url"],
-			message: "A URL source requires a valid URL",
-		});
-	}
-});
+export const sourceCreateSchema = projectIdSchema
+	.extend({
+		title: requiredText("Source title", 160),
+		type: z.enum(SOURCE_TYPE_OPTIONS),
+		url: urlOrEmpty("Enter a valid URL"),
+		content: shortText(20000),
+		indexNow: z.boolean(),
+	})
+	.superRefine((value, ctx) => {
+		if (value.type === "url" && !value.url) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["url"],
+				message: "A URL source requires a valid URL",
+			});
+		}
+	});
 
 export const sourceActionSchema = projectIdSchema.extend({
 	sourceId: z.string().trim().min(1, "Source id is required"),
@@ -72,7 +72,7 @@ export const artifactCreateSchema = projectIdSchema.extend({
 	title: requiredText("Artifact title", 160),
 	type: z.enum(ARTIFACT_TYPE_OPTIONS),
 	content: requiredText("Artifact content", 20000),
-	sourceIds: z.array(z.string().trim().min(1)).default([]),
+	sourceIds: z.array(z.string().trim().min(1)),
 });
 
 export const artifactActionSchema = projectIdSchema.extend({
@@ -87,18 +87,11 @@ export const userSettingsUpdateSchema = z.object({
 	defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS),
 	defaultModel: requiredText("Default model", 120),
 	defaultArtifactType: z.enum(ARTIFACT_TYPE_OPTIONS),
-	openAIApiKey: optionalText(500),
-	clearOpenAIApiKey: z.boolean().default(false),
-	anthropicApiKey: optionalText(500),
-	clearAnthropicApiKey: z.boolean().default(false),
-	googleApiKey: optionalText(500),
-	clearGoogleApiKey: z.boolean().default(false),
-	ollamaBaseUrl: z
-		.url("Enter a valid Ollama URL")
-		.optional()
-		.or(z.literal(""))
-		.transform((value) => {
-			const trimmed = value?.trim();
-			return trimmed ? trimmed : undefined;
-		}),
+	openAIApiKey: shortText(500),
+	clearOpenAIApiKey: z.boolean(),
+	anthropicApiKey: shortText(500),
+	clearAnthropicApiKey: z.boolean(),
+	googleApiKey: shortText(500),
+	clearGoogleApiKey: z.boolean(),
+	ollamaBaseUrl: urlOrEmpty("Enter a valid Ollama URL"),
 });

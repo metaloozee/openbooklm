@@ -57,8 +57,9 @@ export function AppTopbar() {
 							const isLast = index === segments.length - 1;
 							const label =
 								index === 2 && currentProjectId && segment === currentProjectId
-									? (projectsQuery.data?.find((project) => project.id === currentProjectId)?.name ??
-										formatSegment(segment))
+									? (projectsQuery.data?.find(
+											(project) => project.id === currentProjectId,
+										)?.name ?? formatSegment(segment))
 									: formatSegment(segment);
 
 							return (
@@ -66,9 +67,7 @@ export function AppTopbar() {
 									{index > 0 && <BreadcrumbSeparator />}
 									<BreadcrumbItem>
 										{isLast ? (
-											<BreadcrumbPage>
-												{label}
-											</BreadcrumbPage>
+											<BreadcrumbPage>{label}</BreadcrumbPage>
 										) : (
 											<BreadcrumbLink asChild>
 												<Link href={href as unknown as UrlObject}>

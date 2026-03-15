@@ -1,9 +1,6 @@
 "use client";
 
-import {
-	ARTIFACT_TYPE_OPTIONS,
-	artifactCreateSchema,
-} from "@openbooklm/api/contracts";
+import { ARTIFACT_TYPE_OPTIONS, artifactCreateSchema } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
@@ -67,7 +64,7 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 		defaultValues: {
 			projectId,
 			title: "",
-			type: "summary" as const,
+			type: "summary" as (typeof ARTIFACT_TYPE_OPTIONS)[number],
 			content: "",
 			sourceIds: [] as string[],
 		},
@@ -113,7 +110,9 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											placeholder="Executive summary"
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
@@ -132,7 +131,8 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
+													event.target
+														.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
 												)
 											}
 										>
@@ -156,7 +156,9 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											placeholder="Write the artifact body, notes, or generated content."
 											className="min-h-40"
 										/>
@@ -172,7 +174,9 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 										<div className="space-y-2 rounded-md border p-3">
 											{sourcesQuery.data?.length ? (
 												sourcesQuery.data.map((item) => {
-													const checked = field.state.value.includes(item.id);
+													const checked = field.state.value.includes(
+														item.id,
+													);
 													return (
 														<label
 															key={item.id}
@@ -182,14 +186,24 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 																checked={checked}
 																onCheckedChange={(nextChecked) => {
 																	field.handleChange(
-																		Boolean(nextChecked)
-																			? [...field.state.value, item.id]
-																			: field.state.value.filter((value) => value !== item.id),
+																		nextChecked === true
+																			? [
+																					...field.state
+																						.value,
+																					item.id,
+																				]
+																			: field.state.value.filter(
+																					(value) =>
+																						value !==
+																						item.id,
+																				),
 																	);
 																}}
 															/>
 															<div>
-																<p className="font-medium">{item.title}</p>
+																<p className="font-medium">
+																	{item.title}
+																</p>
 																<p className="text-xs/relaxed text-muted-foreground">
 																	{item.type} · {item.status}
 																</p>
@@ -199,7 +213,8 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 												})
 											) : (
 												<p className="text-xs/relaxed text-muted-foreground">
-													Add sources first to link provenance to artifacts.
+													Add sources first to link provenance to
+													artifacts.
 												</p>
 											)}
 										</div>
@@ -218,7 +233,11 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									<Button
 										type="submit"
 										className="w-full"
-										disabled={!canSubmit || isSubmitting || createArtifactMutation.isPending}
+										disabled={
+											!canSubmit ||
+											isSubmitting ||
+											createArtifactMutation.isPending
+										}
 									>
 										{isSubmitting || createArtifactMutation.isPending
 											? "Saving..."
@@ -260,7 +279,9 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									</Button>
 								</CardHeader>
 								<CardContent className="space-y-3">
-									<p className="text-sm text-muted-foreground">{item.contentPreview}</p>
+									<p className="text-sm text-muted-foreground">
+										{item.contentPreview}
+									</p>
 									{item.sourceTitles.length ? (
 										<p className="text-xs/relaxed text-muted-foreground">
 											Based on: {item.sourceTitles.join(", ")}

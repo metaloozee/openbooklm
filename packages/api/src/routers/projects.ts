@@ -97,7 +97,9 @@ export const projectsRouter = router({
 			}),
 		]);
 
-		const indexedSourceCount = projectSources.filter((item) => item.status === "indexed").length;
+		const indexedSourceCount = projectSources.filter(
+			(item) => item.status === "indexed",
+		).length;
 
 		return {
 			project: formatProjectDetail(currentProject),
@@ -127,13 +129,16 @@ export const projectsRouter = router({
 		};
 	}),
 	create: protectedProcedure.input(projectCreateSchema).mutation(async ({ ctx, input }) => {
+		const description = input.description.trim();
+		const icon = input.icon.trim();
+
 		const [createdProject] = await ctx.db
 			.insert(project)
 			.values({
 				ownerId: ctx.userId,
 				name: input.name,
-				description: input.description ?? "",
-				icon: input.icon,
+				description,
+				icon: icon || undefined,
 				visibility: input.visibility,
 				defaultModelProvider: input.defaultModelProvider,
 				defaultModel: input.defaultModel,
@@ -144,13 +149,15 @@ export const projectsRouter = router({
 	}),
 	update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
+		const description = input.description.trim();
+		const icon = input.icon.trim();
 
 		const [updatedProject] = await ctx.db
 			.update(project)
 			.set({
 				name: input.name,
-				description: input.description ?? "",
-				icon: input.icon,
+				description,
+				icon: icon || undefined,
 				visibility: input.visibility,
 				defaultModelProvider: input.defaultModelProvider,
 				defaultModel: input.defaultModel,

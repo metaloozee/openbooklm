@@ -10,11 +10,13 @@ function toIsoString(value: Date) {
 }
 
 function slugifySegment(value: string) {
-	return value
-		.toLowerCase()
-		.trim()
-		replace(/[^a-z0-9]+/g, "-")
-		replace(/(^-|-$)/g, "") || "untitled";
+	return (
+		value
+			.toLowerCase()
+			.trim()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/(^-|-$)/g, "") || "untitled"
+	);
 }
 
 function getSourceExtension(type: "pdf" | "text" | "markdown" | "url") {

@@ -52,9 +52,7 @@ export const project = pgTable(
 			.notNull()
 			.default("openai"),
 		defaultModel: text("default_model").notNull().default("gpt-4.1-mini"),
-		embeddingProvider: modelProviderEnum("embedding_provider")
-			.notNull()
-			.default("openai"),
+		embeddingProvider: modelProviderEnum("embedding_provider").notNull().default("openai"),
 		embeddingModel: text("embedding_model").notNull().default("text-embedding-3-small"),
 		chunkSize: integer("chunk_size").notNull().default(1200),
 		chunkOverlap: integer("chunk_overlap").notNull().default(200),
@@ -149,13 +147,9 @@ export const userSettings = pgTable("user_settings", {
 	theme: themePreferenceEnum("theme").notNull().default("system"),
 	density: densityPreferenceEnum("density").notNull().default("comfortable"),
 	sidebarDefaultOpen: boolean("sidebar_default_open").notNull().default(true),
-	defaultModelProvider: modelProviderEnum("default_model_provider")
-		.notNull()
-		.default("openai"),
+	defaultModelProvider: modelProviderEnum("default_model_provider").notNull().default("openai"),
 	defaultModel: text("default_model").notNull().default("gpt-4.1-mini"),
-	defaultArtifactType: artifactTypeEnum("default_artifact_type")
-		.notNull()
-		.default("summary"),
+	defaultArtifactType: artifactTypeEnum("default_artifact_type").notNull().default("summary"),
 	openAIApiKey: text("openai_api_key"),
 	anthropicApiKey: text("anthropic_api_key"),
 	googleApiKey: text("google_api_key"),

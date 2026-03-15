@@ -11,13 +11,9 @@ import {
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import type { Route } from "next";
 
-import {
-	EmptyState,
-	StatCard,
-	StatusBadge,
-	formatDate,
-} from "@/components/workspace/primitives";
+import { EmptyState, StatCard, StatusBadge, formatDate } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 export function ProjectOverviewView({ projectId }: { projectId: string }) {
@@ -60,15 +56,20 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 							/>
 						</div>
 						<CardDescription className="mt-1">
-							{project.description || "No description yet. Add context in project settings."}
+							{project.description ||
+								"No description yet. Add context in project settings."}
 						</CardDescription>
 					</div>
 					<div className="flex gap-2">
 						<Button variant="outline" asChild>
-							<Link href={`/dashboard/projects/${projectId}/sources`}>Add source</Link>
+							<Link href={`/dashboard/projects/${projectId}/sources` as Route}>
+								Add source
+							</Link>
 						</Button>
 						<Button asChild>
-							<Link href={`/dashboard/projects/${projectId}/artifacts`}>Create artifact</Link>
+							<Link href={`/dashboard/projects/${projectId}/artifacts` as Route}>
+								Create artifact
+							</Link>
 						</Button>
 					</div>
 				</CardHeader>
@@ -87,11 +88,15 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 					</div>
 					<div>
 						<p>Created</p>
-						<p className="font-medium text-foreground">{formatDate(project.createdAt)}</p>
+						<p className="font-medium text-foreground">
+							{formatDate(project.createdAt)}
+						</p>
 					</div>
 					<div>
 						<p>Last activity</p>
-						<p className="font-medium text-foreground">{formatDate(project.updatedAt)}</p>
+						<p className="font-medium text-foreground">
+							{formatDate(project.updatedAt)}
+						</p>
 					</div>
 				</CardContent>
 			</Card>
@@ -140,7 +145,8 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 									<div>
 										<p className="font-medium">{item.title}</p>
 										<p className="text-xs/relaxed text-muted-foreground">
-											{item.type} · {item.chunkCount} chunks · updated {formatDate(item.updatedAt)}
+											{item.type} · {item.chunkCount} chunks · updated{" "}
+											{formatDate(item.updatedAt)}
 										</p>
 									</div>
 									<StatusBadge status={item.status} />
@@ -163,10 +169,7 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 							/>
 						) : (
 							recentArtifacts.map((item) => (
-								<div
-									key={item.id}
-									className="rounded-md border p-3"
-								>
+								<div key={item.id} className="rounded-md border p-3">
 									<div className="flex items-center justify-between gap-3">
 										<p className="font-medium">{item.title}</p>
 										<StatusBadge status="ready" />

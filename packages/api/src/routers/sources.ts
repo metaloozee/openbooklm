@@ -38,8 +38,9 @@ function deriveSourceMetrics(input: {
 }
 
 export const sourcesRouter = router({
-	list: protectedProcedure.input(sourceActionSchema.pick({ projectId: true })).query(
-		async ({ ctx, input }) => {
+	list: protectedProcedure
+		.input(sourceActionSchema.pick({ projectId: true }))
+		.query(async ({ ctx, input }) => {
 			await getProjectForUserOrThrow(ctx, input.projectId);
 
 			const records = await ctx.db.query.source.findMany({
@@ -56,7 +57,7 @@ export const sourcesRouter = router({
 				url: item.url,
 				excerpt:
 					item.type === "url"
-						? item.url ?? ""
+						? (item.url ?? "")
 						: item.content.length > 180
 							? `${item.content.slice(0, 177)}...`
 							: item.content,
@@ -67,8 +68,7 @@ export const sourcesRouter = router({
 				updatedAt: toIsoString(item.updatedAt),
 				indexedAt: item.indexedAt ? toIsoString(item.indexedAt) : null,
 			}));
-		},
-	),
+		}),
 	create: protectedProcedure.input(sourceCreateSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
 
@@ -78,6 +78,7 @@ export const sourcesRouter = router({
 			url: input.url,
 			indexNow: input.indexNow,
 		});
+		const trimmedUrl = input.url.trim();
 
 		const [createdSource] = await ctx.db
 			.insert(source)
@@ -85,8 +86,8 @@ export const sourcesRouter = router({
 				projectId: input.projectId,
 				title: input.title,
 				type: input.type,
-				url: input.url,
-				content: input.type === "url" ? "" : (input.content ?? ""),
+				url: trimmedUrl || undefined,
+				content: input.type === "url" ? "" : input.content,
 				contentBytes: derivedMetrics.contentBytes,
 				pageCount: derivedMetrics.pageCount,
 				chunkCount: derivedMetrics.chunkCount,
@@ -113,7 +114,8 @@ export const sourcesRouter = router({
 			});
 		}
 
-		const payload = currentSource.type === "url" ? (currentSource.url ?? "") : currentSource.content;
+		const payload =
+			currentSource.type === "url" ? (currentSource.url ?? "") : currentSource.content;
 
 		const [updatedSource] = await ctx.db
 			.update(source)

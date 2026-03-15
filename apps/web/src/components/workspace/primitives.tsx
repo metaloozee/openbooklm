@@ -35,10 +35,7 @@ export function FieldErrors({
 	);
 }
 
-export function NativeSelect({
-	className,
-	...props
-}: React.ComponentPropsWithoutRef<"select">) {
+export function NativeSelect({ className, ...props }: React.ComponentPropsWithoutRef<"select">) {
 	return (
 		<select
 			className={cn(

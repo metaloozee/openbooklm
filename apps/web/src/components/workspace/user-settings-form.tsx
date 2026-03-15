@@ -144,7 +144,8 @@ function UserSettingsFormInner({
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof THEME_PREFERENCE_OPTIONS)[number],
+													event.target
+														.value as (typeof THEME_PREFERENCE_OPTIONS)[number],
 												)
 											}
 										>
@@ -170,7 +171,8 @@ function UserSettingsFormInner({
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof DENSITY_PREFERENCE_OPTIONS)[number],
+													event.target
+														.value as (typeof DENSITY_PREFERENCE_OPTIONS)[number],
 												)
 											}
 										>
@@ -196,7 +198,8 @@ function UserSettingsFormInner({
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
+													event.target
+														.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
 												)
 											}
 										>
@@ -224,7 +227,8 @@ function UserSettingsFormInner({
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
+													event.target
+														.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
 												)
 											}
 										>
@@ -248,7 +252,9 @@ function UserSettingsFormInner({
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -262,12 +268,15 @@ function UserSettingsFormInner({
 									<Checkbox
 										id={field.name}
 										checked={field.state.value}
-										onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+										onCheckedChange={(checked) =>
+											field.handleChange(Boolean(checked))
+										}
 									/>
 									<div className="space-y-1">
 										<Label htmlFor={field.name}>Open sidebar by default</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											This updates the persisted sidebar state for future dashboard visits.
+											This updates the persisted sidebar state for future
+											dashboard visits.
 										</p>
 									</div>
 								</div>
@@ -286,7 +295,8 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>
-											OpenAI API key {data.preferences.hasOpenAIApiKey ? "(saved)" : ""}
+											OpenAI API key{" "}
+											{data.preferences.hasOpenAIApiKey ? "(saved)" : ""}
 										</Label>
 										<Input
 											id={field.name}
@@ -294,7 +304,9 @@ function UserSettingsFormInner({
 											type="password"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											placeholder="sk-..."
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
@@ -307,9 +319,13 @@ function UserSettingsFormInner({
 										<label className="flex items-center gap-3 rounded-md border p-3">
 											<Checkbox
 												checked={field.state.value}
-												onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+												onCheckedChange={(checked) =>
+													field.handleChange(Boolean(checked))
+												}
 											/>
-											<span className="text-xs/relaxed">Clear saved OpenAI key</span>
+											<span className="text-xs/relaxed">
+												Clear saved OpenAI key
+											</span>
 										</label>
 									</div>
 								)}
@@ -319,7 +335,8 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>
-											Anthropic API key {data.preferences.hasAnthropicApiKey ? "(saved)" : ""}
+											Anthropic API key{" "}
+											{data.preferences.hasAnthropicApiKey ? "(saved)" : ""}
 										</Label>
 										<Input
 											id={field.name}
@@ -327,7 +344,9 @@ function UserSettingsFormInner({
 											type="password"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -339,9 +358,13 @@ function UserSettingsFormInner({
 										<label className="flex items-center gap-3 rounded-md border p-3">
 											<Checkbox
 												checked={field.state.value}
-												onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+												onCheckedChange={(checked) =>
+													field.handleChange(Boolean(checked))
+												}
 											/>
-											<span className="text-xs/relaxed">Clear saved Anthropic key</span>
+											<span className="text-xs/relaxed">
+												Clear saved Anthropic key
+											</span>
 										</label>
 									</div>
 								)}
@@ -351,7 +374,8 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="space-y-2">
 										<Label htmlFor={field.name}>
-											Google API key {data.preferences.hasGoogleApiKey ? "(saved)" : ""}
+											Google API key{" "}
+											{data.preferences.hasGoogleApiKey ? "(saved)" : ""}
 										</Label>
 										<Input
 											id={field.name}
@@ -359,7 +383,9 @@ function UserSettingsFormInner({
 											type="password"
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -371,9 +397,13 @@ function UserSettingsFormInner({
 										<label className="flex items-center gap-3 rounded-md border p-3">
 											<Checkbox
 												checked={field.state.value}
-												onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+												onCheckedChange={(checked) =>
+													field.handleChange(Boolean(checked))
+												}
 											/>
-											<span className="text-xs/relaxed">Clear saved Google key</span>
+											<span className="text-xs/relaxed">
+												Clear saved Google key
+											</span>
 										</label>
 									</div>
 								)}
@@ -410,9 +440,13 @@ function UserSettingsFormInner({
 						{({ canSubmit, isSubmitting }) => (
 							<Button
 								type="submit"
-								disabled={!canSubmit || isSubmitting || updateSettingsMutation.isPending}
+								disabled={
+									!canSubmit || isSubmitting || updateSettingsMutation.isPending
+								}
 							>
-								{isSubmitting || updateSettingsMutation.isPending ? "Saving..." : "Save settings"}
+								{isSubmitting || updateSettingsMutation.isPending
+									? "Saving..."
+									: "Save settings"}
 							</Button>
 						)}
 					</form.Subscribe>

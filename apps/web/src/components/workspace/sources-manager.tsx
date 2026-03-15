@@ -1,9 +1,6 @@
 "use client";
 
-import {
-	SOURCE_TYPE_OPTIONS,
-	sourceCreateSchema,
-} from "@openbooklm/api/contracts";
+import { SOURCE_TYPE_OPTIONS, sourceCreateSchema } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
@@ -79,7 +76,7 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 		defaultValues: {
 			projectId,
 			title: "",
-			type: "text" as const,
+			type: "text" as (typeof SOURCE_TYPE_OPTIONS)[number],
 			url: "",
 			content: "",
 			indexNow: true,
@@ -126,7 +123,9 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 											placeholder="Paper, article, or note title"
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
@@ -145,7 +144,8 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof SOURCE_TYPE_OPTIONS)[number],
+													event.target
+														.value as (typeof SOURCE_TYPE_OPTIONS)[number],
 												)
 											}
 										>
@@ -173,7 +173,9 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 														type="url"
 														value={field.state.value}
 														onBlur={field.handleBlur}
-														onChange={(event) => field.handleChange(event.target.value)}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
 														placeholder="https://example.com/article"
 													/>
 													<FieldErrors errors={field.state.meta.errors} />
@@ -192,7 +194,9 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 														name={field.name}
 														value={field.state.value}
 														onBlur={field.handleBlur}
-														onChange={(event) => field.handleChange(event.target.value)}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
 														placeholder={
 															type === "pdf"
 																? "Optional notes or extracted text placeholder."
@@ -213,12 +217,17 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 										<Checkbox
 											id={field.name}
 											checked={field.state.value}
-											onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+											onCheckedChange={(checked) =>
+												field.handleChange(Boolean(checked))
+											}
 										/>
 										<div className="space-y-1">
-											<Label htmlFor={field.name}>Mark as ready for grounding</Label>
+											<Label htmlFor={field.name}>
+												Mark as ready for grounding
+											</Label>
 											<p className="text-xs/relaxed text-muted-foreground">
-												When enabled, the source is immediately counted as indexed.
+												When enabled, the source is immediately counted as
+												indexed.
 											</p>
 										</div>
 									</div>
@@ -235,7 +244,11 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 									<Button
 										type="submit"
 										className="w-full"
-										disabled={!canSubmit || isSubmitting || createSourceMutation.isPending}
+										disabled={
+											!canSubmit ||
+											isSubmitting ||
+											createSourceMutation.isPending
+										}
 									>
 										{isSubmitting || createSourceMutation.isPending
 											? "Saving..."

@@ -135,7 +135,9 @@ function ProjectSettingsFormInner({
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -150,7 +152,9 @@ function ProjectSettingsFormInner({
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -185,7 +189,8 @@ function ProjectSettingsFormInner({
 										onBlur={field.handleBlur}
 										onChange={(event) =>
 											field.handleChange(
-												event.target.value as (typeof PROJECT_VISIBILITY_OPTIONS)[number],
+												event.target
+													.value as (typeof PROJECT_VISIBILITY_OPTIONS)[number],
 											)
 										}
 									>
@@ -218,7 +223,8 @@ function ProjectSettingsFormInner({
 										onBlur={field.handleBlur}
 										onChange={(event) =>
 											field.handleChange(
-												event.target.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
+												event.target
+													.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
 											)
 										}
 									>
@@ -268,7 +274,8 @@ function ProjectSettingsFormInner({
 											onBlur={field.handleBlur}
 											onChange={(event) =>
 												field.handleChange(
-													event.target.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
+													event.target
+														.value as (typeof MODEL_PROVIDER_OPTIONS)[number],
 												)
 											}
 										>
@@ -292,7 +299,9 @@ function ProjectSettingsFormInner({
 											name={field.name}
 											value={field.state.value}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(event.target.value)}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -309,7 +318,9 @@ function ProjectSettingsFormInner({
 											type="number"
 											value={String(field.state.value)}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(Number(event.target.value))}
+											onChange={(event) =>
+												field.handleChange(Number(event.target.value))
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -326,7 +337,9 @@ function ProjectSettingsFormInner({
 											type="number"
 											value={String(field.state.value)}
 											onBlur={field.handleBlur}
-											onChange={(event) => field.handleChange(Number(event.target.value))}
+											onChange={(event) =>
+												field.handleChange(Number(event.target.value))
+											}
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -340,12 +353,17 @@ function ProjectSettingsFormInner({
 									<Checkbox
 										id={field.name}
 										checked={field.state.value}
-										onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+										onCheckedChange={(checked) =>
+											field.handleChange(Boolean(checked))
+										}
 									/>
 									<div className="space-y-1">
-										<Label htmlFor={field.name}>Refresh index automatically</Label>
+										<Label htmlFor={field.name}>
+											Refresh index automatically
+										</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											Keep the project index current when sources are added or updated.
+											Keep the project index current when sources are added or
+											updated.
 										</p>
 									</div>
 								</div>
@@ -364,9 +382,13 @@ function ProjectSettingsFormInner({
 						{({ canSubmit, isSubmitting }) => (
 							<Button
 								type="submit"
-								disabled={!canSubmit || isSubmitting || updateProjectMutation.isPending}
+								disabled={
+									!canSubmit || isSubmitting || updateProjectMutation.isPending
+								}
 							>
-								{isSubmitting || updateProjectMutation.isPending ? "Saving..." : "Save changes"}
+								{isSubmitting || updateProjectMutation.isPending
+									? "Saving..."
+									: "Save changes"}
 							</Button>
 						)}
 					</form.Subscribe>
