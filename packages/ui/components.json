@@ -11,15 +11,18 @@
     "prefix": ""
   },
   "iconLibrary": "lucide",
+  "rtl": false,
+  "menuColor": "default-translucent",
+  "menuAccent": "subtle",
   "aliases": {
     "components": "@openbooklm/ui/components",
     "utils": "@openbooklm/ui/lib/utils",
-    "hooks": "@openbooklm/ui/hooks",
+    "ui": "@openbooklm/ui/components",
     "lib": "@openbooklm/ui/lib",
-    "ui": "@openbooklm/ui/components"
+    "hooks": "@openbooklm/ui/hooks"
   },
-  "menuColor": "default-translucent",
-  "menuAccent": "subtle",
-  "registries": {},
-  "rtl": false
+  "registries": {
+    "@spell": "https://spell.sh/r/{name}.json",
+    "@magicui": "https://magicui.design/r/{name}"
+  }
 }

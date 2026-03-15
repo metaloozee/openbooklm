@@ -20,14 +20,14 @@ export const env = createEnv({
   emptyStringAsUndefined: true,
 });
 
-z
-  .object(googleOAuthSchema)
+z.object(googleOAuthSchema)
   .refine(
     ({ GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET }) =>
       (!!GOOGLE_CLIENT_ID && !!GOOGLE_CLIENT_SECRET) ||
       (!GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_SECRET),
     {
-      message: "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must either both be set or both be omitted.",
+      message:
+        "GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET must either both be set or both be omitted.",
       path: ["GOOGLE_CLIENT_ID"],
     },
   )

@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@openbooklm/ui/components/card";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -30,9 +36,7 @@ export default function LoginPage() {
       <Card className="w-full">
         <CardHeader>
           <CardTitle>{showSignIn ? "Welcome Back" : "Create Account"}</CardTitle>
-          <CardDescription>
-            Sign in with Google or use your email and password.
-          </CardDescription>
+          <CardDescription>Sign in with Google or use your email and password.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           <GoogleAuthButton />
