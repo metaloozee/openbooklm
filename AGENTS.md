@@ -37,11 +37,11 @@ Think of it as "NotebookLM, but open-source, model-agnostic, and project-centric
 
 Turborepo monorepo with Bun (v1.3.9) as package manager and runtime. Two apps plus shared packages:
 
-| Service | Port | Start command |
+| Service                             | Port       | Start command        |
 | ----------------------------------- | ---------- | -------------------- |
-| Backend (Hono + tRPC + Better Auth) | 3000 | `bun run dev:server` |
-| Frontend (Next.js 16) | 3001 | `bun run dev:web` |
-| Both together | 3000, 3001 | `bun run dev` |
+| Backend (Hono + tRPC + Better Auth) | 3000       | `bun run dev:server` |
+| Frontend (Next.js 16)               | 3001       | `bun run dev:web`    |
+| Both together                       | 3000, 3001 | `bun run dev`        |
 
 ### Environment variables
 

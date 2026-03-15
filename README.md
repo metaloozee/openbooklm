@@ -63,16 +63,16 @@ openbooklm/
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `bun run dev` | Start both frontend and backend |
-| `bun run dev:web` | Start frontend only (port 3001) |
-| `bun run dev:server` | Start backend only (port 3000) |
-| `bun run build` | Build all apps |
-| `bun run check-types` | TypeScript type checking |
-| `bun run check` | Lint + format (oxlint + oxfmt) |
-| `bun run db:push` | Push schema to database |
-| `bun run db:studio` | Open Drizzle Studio |
+| Command               | Description                     |
+| --------------------- | ------------------------------- |
+| `bun run dev`         | Start both frontend and backend |
+| `bun run dev:web`     | Start frontend only (port 3001) |
+| `bun run dev:server`  | Start backend only (port 3000)  |
+| `bun run build`       | Build all apps                  |
+| `bun run check-types` | TypeScript type checking        |
+| `bun run check`       | Lint + format (oxlint + oxfmt)  |
+| `bun run db:push`     | Push schema to database         |
+| `bun run db:studio`   | Open Drizzle Studio             |
 
 ## UI Customization
 

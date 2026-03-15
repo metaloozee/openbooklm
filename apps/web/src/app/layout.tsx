@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "openbooklm",
-	description: "openbooklm",
+	title: "OpenBookLM",
+	description: "An open-source, model-agnostic AI research environment",
 };
 
 export default function RootLayout({

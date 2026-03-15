@@ -47,27 +47,35 @@ A plugin/tooling system supports custom operations: domain-specific parsers, vis
 ## Core Entities (Data Model)
 
 ### User
+
 Identity, preferences, theme settings, and API key storage for custom model providers. Users own projects and can be invited to collaborate on others.
 
 ### Project
+
 The central organizing unit. Contains metadata (name, description, icon, visibility), settings (default model, embedding provider, tool configuration), a pointer to the project's root in object storage, and a reference to any active sandbox. Projects track creation time, last activity, and member roles.
 
 ### Source
+
 An uploaded or linked document that serves as grounding material. Sources have a type (PDF, text, markdown, URL, image, audio, video, spreadsheet), processing status (pending, indexed, failed), extracted metadata, and chunk-level embeddings stored in a vector index. Sources are the "truth" that the AI grounds its responses in.
 
 ### Conversation
+
 A sequence of messages within a project. A project can have multiple conversations (threads) — e.g., one for general Q&A, another for a specific sub-task. Conversations reference the project and track which sources and tools were used.
 
 ### Message
+
 A single turn in a conversation — either user or agent. Messages carry structured annotations: citations (linking claims to source chunks), tool calls (code execution, file operations), file references, and status indicators. Agent messages may include rich content blocks (markdown, code, charts, audio).
 
 ### Artifact
+
 A generated output that materializes as a file in the project. Types include: summary, report, timeline, mind map, study guide, FAQ, audio overview, code notebook, visualization, and custom plugin outputs. Artifacts are versioned and traceable back to the conversation turn and sources that produced them.
 
 ### Index
+
 The vector/search index configuration for a project's sources. Tracks the embedding model, chunking strategy, refresh policy, and statistics (total chunks, coverage). Indexes are rebuilt when sources change.
 
 ### Sandbox
+
 An ephemeral compute runtime associated with a project. Tracks the runtime identifier (container/VM ID), resource allocation, lifecycle state (starting, running, paused, terminated), and the set of tools/packages available.
 
 ### Entity Relationships
@@ -110,17 +118,17 @@ openbooklm/
 
 ### Technology Stack
 
-| Layer | Technology | Purpose |
-| --- | --- | --- |
-| Runtime | Bun | Package manager, JS/TS runtime, test runner |
-| Frontend | Next.js 16 (App Router) | SSR, RSC, routing, middleware |
-| Styling | Tailwind CSS v4 + shadcn/ui | Design system, component library |
-| Backend | Hono | Lightweight HTTP framework for API |
-| API Layer | tRPC | End-to-end type-safe RPC |
-| Auth | Better Auth | Session management, OAuth, email/password |
-| Database | Neon Serverless Postgres | Primary data store via Drizzle ORM |
-| Monorepo | Turborepo | Build orchestration, caching, task pipeline |
-| Lint/Format | oxlint + oxfmt | Fast linting and formatting |
+| Layer       | Technology                  | Purpose                                     |
+| ----------- | --------------------------- | ------------------------------------------- |
+| Runtime     | Bun                         | Package manager, JS/TS runtime, test runner |
+| Frontend    | Next.js 16 (App Router)     | SSR, RSC, routing, middleware               |
+| Styling     | Tailwind CSS v4 + shadcn/ui | Design system, component library            |
+| Backend     | Hono                        | Lightweight HTTP framework for API          |
+| API Layer   | tRPC                        | End-to-end type-safe RPC                    |
+| Auth        | Better Auth                 | Session management, OAuth, email/password   |
+| Database    | Neon Serverless Postgres    | Primary data store via Drizzle ORM          |
+| Monorepo    | Turborepo                   | Build orchestration, caching, task pipeline |
+| Lint/Format | oxlint + oxfmt              | Fast linting and formatting                 |
 
 ### Frontend Route Map
 
@@ -170,6 +178,7 @@ While the conversational control plane is the north star, users should never be 
 The first milestone focuses on the core loop: **create a project → upload sources → chat with grounded responses → generate artifacts**.
 
 ### In scope for V1:
+
 - User authentication (email/password, Google OAuth)
 - Project CRUD (create, list, rename, delete)
 - Source upload and processing (PDF, text, markdown, URL)
@@ -181,6 +190,7 @@ The first milestone focuses on the core loop: **create a project → upload sour
 - User settings (API keys, preferences)
 
 ### Deferred to V2+:
+
 - Sandbox compute (code execution, data processing)
 - Virtual file system with full CRUD
 - Audio overview generation (podcast-style)
@@ -197,6 +207,7 @@ The first milestone focuses on the core loop: **create a project → upload sour
 ### Source Processing Pipeline
 
 Source ingestion should be a multi-stage pipeline:
+
 1. **Upload** — Raw file stored in object storage (S3-compatible or Neon blob)
 2. **Extract** — Text extraction (PDF via pdf-parse, DOCX via mammoth, URL via readability)
 3. **Chunk** — Split into semantically meaningful chunks (paragraph-aware, with overlap)
@@ -209,6 +220,7 @@ This pipeline should be idempotent and resumable — a failed extraction should 
 ### Retrieval-Augmented Generation (RAG)
 
 The core Q&A flow:
+
 1. User sends a message in a project conversation
 2. System embeds the query and retrieves top-K relevant chunks from the project index
 3. Retrieved chunks are injected into the LLM prompt as grounding context
@@ -219,26 +231,28 @@ The core Q&A flow:
 ### Model Adapter Layer
 
 Define a clean interface for LLM providers:
+
 ```typescript
 interface ModelAdapter {
-  chat(messages: Message[], options: ModelOptions): AsyncIterable<StreamChunk>
-  embed(texts: string[]): Promise<number[][]>
-  models(): Promise<ModelInfo[]>
+	chat(messages: Message[], options: ModelOptions): AsyncIterable<StreamChunk>;
+	embed(texts: string[]): Promise<number[][]>;
+	models(): Promise<ModelInfo[]>;
 }
 ```
+
 Implement adapters for OpenAI, Anthropic, Google, and Ollama. Users configure their preferred provider at the project or account level.
 
 ---
 
 ## Glossary
 
-| Term | Definition |
-| --- | --- |
-| **Project** | A workspace containing sources, conversations, artifacts, and configuration for a research task |
-| **Source** | An uploaded or linked document that provides grounding material for AI responses |
-| **Artifact** | A generated output (summary, report, FAQ, mind map, etc.) derived from project sources |
-| **Grounding** | The practice of constraining AI responses to information present in uploaded sources |
-| **Citation** | A reference from an AI response back to a specific passage in a source document |
-| **Index** | The vector search index built from a project's source chunks and embeddings |
-| **Sandbox** | An isolated compute environment attached to a project for code execution and tool use |
-| **Conversation** | A chat thread within a project where the user interacts with the AI agent |
+| Term             | Definition                                                                                      |
+| ---------------- | ----------------------------------------------------------------------------------------------- |
+| **Project**      | A workspace containing sources, conversations, artifacts, and configuration for a research task |
+| **Source**       | An uploaded or linked document that provides grounding material for AI responses                |
+| **Artifact**     | A generated output (summary, report, FAQ, mind map, etc.) derived from project sources          |
+| **Grounding**    | The practice of constraining AI responses to information present in uploaded sources            |
+| **Citation**     | A reference from an AI response back to a specific passage in a source document                 |
+| **Index**        | The vector search index built from a project's source chunks and embeddings                     |
+| **Sandbox**      | An isolated compute environment attached to a project for code execution and tool use           |
+| **Conversation** | A chat thread within a project where the user interacts with the AI agent                       |
