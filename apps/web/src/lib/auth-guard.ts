@@ -1,10 +1,14 @@
-import { auth } from "@openbooklm/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
+import { authClient } from "@/lib/auth-client";
+
 export async function getServerSession() {
-	return auth.api.getSession({
-		headers: await headers(),
+	return authClient.getSession({
+		fetchOptions: {
+			headers: await headers(),
+			throw: true,
+		},
 	});
 }
 

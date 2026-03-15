@@ -1,9 +1,10 @@
 import type { AppRouter } from "@openbooklm/api/routers/index";
-import { env } from "@openbooklm/env/web";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { toast } from "sonner";
+
+import { getServerUrl } from "@/lib/server-url";
 
 export const queryClient = new QueryClient({
 	queryCache: new QueryCache({
@@ -21,7 +22,7 @@ export const queryClient = new QueryClient({
 const trpcClient = createTRPCClient<AppRouter>({
 	links: [
 		httpBatchLink({
-			url: `${env.NEXT_PUBLIC_SERVER_URL}/trpc`,
+			url: new URL("/trpc", getServerUrl()).toString(),
 			fetch(url, options) {
 				return fetch(url, {
 					...options,
