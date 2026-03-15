@@ -41,9 +41,13 @@ export function AppTopbar() {
 									{index > 0 && <BreadcrumbSeparator />}
 									<BreadcrumbItem>
 										{isLast ? (
-											<BreadcrumbPage>{formatSegment(segment)}</BreadcrumbPage>
+											<BreadcrumbPage>
+												{formatSegment(segment)}
+											</BreadcrumbPage>
 										) : (
-											<BreadcrumbLink href={href}>{formatSegment(segment)}</BreadcrumbLink>
+											<BreadcrumbLink href={href}>
+												{formatSegment(segment)}
+											</BreadcrumbLink>
 										)}
 									</BreadcrumbItem>
 								</Fragment>

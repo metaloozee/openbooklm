@@ -72,7 +72,9 @@ export function NavUser() {
 						>
 							<UserAvatar name={session.user.name} />
 							<div className="grid flex-1 text-left leading-tight">
-								<span className="truncate text-xs font-medium">{session.user.name}</span>
+								<span className="truncate text-xs font-medium">
+									{session.user.name}
+								</span>
 								<span className="truncate text-[0.6875rem] text-muted-foreground">
 									{session.user.email}
 								</span>
@@ -90,7 +92,9 @@ export function NavUser() {
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left">
 								<UserAvatar name={session.user.name} />
 								<div className="grid flex-1 text-left leading-tight">
-									<span className="truncate text-xs font-medium">{session.user.name}</span>
+									<span className="truncate text-xs font-medium">
+										{session.user.name}
+									</span>
 									<span className="truncate text-[0.6875rem] text-muted-foreground">
 										{session.user.email}
 									</span>
