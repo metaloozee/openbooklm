@@ -1,16 +1,47 @@
 # OpenBookLM
 
+OpenBookLM is an open-source, model-agnostic AI research environment. Users create **Projects** — structured workspaces backed by uploaded source documents — and interact with an AI agent through a conversational interface that grounds every response in the project's sources with inspectable citations.
+
+Think of it as "NotebookLM, but open-source, model-agnostic, and project-centric." The detailed vision, data model, architecture decisions, and V1 scope are documented in `PROJECT.md` at the repository root.
+
+### Core entities
+
+- **Project** — workspace containing sources, conversations, artifacts, and configuration
+- **Source** — uploaded document (PDF, text, URL) that provides grounding material
+- **Conversation** — chat thread scoped to a project
+- **Message** — a turn in a conversation with citations and tool-call annotations
+- **Artifact** — generated output (summary, FAQ, study guide) derived from sources
+- **Index** — vector search index built from a project's chunked/embedded sources
+
+### Frontend route map
+
+```
+/                                             → Landing page (public)
+/login                                        → Authentication (public)
+/dashboard                                    → Projects overview
+/dashboard/projects/new                       → Create new project
+/dashboard/projects/[projectId]               → Project workspace overview
+/dashboard/projects/[projectId]/sources       → Source document management
+/dashboard/projects/[projectId]/chat          → AI conversation interface
+/dashboard/projects/[projectId]/artifacts     → Generated artifact browser
+/dashboard/projects/[projectId]/files         → Virtual file system explorer
+/dashboard/projects/[projectId]/settings      → Project configuration
+/dashboard/settings                           → User account & preferences
+```
+
+---
+
 ## Cursor Cloud specific instructions
 
 ### Architecture
 
 Turborepo monorepo with Bun (v1.3.9) as package manager and runtime. Two apps plus shared packages:
 
-| Service                             | Port       | Start command        |
+| Service | Port | Start command |
 | ----------------------------------- | ---------- | -------------------- |
-| Backend (Hono + tRPC + Better Auth) | 3000       | `bun run dev:server` |
-| Frontend (Next.js 16)               | 3001       | `bun run dev:web`    |
-| Both together                       | 3000, 3001 | `bun run dev`        |
+| Backend (Hono + tRPC + Better Auth) | 3000 | `bun run dev:server` |
+| Frontend (Next.js 16) | 3001 | `bun run dev:web` |
+| Both together | 3000, 3001 | `bun run dev` |
 
 ### Environment variables
 
