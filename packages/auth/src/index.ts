@@ -4,6 +4,15 @@ import { env } from "@openbooklm/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+const googleProvider =
+  env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
+    ? {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+        prompt: "select_account" as const,
+      }
+    : undefined;
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -11,8 +20,8 @@ export const auth = betterAuth({
     schema: schema,
   }),
   trustedOrigins: [env.CORS_ORIGIN],
-  emailAndPassword: {
-    enabled: true,
+  socialProviders: {
+    ...(googleProvider ? { google: googleProvider } : {}),
   },
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
