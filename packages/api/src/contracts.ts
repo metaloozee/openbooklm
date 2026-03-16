@@ -61,8 +61,8 @@ export const sourceCreateSchema = projectIdSchema
 		title: requiredText("Source title", 160),
 		type: z.enum(SOURCE_TYPE_OPTIONS),
 		url: urlOrEmpty("Enter a valid URL"),
-		content: shortText(20000),
-		indexNow: z.boolean(),
+		content: z.string().trim(),
+		indexNow: z.boolean().optional(),
 	})
 	.superRefine((value, ctx) => {
 		if (value.type === "url" && !value.url) {

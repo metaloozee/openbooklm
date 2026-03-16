@@ -22,11 +22,10 @@ function deriveSourceMetrics(input: {
 	type: "pdf" | "text" | "markdown" | "url";
 	content?: string;
 	url?: string;
-	indexNow: boolean;
 }) {
 	const payload = input.type === "url" ? (input.url ?? "") : (input.content ?? "");
 	const contentBytes = new TextEncoder().encode(payload).length;
-	const shouldIndex = input.indexNow && payload.trim().length > 0;
+	const shouldIndex = payload.trim().length > 0;
 
 	return {
 		contentBytes,
@@ -76,7 +75,6 @@ export const sourcesRouter = router({
 			type: input.type,
 			content: input.content,
 			url: input.url,
-			indexNow: input.indexNow,
 		});
 		const trimmedUrl = input.url.trim();
 

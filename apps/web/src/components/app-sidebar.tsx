@@ -170,7 +170,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<>
-			<Sidebar collapsible="icon" {...props}>
+			<Sidebar {...props}>
 				<SidebarHeader>
 					<Link href="/" className="flex items-center justify-start gap-2 p-1">
 						<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
