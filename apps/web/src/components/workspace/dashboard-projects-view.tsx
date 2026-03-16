@@ -1,30 +1,44 @@
 "use client";
 
+import { Badge } from "@openbooklm/ui/components/badge";
 import { Button } from "@openbooklm/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@openbooklm/ui/components/card";
 import { Input } from "@openbooklm/ui/components/input";
+import {
+	PerspectiveBook,
+	BookHeader,
+	BookTitle,
+	BookDescription,
+} from "@openbooklm/ui/components/perspective-book";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRightIcon, FolderOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
+import { FolderOpenIcon, PlusIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
 
-import {
-	EmptyState,
-	QueryErrorState,
-	StatusBadge,
-	formatDate,
-} from "@/components/workspace/primitives";
+import { EmptyState, QueryErrorState } from "@/components/workspace/primitives";
 import { CreateProjectDialog } from "@/components/workspace/new-project-form";
 import { trpc } from "@/utils/trpc";
+
+const COVER_PALETTES = [
+	"bg-gradient-to-br from-rose-500 to-orange-400 text-white",
+	"bg-gradient-to-br from-violet-600 to-indigo-500 text-white",
+	"bg-gradient-to-br from-emerald-500 to-teal-400 text-white",
+	"bg-gradient-to-br from-sky-500 to-cyan-400 text-white",
+	"bg-gradient-to-br from-amber-500 to-yellow-400 text-white",
+	"bg-gradient-to-br from-fuchsia-500 to-pink-400 text-white",
+	"bg-gradient-to-br from-slate-700 to-slate-500 text-white",
+	"bg-gradient-to-br from-lime-500 to-green-400 text-white",
+];
+
+function pickCoverColor(id: string) {
+	let hash = 0;
+	for (let i = 0; i < id.length; i++) {
+		hash = (hash << 5) - hash + id.charCodeAt(i);
+		hash |= 0;
+	}
+	return COVER_PALETTES[Math.abs(hash) % COVER_PALETTES.length];
+}
 
 export function DashboardProjectsView() {
 	const [search, setSearch] = useState("");
@@ -75,18 +89,9 @@ export function DashboardProjectsView() {
 			</div>
 
 			{projectsQuery.isPending ? (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-					{Array.from({ length: 6 }).map((_, index) => (
-						<Card key={index}>
-							<CardHeader className="flex flex-col gap-3">
-								<Skeleton className="h-5 w-36" />
-								<Skeleton className="h-3.5 w-full" />
-							</CardHeader>
-							<CardContent className="flex flex-col gap-2">
-								<Skeleton className="h-3 w-24" />
-								<Skeleton className="h-3 w-32" />
-							</CardContent>
-						</Card>
+				<div className="flex flex-wrap gap-8">
+					{Array.from({ length: 4 }).map((_, index) => (
+						<Skeleton key={index} className="h-60 w-[196px] rounded-md" />
 					))}
 				</div>
 			) : projectsQuery.isError ? (
@@ -116,76 +121,36 @@ export function DashboardProjectsView() {
 					}
 				/>
 			) : (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				<div className="flex flex-wrap gap-8">
 					{filteredProjects.map((project) => (
-						<Card
+						<Link
 							key={project.id}
-							className="group transition-colors hover:border-foreground/20"
+							href={`/dashboard/projects/${project.id}` as Route}
+							className="block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
 						>
-							<CardHeader>
-								<div className="flex items-start justify-between gap-3">
-									<div className="flex items-start gap-3">
-										<span
-											className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-base"
-											aria-hidden
-										>
-											{project.icon || "📁"}
-										</span>
-										<div>
-											<CardTitle className="leading-snug">
-												{project.name}
-											</CardTitle>
-											<CardDescription className="mt-0.5 line-clamp-2">
-												{project.description || "No description yet."}
-											</CardDescription>
-										</div>
-									</div>
-									<StatusBadge
-										status={
-											project.pendingSourceCount > 0 ? "pending" : "ready"
+							<PerspectiveBook className={pickCoverColor(project.id)}>
+								<BookHeader>
+									<Badge
+										variant={
+											project.pendingSourceCount > 0 ? "warning" : "success"
 										}
-									/>
-								</div>
-							</CardHeader>
-							<CardContent className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs/relaxed">
-								<div>
-									<p className="text-muted-foreground">Sources</p>
-									<p className="font-medium tabular-nums">
-										{project.indexedSourceCount}/{project.sourceCount} indexed
-									</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Artifacts</p>
-									<p className="font-medium tabular-nums">
-										{project.artifactCount}
-									</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Model</p>
-									<p className="font-medium truncate">{project.defaultModel}</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Updated</p>
-									<p className="font-medium">{formatDate(project.updatedAt)}</p>
-								</div>
-							</CardContent>
-							<CardFooter className="justify-between gap-2">
-								<Button variant="ghost" size="sm" asChild>
-									<Link
-										href={`/dashboard/projects/${project.id}/settings` as Route}
+										className="text-[10px]"
 									>
-										<SettingsIcon data-icon="inline-start" />
-										Settings
-									</Link>
-								</Button>
-								<Button variant="outline" size="sm" asChild>
-									<Link href={`/dashboard/projects/${project.id}` as Route}>
-										Open
-										<ArrowRightIcon data-icon="inline-end" />
-									</Link>
-								</Button>
-							</CardFooter>
-						</Card>
+										{project.pendingSourceCount > 0 ? "pending" : "ready"}
+									</Badge>
+									<Badge
+										variant="outline"
+										className="border-white/30 bg-white/10 text-[10px] text-inherit"
+									>
+										{project.sourceCount} sources
+									</Badge>
+								</BookHeader>
+								<BookTitle>{project.name}</BookTitle>
+								<BookDescription>
+									{project.description || "No description yet."}
+								</BookDescription>
+							</PerspectiveBook>
+						</Link>
 					))}
 				</div>
 			)}
