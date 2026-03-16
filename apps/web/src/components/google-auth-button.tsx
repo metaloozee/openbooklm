@@ -38,8 +38,8 @@ export default function GoogleAuthButton() {
 
 		const { error } = await authClient.signIn.social({
 			provider: "google",
-			callbackURL: "/dashboard",
-			newUserCallbackURL: "/dashboard",
+			callbackURL: "/login",
+			newUserCallbackURL: "/login",
 			errorCallbackURL: "/login",
 		});
 

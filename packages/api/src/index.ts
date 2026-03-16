@@ -9,17 +9,19 @@ export const router = t.router;
 export const publicProcedure = t.procedure;
 
 export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-	if (!ctx.session) {
+	if (!ctx.session || !ctx.userId) {
+		const cause = ctx.session ? "Missing userId" : "No session";
 		throw new TRPCError({
 			code: "UNAUTHORIZED",
 			message: "Authentication required",
-			cause: "No session",
+			cause,
 		});
 	}
 	return next({
 		ctx: {
 			...ctx,
 			session: ctx.session,
+			userId: ctx.userId,
 		},
 	});
 });
