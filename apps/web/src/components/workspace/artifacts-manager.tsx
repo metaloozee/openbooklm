@@ -33,7 +33,7 @@ import {
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
-function CreateArtifactDialog({
+export function CreateArtifactDialog({
 	projectId,
 	open,
 	onOpenChange,

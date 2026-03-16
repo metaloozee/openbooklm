@@ -34,7 +34,7 @@ import {
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
-function AddSourceDialog({
+export function AddSourceDialog({
 	projectId,
 	open,
 	onOpenChange,

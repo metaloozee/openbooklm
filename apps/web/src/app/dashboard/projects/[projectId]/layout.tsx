@@ -1,4 +1,5 @@
 import { assertProjectAccess } from "@/lib/auth-guard";
+import { ProjectWorkspaceShell } from "@/components/workspace/project-workspace-shell";
 
 export default async function ProjectLayout({
 	children,
@@ -10,5 +11,5 @@ export default async function ProjectLayout({
 	const { projectId } = await params;
 	await assertProjectAccess(projectId);
 
-	return <>{children}</>;
+	return <ProjectWorkspaceShell projectId={projectId}>{children}</ProjectWorkspaceShell>;
 }
