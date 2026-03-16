@@ -14,22 +14,28 @@ import {
 	SidebarMenuSkeleton,
 	SidebarRail,
 } from "@openbooklm/ui/components/sidebar";
+import {
+	FileTree,
+	FileTreeFile,
+	FileTreeFolder,
+} from "@openbooklm/ui/components/ai-elements/file-tree";
 import { Button } from "@openbooklm/ui/components/button";
 import { useQuery } from "@tanstack/react-query";
 import {
 	ArrowLeftIcon,
 	BookOpenIcon,
-	FilesIcon,
 	FolderOpenIcon,
 	LayoutDashboardIcon,
 	MessageSquareIcon,
 	PlusIcon,
 	SettingsIcon,
 	SparklesIcon,
+	FilesIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useMemo } from "react";
 
 import { NavUser } from "./nav-user";
 import { trpc } from "@/utils/trpc";
@@ -44,6 +50,71 @@ function getProjectIdFromPathname(pathname: string) {
 
 function isActiveRoute(pathname: string, href: string) {
 	return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function getSelectedPath(pathname: string, projectId: string) {
+	const base = `/dashboard/projects/${projectId}`;
+	if (pathname === base) return base;
+	if (pathname.startsWith(`${base}/sources`)) return `${base}/sources`;
+	if (pathname.startsWith(`${base}/chat`)) return `${base}/chat`;
+	if (pathname.startsWith(`${base}/artifacts`)) return `${base}/artifacts`;
+	if (pathname.startsWith(`${base}/files`)) return `${base}/files`;
+	if (pathname.startsWith(`${base}/settings`)) return `${base}/settings`;
+	return base;
+}
+
+function ProjectFileTree({
+	projectId,
+	projectName,
+	projectIcon,
+}: {
+	projectId: string;
+	projectName: string;
+	projectIcon: string | null;
+}) {
+	const pathname = usePathname();
+	const router = useRouter();
+	const base = `/dashboard/projects/${projectId}`;
+	const selectedPath = getSelectedPath(pathname, projectId);
+
+	const defaultExpanded = useMemo(() => new Set([base]), [base]);
+
+	return (
+		<FileTree
+			defaultExpanded={defaultExpanded}
+			selectedPath={selectedPath}
+			onSelect={(path) => router.push(path as Route)}
+			className="border-none bg-transparent p-0 font-sans"
+		>
+			<FileTreeFolder path={base} name={`${projectIcon || "📁"} ${projectName}`}>
+				<FileTreeFile
+					path={`${base}/sources`}
+					name="Sources"
+					icon={<FolderOpenIcon className="size-4 text-muted-foreground" />}
+				/>
+				<FileTreeFile
+					path={`${base}/chat`}
+					name="Chat"
+					icon={<MessageSquareIcon className="size-4 text-muted-foreground" />}
+				/>
+				<FileTreeFile
+					path={`${base}/artifacts`}
+					name="Artifacts"
+					icon={<SparklesIcon className="size-4 text-muted-foreground" />}
+				/>
+				<FileTreeFile
+					path={`${base}/files`}
+					name="Files"
+					icon={<FilesIcon className="size-4 text-muted-foreground" />}
+				/>
+				<FileTreeFile
+					path={`${base}/settings`}
+					name="Settings"
+					icon={<SettingsIcon className="size-4 text-muted-foreground" />}
+				/>
+			</FileTreeFolder>
+		</FileTree>
+	);
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -72,41 +143,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 			icon: SettingsIcon,
 		},
 	];
-
-	const projectItems = projectId
-		? [
-				{
-					href: `/dashboard/projects/${projectId}` as Route,
-					label: "Overview",
-					icon: LayoutDashboardIcon,
-				},
-				{
-					href: `/dashboard/projects/${projectId}/sources` as Route,
-					label: "Sources",
-					icon: FolderOpenIcon,
-				},
-				{
-					href: `/dashboard/projects/${projectId}/chat` as Route,
-					label: "Chat",
-					icon: MessageSquareIcon,
-				},
-				{
-					href: `/dashboard/projects/${projectId}/artifacts` as Route,
-					label: "Artifacts",
-					icon: SparklesIcon,
-				},
-				{
-					href: `/dashboard/projects/${projectId}/files` as Route,
-					label: "Files",
-					icon: FilesIcon,
-				},
-				{
-					href: `/dashboard/projects/${projectId}/settings` as Route,
-					label: "Settings",
-					icon: SettingsIcon,
-				},
-			]
-		: [];
 
 	const renderMenuGroup = ({
 		label,
@@ -143,46 +179,45 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 	);
 
 	const renderProjectNavigation = () => (
-		<SidebarGroup>
-			<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
-			<SidebarGroupContent>
-				<SidebarMenu>
-					<SidebarMenuItem>
-						<SidebarMenuButton
-							asChild
-							isActive={pathname === "/dashboard"}
-							tooltip="Back to dashboard"
-						>
-							<Link href="/dashboard">
-								<ArrowLeftIcon />
-								<span>Back to dashboard</span>
-							</Link>
-						</SidebarMenuButton>
-					</SidebarMenuItem>
-					{projectItems.map((item) => (
-						<SidebarMenuItem key={item.href}>
+		<>
+			<SidebarGroup>
+				<SidebarGroupContent>
+					<SidebarMenu>
+						<SidebarMenuItem>
 							<SidebarMenuButton
 								asChild
-								isActive={isActiveRoute(pathname, item.href)}
-								tooltip={item.label}
+								isActive={pathname === "/dashboard"}
+								tooltip="Back to dashboard"
 							>
-								<Link href={item.href}>
-									<item.icon />
-									<span>{item.label}</span>
+								<Link href="/dashboard">
+									<ArrowLeftIcon />
+									<span>Back to dashboard</span>
 								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
-					))}
-				</SidebarMenu>
-			</SidebarGroupContent>
-		</SidebarGroup>
+					</SidebarMenu>
+				</SidebarGroupContent>
+			</SidebarGroup>
+			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
+				<SidebarGroupLabel>Workspace</SidebarGroupLabel>
+				<SidebarGroupContent>
+					{projectId ? (
+						<ProjectFileTree
+							projectId={projectId}
+							projectName={currentProject?.name ?? "Project"}
+							projectIcon={currentProject?.icon ?? null}
+						/>
+					) : null}
+				</SidebarGroupContent>
+			</SidebarGroup>
+		</>
 	);
 
 	return (
-		<Sidebar collapsible="icon" variant={"inset"} {...props}>
+		<Sidebar collapsible="icon" variant="inset" {...props}>
 			<SidebarHeader>
-				<Link href="/" className="flex items-center justify-center mx-auto gap-2 p-1">
-					<div className="flex size-7  shrink-0 items-center justify-center rounded-md bg-foreground text-background">
+				<Link href="/" className="mx-auto flex items-center justify-center gap-2 p-1">
+					<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
 						<BookOpenIcon className="size-3.5" />
 					</div>
 					<span className="truncate text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
@@ -208,7 +243,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					<>
 						{isProjectRoute
 							? renderProjectNavigation()
-							: renderMenuGroup({ label: "Global", items: globalItems })}
+							: renderMenuGroup({
+									label: "Global",
+									items: globalItems,
+								})}
 						<SidebarGroup>
 							<SidebarGroupLabel>Projects unavailable</SidebarGroupLabel>
 							<SidebarGroupContent>
@@ -235,7 +273,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 						{renderProjectNavigation()}
 
 						{projectsQuery.data?.length ? (
-							<SidebarGroup>
+							<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 								<SidebarGroupLabel>Switch project</SidebarGroupLabel>
 								<SidebarGroupContent>
 									<SidebarMenu>
@@ -264,7 +302,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					</>
 				) : (
 					<>
-						{renderMenuGroup({ label: "Global", items: globalItems })}
+						{renderMenuGroup({
+							label: "Global",
+							items: globalItems,
+						})}
 
 						<SidebarGroup>
 							<SidebarGroupLabel>Projects</SidebarGroupLabel>
