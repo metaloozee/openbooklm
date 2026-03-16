@@ -10,6 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/compone
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
+import {
+	Sheet,
+	SheetContent,
+	SheetFooter,
+	SheetHeader,
+	SheetTitle,
+} from "@openbooklm/ui/components/sheet";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,7 +24,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import { EmptyState, FieldErrors, NativeSelect } from "@/components/workspace/primitives";
+import {
+	EmptyState,
+	FieldErrors,
+	NativeSelect,
+	QueryErrorState,
+} from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 function BufferedNumberInput({
@@ -379,7 +391,7 @@ function ProjectSettingsFormInner({
 										id={field.name}
 										checked={field.state.value}
 										onCheckedChange={(checked) =>
-											field.handleChange(Boolean(checked))
+											field.handleChange(checked === true)
 										}
 									/>
 									<div className="space-y-1">
@@ -444,64 +456,60 @@ function ProjectSettingsFormInner({
 				</CardContent>
 			</Card>
 
-			{isDeleteDialogOpen ? (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
-					<Card className="w-full max-w-md border-destructive/20">
-						<CardHeader>
-							<CardTitle>Confirm project deletion</CardTitle>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<p className="text-sm text-muted-foreground">
-								Type{" "}
-								<span className="font-medium text-foreground">
-									{project.project.name}
-								</span>{" "}
-								to permanently delete this workspace.
-							</p>
-							<div className="space-y-2">
-								<Label htmlFor="delete-project-confirmation">Project name</Label>
-								<Input
-									id="delete-project-confirmation"
-									value={deleteConfirmationValue}
-									onChange={(event) =>
-										setDeleteConfirmationValue(event.target.value)
-									}
-								/>
-							</div>
-							<div className="flex justify-end gap-2">
-								<Button
-									variant="outline"
-									disabled={deleteProjectMutation.isPending}
-									onClick={() => setIsDeleteDialogOpen(false)}
-								>
-									Cancel
-								</Button>
-								<Button
-									variant="destructive"
-									disabled={
-										deleteProjectMutation.isPending ||
-										deleteConfirmationValue !== project.project.name
-									}
-									onClick={() => {
-										deleteProjectMutation.mutate(
-											{ projectId },
-											{
-												onSuccess: () => {
-													setIsDeleteDialogOpen(false);
-												},
-											},
-										);
-									}}
-								>
-									{deleteProjectMutation.isPending
-										? "Deleting..."
-										: "Confirm delete"}
-								</Button>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-			) : null}
+			<Sheet open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<SheetContent className="w-full max-w-md p-0" showCloseButton={false}>
+					<SheetHeader>
+						<SheetTitle>Confirm project deletion</SheetTitle>
+					</SheetHeader>
+					<div className="space-y-4 px-6">
+						<p className="text-sm text-muted-foreground">
+							Type{" "}
+							<span className="font-medium text-foreground">
+								{project.project.name}
+							</span>{" "}
+							to permanently delete this workspace.
+						</p>
+						<div className="space-y-2">
+							<Label htmlFor="delete-project-confirmation">Project name</Label>
+							<Input
+								id="delete-project-confirmation"
+								value={deleteConfirmationValue}
+								onChange={(event) =>
+									setDeleteConfirmationValue(event.target.value)
+								}
+							/>
+						</div>
+					</div>
+					<SheetFooter className="sm:flex-row sm:justify-end">
+						<Button
+							variant="outline"
+							disabled={deleteProjectMutation.isPending}
+							onClick={() => setIsDeleteDialogOpen(false)}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							disabled={
+								deleteProjectMutation.isPending ||
+								deleteConfirmationValue !== project.project.name
+							}
+							onClick={() => {
+								deleteProjectMutation.mutate(
+									{ projectId },
+									{
+										onSuccess: () => {
+											setIsDeleteDialogOpen(false);
+										},
+									},
+								);
+							}}
+						>
+							{deleteProjectMutation.isPending ? "Deleting..." : "Confirm delete"}
+						</Button>
+					</SheetFooter>
+				</SheetContent>
+			</Sheet>
 		</div>
 	);
 }
@@ -516,6 +524,16 @@ export function ProjectSettingsForm({ projectId }: { projectId: string }) {
 				<div className="h-72 w-full animate-pulse rounded-md bg-muted" />
 				<div className="h-72 w-full animate-pulse rounded-md bg-muted" />
 			</div>
+		);
+	}
+
+	if (projectQuery.isError) {
+		return (
+			<QueryErrorState
+				title="Project settings unavailable"
+				description={projectQuery.error.message}
+				onRetry={() => void projectQuery.refetch()}
+			/>
 		);
 	}
 

@@ -42,6 +42,10 @@ function getProjectIdFromPathname(pathname: string) {
 	return slug && !RESERVED_PROJECT_SEGMENTS.has(slug) ? slug : null;
 }
 
+function isActiveRoute(pathname: string, href: string) {
+	return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 	const pathname = usePathname();
 	const projectId = getProjectIdFromPathname(pathname);
@@ -104,6 +108,76 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 			]
 		: [];
 
+	const renderMenuGroup = ({
+		label,
+		items,
+	}: {
+		label: string;
+		items: Array<{
+			href: Route;
+			label: string;
+			icon: React.ComponentType<{ className?: string }>;
+		}>;
+	}) => (
+		<SidebarGroup>
+			<SidebarGroupLabel>{label}</SidebarGroupLabel>
+			<SidebarGroupContent>
+				<SidebarMenu>
+					{items.map((item) => (
+						<SidebarMenuItem key={item.href}>
+							<SidebarMenuButton
+								asChild
+								isActive={isActiveRoute(pathname, item.href)}
+								tooltip={item.label}
+							>
+								<Link href={item.href}>
+									<item.icon />
+									<span>{item.label}</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroupContent>
+		</SidebarGroup>
+	);
+
+	const renderProjectNavigation = () => (
+		<SidebarGroup>
+			<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
+			<SidebarGroupContent>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							asChild
+							isActive={pathname === "/dashboard"}
+							tooltip="Back to dashboard"
+						>
+							<Link href="/dashboard">
+								<ArrowLeftIcon />
+								<span>Back to dashboard</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+					{projectItems.map((item) => (
+						<SidebarMenuItem key={item.href}>
+							<SidebarMenuButton
+								asChild
+								isActive={isActiveRoute(pathname, item.href)}
+								tooltip={item.label}
+							>
+								<Link href={item.href}>
+									<item.icon />
+									<span>{item.label}</span>
+								</Link>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					))}
+				</SidebarMenu>
+			</SidebarGroupContent>
+		</SidebarGroup>
+	);
+
 	return (
 		<Sidebar collapsible="icon" variant={"inset"} {...props}>
 			<SidebarHeader>
@@ -132,74 +206,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroup>
 				) : projectsQuery.isError ? (
 					<>
-						{isProjectRoute ? (
-							<SidebarGroup>
-								<SidebarGroupLabel>
-									{currentProject?.name ?? "Project"}
-								</SidebarGroupLabel>
-								<SidebarGroupContent>
-									<SidebarMenu>
-										<SidebarMenuItem>
-											<SidebarMenuButton
-												asChild
-												isActive={pathname === "/dashboard"}
-												tooltip="Back to dashboard"
-											>
-												<Link href="/dashboard">
-													<ArrowLeftIcon />
-													<span>Back to dashboard</span>
-												</Link>
-											</SidebarMenuButton>
-										</SidebarMenuItem>
-										{projectItems.map((item) => (
-											<SidebarMenuItem key={item.href}>
-												<SidebarMenuButton
-													asChild
-													isActive={
-														item.href ===
-														`/dashboard/projects/${projectId}`
-															? pathname === item.href
-															: pathname.startsWith(item.href)
-													}
-													tooltip={item.label}
-												>
-													<Link href={item.href}>
-														<item.icon />
-														<span>{item.label}</span>
-													</Link>
-												</SidebarMenuButton>
-											</SidebarMenuItem>
-										))}
-									</SidebarMenu>
-								</SidebarGroupContent>
-							</SidebarGroup>
-						) : (
-							<SidebarGroup>
-								<SidebarGroupLabel>Global</SidebarGroupLabel>
-								<SidebarGroupContent>
-									<SidebarMenu>
-										{globalItems.map((item) => (
-											<SidebarMenuItem key={item.href}>
-												<SidebarMenuButton
-													asChild
-													isActive={
-														item.href === "/dashboard"
-															? pathname === item.href
-															: pathname.startsWith(item.href)
-													}
-													tooltip={item.label}
-												>
-													<Link href={item.href}>
-														<item.icon />
-														<span>{item.label}</span>
-													</Link>
-												</SidebarMenuButton>
-											</SidebarMenuItem>
-										))}
-									</SidebarMenu>
-								</SidebarGroupContent>
-							</SidebarGroup>
-						)}
+						{isProjectRoute ? renderProjectNavigation() : renderMenuGroup({ label: "Global", items: globalItems })}
 						<SidebarGroup>
 							<SidebarGroupLabel>Projects unavailable</SidebarGroupLabel>
 							<SidebarGroupContent>
@@ -223,45 +230,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					</>
 				) : isProjectRoute ? (
 					<>
-						<SidebarGroup>
-							<SidebarGroupLabel>
-								{currentProject?.name ?? "Project"}
-							</SidebarGroupLabel>
-							<SidebarGroupContent>
-								<SidebarMenu>
-									<SidebarMenuItem>
-										<SidebarMenuButton
-											asChild
-											isActive={pathname === "/dashboard"}
-											tooltip="Back to dashboard"
-										>
-											<Link href="/dashboard">
-												<ArrowLeftIcon />
-												<span>Back to dashboard</span>
-											</Link>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-									{projectItems.map((item) => (
-										<SidebarMenuItem key={item.href}>
-											<SidebarMenuButton
-												asChild
-												isActive={
-													item.href === `/dashboard/projects/${projectId}`
-														? pathname === item.href
-														: pathname.startsWith(item.href)
-												}
-												tooltip={item.label}
-											>
-												<Link href={item.href}>
-													<item.icon />
-													<span>{item.label}</span>
-												</Link>
-											</SidebarMenuButton>
-										</SidebarMenuItem>
-									))}
-								</SidebarMenu>
-							</SidebarGroupContent>
-						</SidebarGroup>
+						{renderProjectNavigation()}
 
 						{projectsQuery.data?.length ? (
 							<SidebarGroup>
@@ -293,31 +262,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					</>
 				) : (
 					<>
-						<SidebarGroup>
-							<SidebarGroupLabel>Global</SidebarGroupLabel>
-							<SidebarGroupContent>
-								<SidebarMenu>
-									{globalItems.map((item) => (
-										<SidebarMenuItem key={item.href}>
-											<SidebarMenuButton
-												asChild
-												isActive={
-													item.href === "/dashboard"
-														? pathname === item.href
-														: pathname.startsWith(item.href)
-												}
-												tooltip={item.label}
-											>
-												<Link href={item.href}>
-													<item.icon />
-													<span>{item.label}</span>
-												</Link>
-											</SidebarMenuButton>
-										</SidebarMenuItem>
-									))}
-								</SidebarMenu>
-							</SidebarGroupContent>
-						</SidebarGroup>
+						{renderMenuGroup({ label: "Global", items: globalItems })}
 
 						<SidebarGroup>
 							<SidebarGroupLabel>Projects</SidebarGroupLabel>
@@ -328,7 +273,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 											<SidebarMenuItem key={project.id}>
 												<SidebarMenuButton
 													asChild
-													isActive={pathname.startsWith(
+													isActive={isActiveRoute(
+														pathname,
 														`/dashboard/projects/${project.id}`,
 													)}
 													tooltip={project.name}
