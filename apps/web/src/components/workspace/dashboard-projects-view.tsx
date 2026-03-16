@@ -1,32 +1,59 @@
 "use client";
 
+import { Badge } from "@openbooklm/ui/components/badge";
 import { Button } from "@openbooklm/ui/components/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@openbooklm/ui/components/card";
 import { Input } from "@openbooklm/ui/components/input";
+import {
+	PerspectiveBook,
+	BookHeader,
+	BookTitle,
+	BookDescription,
+} from "@openbooklm/ui/components/perspective-book";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import { FolderOpenIcon, PlusIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-	EmptyState,
-	QueryErrorState,
-	StatusBadge,
-	formatDate,
-} from "@/components/workspace/primitives";
+import { EmptyState, QueryErrorState } from "@/components/workspace/primitives";
+import { CreateProjectDialog } from "@/components/workspace/new-project-form";
 import { trpc } from "@/utils/trpc";
+
+const COVER_PALETTES = [
+	"bg-gradient-to-br from-rose-500 to-orange-400 text-white",
+	"bg-gradient-to-br from-violet-600 to-indigo-500 text-white",
+	"bg-gradient-to-br from-emerald-500 to-teal-400 text-white",
+	"bg-gradient-to-br from-sky-500 to-cyan-400 text-white",
+	"bg-gradient-to-br from-amber-500 to-yellow-400 text-white",
+	"bg-gradient-to-br from-fuchsia-500 to-pink-400 text-white",
+	"bg-gradient-to-br from-slate-700 to-slate-500 text-white",
+	"bg-gradient-to-br from-lime-500 to-green-400 text-white",
+];
+
+function pickCoverColor(id: string) {
+	let hash = 0;
+	for (let i = 0; i < id.length; i++) {
+		hash = (hash << 5) - hash + id.charCodeAt(i);
+		hash |= 0;
+	}
+	return COVER_PALETTES[Math.abs(hash) % COVER_PALETTES.length];
+}
 
 export function DashboardProjectsView() {
 	const [search, setSearch] = useState("");
+	const [isCreateOpen, setIsCreateOpen] = useState(false);
+	const searchParams = useSearchParams();
+	const router = useRouter();
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
+
+	useEffect(() => {
+		if (searchParams.get("create") === "true") {
+			setIsCreateOpen(true);
+			router.replace("/dashboard", { scroll: false });
+		}
+	}, [searchParams, router]);
 
 	const filteredProjects = useMemo(() => {
 		const normalizedSearch = search.trim().toLowerCase();
@@ -44,42 +71,37 @@ export function DashboardProjectsView() {
 	}, [projectsQuery.data, search]);
 
 	return (
-		<div className="space-y-4">
-			<div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+		<div className="flex flex-col gap-6">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 				<div>
 					<h1 className="text-lg font-semibold tracking-tight">Projects</h1>
 					<p className="text-sm text-muted-foreground">
-						Your research workspaces. Each project bundles sources, artifacts, settings,
-						and future grounded conversations.
+						Your research workspaces. Each project bundles sources, artifacts, and
+						grounded conversations.
 					</p>
 				</div>
-				<div className="flex flex-col gap-2 sm:flex-row">
-					<Input
-						aria-label="Search projects"
-						value={search}
-						onChange={(event) => setSearch(event.target.value)}
-						placeholder="Search projects"
-						className="w-full sm:w-56"
-					/>
-					<Button asChild>
-						<Link href="/dashboard/projects/new">Create project</Link>
+				<div className="flex items-center gap-2">
+					<div className="relative">
+						<SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+						<Input
+							aria-label="Search projects"
+							value={search}
+							onChange={(event) => setSearch(event.target.value)}
+							placeholder="Search..."
+							className="w-full pl-8 sm:w-48"
+						/>
+					</div>
+					<Button onClick={() => setIsCreateOpen(true)}>
+						<PlusIcon data-icon="inline-start" />
+						New project
 					</Button>
 				</div>
 			</div>
 
 			{projectsQuery.isPending ? (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-					{Array.from({ length: 6 }).map((_, index) => (
-						<Card key={index}>
-							<CardHeader className="space-y-2">
-								<Skeleton className="h-4 w-32" />
-								<Skeleton className="h-3 w-full" />
-							</CardHeader>
-							<CardContent className="space-y-2">
-								<Skeleton className="h-3 w-24" />
-								<Skeleton className="h-3 w-28" />
-							</CardContent>
-						</Card>
+				<div className="flex flex-wrap gap-8">
+					{Array.from({ length: 4 }).map((_, index) => (
+						<Skeleton key={index} className="h-60 w-[196px] rounded-md" />
 					))}
 				</div>
 			) : projectsQuery.isError ? (
@@ -90,6 +112,7 @@ export function DashboardProjectsView() {
 				/>
 			) : filteredProjects.length === 0 ? (
 				<EmptyState
+					icon={FolderOpenIcon}
 					title={
 						projectsQuery.data?.length
 							? "No matching projects"
@@ -101,68 +124,48 @@ export function DashboardProjectsView() {
 							: "Projects are the top-level workspaces for sources, artifacts, and settings."
 					}
 					action={
-						<Button asChild>
-							<Link href="/dashboard/projects/new">New project</Link>
+						<Button onClick={() => setIsCreateOpen(true)}>
+							<PlusIcon data-icon="inline-start" />
+							New project
 						</Button>
 					}
 				/>
 			) : (
-				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+				<div className="flex flex-wrap gap-8">
 					{filteredProjects.map((project) => (
-						<Card key={project.id}>
-							<CardHeader>
-								<div className="flex items-start justify-between gap-3">
-									<div>
-										<CardTitle>{project.name}</CardTitle>
-										<CardDescription className="mt-1">
-											{project.description || "No description yet."}
-										</CardDescription>
-									</div>
-									<StatusBadge
-										status={
-											project.pendingSourceCount > 0 ? "pending" : "ready"
+						<Link
+							key={project.id}
+							href={`/dashboard/projects/${project.id}` as Route}
+							className="block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
+						>
+							<PerspectiveBook className={pickCoverColor(project.id)}>
+								<BookHeader>
+									<Badge
+										variant={
+											project.pendingSourceCount > 0 ? "warning" : "success"
 										}
-									/>
-								</div>
-							</CardHeader>
-							<CardContent className="grid grid-cols-2 gap-3 text-xs/relaxed">
-								<div>
-									<p className="text-muted-foreground">Sources</p>
-									<p className="font-medium">
-										{project.indexedSourceCount}/{project.sourceCount} indexed
-									</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Artifacts</p>
-									<p className="font-medium">{project.artifactCount}</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Model</p>
-									<p className="font-medium">{project.defaultModel}</p>
-								</div>
-								<div>
-									<p className="text-muted-foreground">Updated</p>
-									<p className="font-medium">{formatDate(project.updatedAt)}</p>
-								</div>
-							</CardContent>
-							<CardFooter className="justify-between gap-2">
-								<Button variant="outline" asChild>
-									<Link
-										href={`/dashboard/projects/${project.id}/settings` as Route}
+										className="text-[10px]"
 									>
-										Settings
-									</Link>
-								</Button>
-								<Button asChild>
-									<Link href={`/dashboard/projects/${project.id}` as Route}>
-										Open workspace
-									</Link>
-								</Button>
-							</CardFooter>
-						</Card>
+										{project.pendingSourceCount > 0 ? "pending" : "ready"}
+									</Badge>
+									<Badge
+										variant="outline"
+										className="border-white/30 bg-white/10 text-[10px] text-inherit"
+									>
+										{project.sourceCount} sources
+									</Badge>
+								</BookHeader>
+								<BookTitle>{project.name}</BookTitle>
+								<BookDescription>
+									{project.description || "No description yet."}
+								</BookDescription>
+							</PerspectiveBook>
+						</Link>
 					))}
 				</div>
 			)}
+
+			<CreateProjectDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 		</div>
 	);
 }

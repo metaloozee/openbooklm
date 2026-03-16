@@ -1,8 +1,5 @@
-import { assertAuthenticated } from "@/lib/auth-guard";
-import { NewProjectForm } from "@/components/workspace/new-project-form";
+import { redirect } from "next/navigation";
 
-export default async function NewProjectPage() {
-	await assertAuthenticated();
-
-	return <NewProjectForm />;
+export default function NewProjectPage() {
+	redirect("/dashboard?create=true");
 }

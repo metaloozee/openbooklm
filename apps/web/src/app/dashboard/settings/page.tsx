@@ -4,5 +4,9 @@ import { UserSettingsForm } from "@/components/workspace/user-settings-form";
 export default async function UserSettingsPage() {
 	await assertAuthenticated();
 
-	return <UserSettingsForm />;
+	return (
+		<div className="p-4">
+			<UserSettingsForm />
+		</div>
+	);
 }
