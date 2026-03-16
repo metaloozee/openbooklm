@@ -19,6 +19,8 @@ import type { UrlObject } from "url";
 
 import { trpc } from "@/utils/trpc";
 
+const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
+
 function formatSegment(segment: string): string {
 	if (segment === "dashboard") {
 		return "Dashboard";
@@ -36,7 +38,8 @@ function formatSegment(segment: string): string {
 
 function getProjectIdFromPathname(pathname: string) {
 	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
-	return match?.[1] ?? null;
+	const slug = match?.[1] ?? null;
+	return slug && !RESERVED_PROJECT_SEGMENTS.has(slug) ? slug : null;
 }
 
 export function AppTopbar() {

@@ -1,5 +1,5 @@
 import { artifact, project, source } from "@openbooklm/db";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import { projectCreateSchema, projectIdSchema, projectUpdateSchema } from "../contracts";
 import { protectedProcedure, router } from "../index";
@@ -11,13 +11,11 @@ function toIsoString(value: Date) {
 
 function formatProjectListItem(
 	record: typeof project.$inferSelect & {
-		sources: Array<Pick<typeof source.$inferSelect, "id" | "status">>;
-		artifacts: Array<Pick<typeof artifact.$inferSelect, "id">>;
+		sourceCount: number;
+		indexedSourceCount: number;
+		artifactCount: number;
 	},
 ) {
-	const indexedSourceCount = record.sources.filter((item) => item.status === "indexed").length;
-	const pendingSourceCount = record.sources.filter((item) => item.status !== "indexed").length;
-
 	return {
 		id: record.id,
 		name: record.name,
@@ -26,10 +24,10 @@ function formatProjectListItem(
 		visibility: record.visibility,
 		defaultModelProvider: record.defaultModelProvider,
 		defaultModel: record.defaultModel,
-		sourceCount: record.sources.length,
-		indexedSourceCount,
-		pendingSourceCount,
-		artifactCount: record.artifacts.length,
+		sourceCount: record.sourceCount,
+		indexedSourceCount: record.indexedSourceCount,
+		pendingSourceCount: record.sourceCount - record.indexedSourceCount,
+		artifactCount: record.artifactCount,
 		createdAt: toIsoString(record.createdAt),
 		updatedAt: toIsoString(record.updatedAt),
 	};
@@ -56,60 +54,85 @@ function formatProjectDetail(record: typeof project.$inferSelect) {
 
 export const projectsRouter = router({
 	list: protectedProcedure.query(async ({ ctx }) => {
-		const records = await ctx.db.query.project.findMany({
-			where: eq(project.ownerId, ctx.userId),
-			with: {
-				sources: {
-					columns: {
-						id: true,
-						status: true,
-					},
-				},
-				artifacts: {
-					columns: {
-						id: true,
-					},
-				},
-			},
-			orderBy: [desc(project.updatedAt)],
-		});
+		const records = await ctx.db
+			.select({
+				id: project.id,
+				ownerId: project.ownerId,
+				name: project.name,
+				description: project.description,
+				icon: project.icon,
+				visibility: project.visibility,
+				defaultModelProvider: project.defaultModelProvider,
+				defaultModel: project.defaultModel,
+				embeddingProvider: project.embeddingProvider,
+				embeddingModel: project.embeddingModel,
+				chunkSize: project.chunkSize,
+				chunkOverlap: project.chunkOverlap,
+				refreshOnSourceChange: project.refreshOnSourceChange,
+				createdAt: project.createdAt,
+				updatedAt: project.updatedAt,
+				sourceCount: sql<number>`(
+					select count(*)::int
+					from ${source}
+					where ${source.projectId} = ${project.id}
+				)`,
+				indexedSourceCount: sql<number>`(
+					select count(*)::int
+					from ${source}
+					where ${source.projectId} = ${project.id}
+						and ${source.status} = 'indexed'
+				)`,
+				artifactCount: sql<number>`(
+					select count(*)::int
+					from ${artifact}
+					where ${artifact.projectId} = ${project.id}
+				)`,
+			})
+			.from(project)
+			.where(eq(project.ownerId, ctx.userId))
+			.orderBy(desc(project.updatedAt));
 
 		return records.map(formatProjectListItem);
 	}),
 	byId: protectedProcedure.input(projectIdSchema).query(async ({ ctx, input }) => {
 		const currentProject = await getProjectForUserOrThrow(ctx, input.projectId);
 
-		const [projectSources, projectArtifacts] = await Promise.all([
-			ctx.db.query.source.findMany({
-				where: eq(source.projectId, input.projectId),
-				orderBy: [desc(source.updatedAt)],
-			}),
-			ctx.db.query.artifact.findMany({
-				where: eq(artifact.projectId, input.projectId),
-				with: {
-					sourceLinks: {
-						with: {
-							source: true,
+		const [sourceCount, indexedSourceCount, artifactCount, recentSources, recentArtifacts] =
+			await Promise.all([
+				ctx.db.$count(source, eq(source.projectId, input.projectId)),
+				ctx.db.$count(
+					source,
+					and(eq(source.projectId, input.projectId), eq(source.status, "indexed")),
+				),
+				ctx.db.$count(artifact, eq(artifact.projectId, input.projectId)),
+				ctx.db.query.source.findMany({
+					where: eq(source.projectId, input.projectId),
+					orderBy: [desc(source.updatedAt)],
+					limit: 5,
+				}),
+				ctx.db.query.artifact.findMany({
+					where: eq(artifact.projectId, input.projectId),
+					with: {
+						sourceLinks: {
+							with: {
+								source: true,
+							},
 						},
 					},
-				},
-				orderBy: [desc(artifact.updatedAt)],
-			}),
-		]);
-
-		const indexedSourceCount = projectSources.filter(
-			(item) => item.status === "indexed",
-		).length;
+					orderBy: [desc(artifact.updatedAt)],
+					limit: 5,
+				}),
+			]);
 
 		return {
 			project: formatProjectDetail(currentProject),
 			stats: {
-				sourceCount: projectSources.length,
+				sourceCount,
 				indexedSourceCount,
-				pendingSourceCount: projectSources.length - indexedSourceCount,
-				artifactCount: projectArtifacts.length,
+				pendingSourceCount: sourceCount - indexedSourceCount,
+				artifactCount,
 			},
-			recentSources: projectSources.slice(0, 5).map((item) => ({
+			recentSources: recentSources.map((item) => ({
 				id: item.id,
 				title: item.title,
 				type: item.type,
@@ -118,7 +141,7 @@ export const projectsRouter = router({
 				chunkCount: item.chunkCount,
 				updatedAt: toIsoString(item.updatedAt),
 			})),
-			recentArtifacts: projectArtifacts.slice(0, 5).map((item) => ({
+			recentArtifacts: recentArtifacts.map((item) => ({
 				id: item.id,
 				title: item.title,
 				type: item.type,

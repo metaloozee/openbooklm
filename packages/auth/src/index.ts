@@ -4,21 +4,7 @@ import { env } from "@openbooklm/env/server";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
-function getTrustedOrigins() {
-	const origins = new Set([env.CORS_ORIGIN]);
-
-	if (env.NODE_ENV !== "development") {
-		return [...origins];
-	}
-
-	const configuredOrigin = new URL(env.CORS_ORIGIN);
-	const siblingHost = configuredOrigin.hostname === "localhost" ? "127.0.0.1" : "localhost";
-	origins.add(
-		`${configuredOrigin.protocol}//${siblingHost}${configuredOrigin.port ? `:${configuredOrigin.port}` : ""}`,
-	);
-
-	return [...origins];
-}
+import { expandTrustedOrigins } from "./origins";
 
 const googleProvider =
 	env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
@@ -35,7 +21,7 @@ export const auth = betterAuth({
 
 		schema: schema,
 	}),
-	trustedOrigins: getTrustedOrigins(),
+	trustedOrigins: expandTrustedOrigins(env.CORS_ORIGIN, env.NODE_ENV),
 	emailAndPassword: {
 		enabled: true,
 	},

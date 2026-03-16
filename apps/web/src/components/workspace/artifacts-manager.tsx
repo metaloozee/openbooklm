@@ -16,6 +16,7 @@ import {
 	EmptyState,
 	FieldErrors,
 	NativeSelect,
+	QueryErrorState,
 	StatusBadge,
 	formatDate,
 } from "@/components/workspace/primitives";
@@ -172,7 +173,23 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									<div className="space-y-2">
 										<Label>Linked sources</Label>
 										<div className="space-y-2 rounded-md border p-3">
-											{sourcesQuery.data?.length ? (
+											{sourcesQuery.isPending || sourcesQuery.isFetching ? (
+												<p className="text-xs/relaxed text-muted-foreground">
+													Loading sources...
+												</p>
+											) : sourcesQuery.isError ? (
+												<div className="rounded-md border border-dashed p-3 text-xs/relaxed text-destructive">
+													<p>{sourcesQuery.error.message}</p>
+													<Button
+														variant="outline"
+														size="sm"
+														className="mt-2"
+														onClick={() => void sourcesQuery.refetch()}
+													>
+														Retry
+													</Button>
+												</div>
+											) : sourcesQuery.data?.length ? (
 												sourcesQuery.data.map((item) => {
 													const checked = field.state.value.includes(
 														item.id,
@@ -250,7 +267,22 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 				</Card>
 
 				<div className="space-y-4">
-					{artifactsQuery.data?.length ? (
+					{artifactsQuery.isPending ? (
+						Array.from({ length: 2 }).map((_, index) => (
+							<Card key={index}>
+								<CardHeader className="space-y-2">
+									<div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
+									<div className="h-3 w-56 animate-pulse rounded-md bg-muted" />
+								</CardHeader>
+							</Card>
+						))
+					) : artifactsQuery.isError ? (
+						<QueryErrorState
+							title="Artifacts unavailable"
+							description={artifactsQuery.error.message}
+							onRetry={() => void artifactsQuery.refetch()}
+						/>
+					) : artifactsQuery.data?.length ? (
 						artifactsQuery.data.map((item) => (
 							<Card key={item.id}>
 								<CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">

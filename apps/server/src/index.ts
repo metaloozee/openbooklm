@@ -2,26 +2,13 @@ import { trpcServer } from "@hono/trpc-server";
 import { createContext } from "@openbooklm/api/context";
 import { appRouter } from "@openbooklm/api/routers/index";
 import { auth } from "@openbooklm/auth";
+import { expandTrustedOrigins } from "@openbooklm/auth/origins";
 import { env } from "@openbooklm/env/server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 
-function getAllowedOrigins() {
-	const origins = new Set([env.CORS_ORIGIN]);
-
-	if (env.NODE_ENV === "development") {
-		const configuredOrigin = new URL(env.CORS_ORIGIN);
-		const siblingHost = configuredOrigin.hostname === "localhost" ? "127.0.0.1" : "localhost";
-		origins.add(
-			`${configuredOrigin.protocol}//${siblingHost}${configuredOrigin.port ? `:${configuredOrigin.port}` : ""}`,
-		);
-	}
-
-	return [...origins];
-}
-
-const allowedOrigins = getAllowedOrigins();
+const allowedOrigins = expandTrustedOrigins(env.CORS_ORIGIN, env.NODE_ENV);
 const app = new Hono();
 
 app.use(logger());

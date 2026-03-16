@@ -1,10 +1,10 @@
-import { artifact, artifactSource, source } from "@openbooklm/db";
+import { artifact, artifactSource, project, source } from "@openbooklm/db";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 import { artifactActionSchema, artifactCreateSchema, projectIdSchema } from "../contracts";
 import { protectedProcedure, router } from "../index";
-import { getProjectForUserOrThrow, touchProject } from "../project-access";
+import { getProjectForUserOrThrow } from "../project-access";
 
 function toIsoString(value: Date) {
 	return value.toISOString();
@@ -61,36 +61,38 @@ export const artifactsRouter = router({
 			}
 		}
 
-		const [createdArtifact] = await ctx.db
-			.insert(artifact)
-			.values({
+		const artifactId = crypto.randomUUID();
+		const timestamp = new Date();
+		await ctx.db.batch([
+			ctx.db.insert(artifact).values({
+				id: artifactId,
 				projectId: input.projectId,
 				createdByUserId: ctx.userId,
 				title: input.title,
 				type: input.type,
 				content: input.content,
-			})
-			.returning({ id: artifact.id });
+				createdAt: timestamp,
+				updatedAt: timestamp,
+			}),
+			...(input.sourceIds.length > 0
+				? [
+						ctx.db.insert(artifactSource).values(
+							input.sourceIds.map((sourceId) => ({
+								artifactId,
+								sourceId,
+							})),
+						),
+					]
+				: []),
+			ctx.db
+				.update(project)
+				.set({
+					updatedAt: timestamp,
+				})
+				.where(eq(project.id, input.projectId)),
+		]);
 
-		if (!createdArtifact) {
-			throw new TRPCError({
-				code: "INTERNAL_SERVER_ERROR",
-				message: "Artifact creation failed",
-			});
-		}
-
-		if (input.sourceIds.length > 0) {
-			await ctx.db.insert(artifactSource).values(
-				input.sourceIds.map((sourceId) => ({
-					artifactId: createdArtifact.id,
-					sourceId,
-				})),
-			);
-		}
-
-		await touchProject(ctx.db, input.projectId);
-
-		return createdArtifact;
+		return { id: artifactId };
 	}),
 	delete: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
@@ -109,13 +111,18 @@ export const artifactsRouter = router({
 			});
 		}
 
-		const [deletedArtifact] = await ctx.db
-			.delete(artifact)
-			.where(eq(artifact.id, input.artifactId))
-			.returning({ id: artifact.id });
+		const timestamp = new Date();
+		await ctx.db.batch([
+			ctx.db.delete(artifactSource).where(eq(artifactSource.artifactId, input.artifactId)),
+			ctx.db.delete(artifact).where(eq(artifact.id, input.artifactId)),
+			ctx.db
+				.update(project)
+				.set({
+					updatedAt: timestamp,
+				})
+				.where(eq(project.id, input.projectId)),
+		]);
 
-		await touchProject(ctx.db, input.projectId);
-
-		return deletedArtifact;
+		return { id: input.artifactId };
 	}),
 });

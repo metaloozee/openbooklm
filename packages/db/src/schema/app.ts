@@ -96,6 +96,7 @@ export const source = pgTable(
 	(table) => [
 		index("source_project_id_idx").on(table.projectId),
 		index("source_project_status_idx").on(table.projectId, table.status),
+		index("source_project_updatedat_idx").on(table.projectId, table.updatedAt),
 	],
 );
 
@@ -123,6 +124,7 @@ export const artifact = pgTable(
 	(table) => [
 		index("artifact_project_id_idx").on(table.projectId),
 		index("artifact_project_created_at_idx").on(table.projectId, table.createdAt),
+		index("artifact_project_updatedat_idx").on(table.projectId, table.updatedAt),
 		index("artifact_created_by_user_id_idx").on(table.createdByUserId),
 	],
 );

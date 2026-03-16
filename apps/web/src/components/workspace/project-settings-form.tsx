@@ -14,10 +14,59 @@ import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { EmptyState, FieldErrors, NativeSelect } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
+
+function BufferedNumberInput({
+	field,
+	label,
+}: {
+	field: {
+		name: string;
+		state: { value: number; meta: { errors: Array<{ message?: string } | undefined> } };
+		handleBlur: () => void;
+		handleChange: (value: number) => void;
+	};
+	label: string;
+}) {
+	const [draftValue, setDraftValue] = useState(String(field.state.value));
+
+	useEffect(() => {
+		setDraftValue(String(field.state.value));
+	}, [field.state.value]);
+
+	return (
+		<div className="space-y-2">
+			<Label htmlFor={field.name}>{label}</Label>
+			<Input
+				id={field.name}
+				name={field.name}
+				type="number"
+				value={draftValue}
+				onChange={(event) => setDraftValue(event.target.value)}
+				onBlur={(event) => {
+					field.handleBlur();
+					if (event.target.value.trim() === "") {
+						setDraftValue(String(field.state.value));
+						return;
+					}
+
+					const parsedValue = event.target.valueAsNumber;
+					if (Number.isFinite(parsedValue)) {
+						field.handleChange(parsedValue);
+						setDraftValue(String(parsedValue));
+					} else {
+						setDraftValue(String(field.state.value));
+					}
+				}}
+			/>
+			<FieldErrors errors={field.state.meta.errors} />
+		</div>
+	);
+}
 
 function ProjectSettingsFormInner({
 	projectId,
@@ -43,6 +92,8 @@ function ProjectSettingsFormInner({
 }) {
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+	const [deleteConfirmationValue, setDeleteConfirmationValue] = useState("");
 
 	const invalidateProjectData = async () => {
 		await Promise.all([
@@ -310,39 +361,13 @@ function ProjectSettingsFormInner({
 
 							<form.Field name="chunkSize">
 								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Chunk size</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="number"
-											value={String(field.state.value)}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(Number(event.target.value))
-											}
-										/>
-										<FieldErrors errors={field.state.meta.errors} />
-									</div>
+								<BufferedNumberInput field={field} label="Chunk size" />
 								)}
 							</form.Field>
 
 							<form.Field name="chunkOverlap">
 								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Chunk overlap</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											type="number"
-											value={String(field.state.value)}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(Number(event.target.value))
-											}
-										/>
-										<FieldErrors errors={field.state.meta.errors} />
-									</div>
+								<BufferedNumberInput field={field} label="Chunk overlap" />
 								)}
 							</form.Field>
 						</div>
@@ -409,12 +434,67 @@ function ProjectSettingsFormInner({
 					<Button
 						variant="destructive"
 						disabled={deleteProjectMutation.isPending}
-						onClick={() => deleteProjectMutation.mutate({ projectId })}
+						onClick={() => {
+							setDeleteConfirmationValue("");
+							setIsDeleteDialogOpen(true);
+						}}
 					>
 						{deleteProjectMutation.isPending ? "Deleting..." : "Delete project"}
 					</Button>
 				</CardContent>
 			</Card>
+
+			{isDeleteDialogOpen ? (
+				<div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+					<Card className="w-full max-w-md border-destructive/20">
+						<CardHeader>
+							<CardTitle>Confirm project deletion</CardTitle>
+						</CardHeader>
+						<CardContent className="space-y-4">
+							<p className="text-sm text-muted-foreground">
+								Type <span className="font-medium text-foreground">{project.project.name}</span>{" "}
+								to permanently delete this workspace.
+							</p>
+							<div className="space-y-2">
+								<Label htmlFor="delete-project-confirmation">Project name</Label>
+								<Input
+									id="delete-project-confirmation"
+									value={deleteConfirmationValue}
+									onChange={(event) => setDeleteConfirmationValue(event.target.value)}
+								/>
+							</div>
+							<div className="flex justify-end gap-2">
+								<Button
+									variant="outline"
+									disabled={deleteProjectMutation.isPending}
+									onClick={() => setIsDeleteDialogOpen(false)}
+								>
+									Cancel
+								</Button>
+								<Button
+									variant="destructive"
+									disabled={
+										deleteProjectMutation.isPending ||
+										deleteConfirmationValue !== project.project.name
+									}
+									onClick={() => {
+										deleteProjectMutation.mutate(
+											{ projectId },
+											{
+												onSuccess: () => {
+													setIsDeleteDialogOpen(false);
+												},
+											},
+										);
+									}}
+								>
+									{deleteProjectMutation.isPending ? "Deleting..." : "Confirm delete"}
+								</Button>
+							</div>
+						</CardContent>
+					</Card>
+				</div>
+			) : null}
 		</div>
 	);
 }

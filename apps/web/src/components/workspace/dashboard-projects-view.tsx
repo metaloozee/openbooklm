@@ -16,7 +16,12 @@ import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
 
-import { EmptyState, StatusBadge, formatDate } from "@/components/workspace/primitives";
+import {
+	EmptyState,
+	QueryErrorState,
+	StatusBadge,
+	formatDate,
+} from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 export function DashboardProjectsView() {
@@ -50,6 +55,7 @@ export function DashboardProjectsView() {
 				</div>
 				<div className="flex flex-col gap-2 sm:flex-row">
 					<Input
+						aria-label="Search projects"
 						value={search}
 						onChange={(event) => setSearch(event.target.value)}
 						placeholder="Search projects"
@@ -76,6 +82,12 @@ export function DashboardProjectsView() {
 						</Card>
 					))}
 				</div>
+			) : projectsQuery.isError ? (
+				<QueryErrorState
+					title="Projects unavailable"
+					description={projectsQuery.error.message}
+					onRetry={() => void projectsQuery.refetch()}
+				/>
 			) : filteredProjects.length === 0 ? (
 				<EmptyState
 					title={

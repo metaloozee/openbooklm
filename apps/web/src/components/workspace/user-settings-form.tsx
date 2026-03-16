@@ -37,7 +37,7 @@ function UserSettingsFormInner({
 			hasOpenAIApiKey: boolean;
 			hasAnthropicApiKey: boolean;
 			hasGoogleApiKey: boolean;
-			ollamaBaseUrl: string;
+			hasOllamaBaseUrl: boolean;
 			updatedAt: string | null;
 		};
 	};
@@ -46,9 +46,9 @@ function UserSettingsFormInner({
 
 	const updateSettingsMutation = useMutation(
 		trpc.userSettings.update.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: async (_data, submittedValues) => {
 				await queryClient.invalidateQueries(trpc.userSettings.get.queryFilter());
-				document.cookie = `sidebar_state=${form.state.values.sidebarDefaultOpen}; path=/; max-age=${60 * 60 * 24 * 7}`;
+				document.cookie = `sidebar_state=${submittedValues.sidebarDefaultOpen}; path=/; max-age=${60 * 60 * 24 * 7}`;
 				toast.success("Settings saved");
 			},
 			onError: (error) => {
@@ -72,7 +72,7 @@ function UserSettingsFormInner({
 			clearAnthropicApiKey: false,
 			googleApiKey: "",
 			clearGoogleApiKey: false,
-			ollamaBaseUrl: data.preferences.ollamaBaseUrl,
+			ollamaBaseUrl: "",
 		},
 		validators: {
 			onSubmit: userSettingsUpdateSchema,
@@ -413,7 +413,10 @@ function UserSettingsFormInner({
 						<form.Field name="ollamaBaseUrl">
 							{(field) => (
 								<div className="space-y-2">
-									<Label htmlFor={field.name}>Ollama base URL</Label>
+									<Label htmlFor={field.name}>
+										Ollama base URL{" "}
+										{data.preferences.hasOllamaBaseUrl ? "(saved)" : ""}
+									</Label>
 									<Input
 										id={field.name}
 										name={field.name}

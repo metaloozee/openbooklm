@@ -32,19 +32,29 @@ export const projectCreateSchema = z.object({
 	defaultModel: requiredText("Default model", 120),
 });
 
-export const projectUpdateSchema = projectIdSchema.extend({
-	name: requiredText("Project name", 120),
-	description: shortText(2000),
-	icon: shortText(32),
-	visibility: z.enum(PROJECT_VISIBILITY_OPTIONS),
-	defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS),
-	defaultModel: requiredText("Default model", 120),
-	embeddingProvider: z.enum(MODEL_PROVIDER_OPTIONS),
-	embeddingModel: requiredText("Embedding model", 120),
-	chunkSize: z.number().int().min(200).max(4000),
-	chunkOverlap: z.number().int().min(0).max(1000),
-	refreshOnSourceChange: z.boolean(),
-});
+export const projectUpdateSchema = projectIdSchema
+	.extend({
+		name: requiredText("Project name", 120),
+		description: shortText(2000),
+		icon: shortText(32),
+		visibility: z.enum(PROJECT_VISIBILITY_OPTIONS),
+		defaultModelProvider: z.enum(MODEL_PROVIDER_OPTIONS),
+		defaultModel: requiredText("Default model", 120),
+		embeddingProvider: z.enum(MODEL_PROVIDER_OPTIONS),
+		embeddingModel: requiredText("Embedding model", 120),
+		chunkSize: z.number().int().min(200).max(4000),
+		chunkOverlap: z.number().int().min(0).max(1000),
+		refreshOnSourceChange: z.boolean(),
+	})
+	.superRefine((value, ctx) => {
+		if (value.chunkOverlap >= value.chunkSize) {
+			ctx.addIssue({
+				code: z.ZodIssueCode.custom,
+				path: ["chunkOverlap"],
+				message: "Chunk overlap must be smaller than chunk size.",
+			});
+		}
+	});
 
 export const sourceCreateSchema = projectIdSchema
 	.extend({

@@ -116,18 +116,24 @@ export const sourcesRouter = router({
 
 		const payload =
 			currentSource.type === "url" ? (currentSource.url ?? "") : currentSource.content;
+		const trimmedPayload = payload.trim();
 
 		const [updatedSource] = await ctx.db
 			.update(source)
 			.set({
-				status: "indexed",
-				chunkCount: estimateChunkCount(payload),
-				indexedAt: new Date(),
-				contentBytes: new TextEncoder().encode(payload).length,
+				status: trimmedPayload.length > 0 ? "indexed" : currentSource.status,
+				chunkCount: trimmedPayload.length > 0 ? estimateChunkCount(payload) : currentSource.chunkCount,
+				indexedAt: trimmedPayload.length > 0 ? new Date() : currentSource.indexedAt,
+				contentBytes:
+					trimmedPayload.length > 0
+						? new TextEncoder().encode(payload).length
+						: currentSource.contentBytes,
 				pageCount:
-					currentSource.type === "pdf"
-						? Math.max(0, Math.ceil(new TextEncoder().encode(payload).length / 4000))
-						: 1,
+					trimmedPayload.length > 0
+						? currentSource.type === "pdf"
+							? Math.max(0, Math.ceil(new TextEncoder().encode(payload).length / 4000))
+							: 1
+						: currentSource.pageCount,
 				updatedAt: new Date(),
 			})
 			.where(eq(source.id, input.sourceId))

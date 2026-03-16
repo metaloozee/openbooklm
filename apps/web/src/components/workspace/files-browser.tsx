@@ -7,6 +7,7 @@ import { FileTextIcon, FolderIcon } from "lucide-react";
 
 import {
 	EmptyState,
+	QueryErrorState,
 	StatusBadge,
 	formatBytes,
 	formatDate,
@@ -27,6 +28,12 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 
 			{filesQuery.isPending ? (
 				<Skeleton className="h-80 w-full" />
+			) : filesQuery.isError ? (
+				<QueryErrorState
+					title="Files unavailable"
+					description={filesQuery.error.message}
+					onRetry={() => void filesQuery.refetch()}
+				/>
 			) : !filesQuery.data?.items.length ? (
 				<EmptyState
 					title="No virtual files yet"

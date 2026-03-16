@@ -64,7 +64,7 @@ export const filesRouter = router({
 			...projectSources.map((item) => ({
 				id: item.id,
 				kind: "source" as const,
-				path: `/sources/${slugifySegment(item.title)}.${getSourceExtension(item.type)}`,
+				path: `/sources/${slugifySegment(item.title)}-${item.id}.${getSourceExtension(item.type)}`,
 				title: item.title,
 				type: item.type,
 				status: item.status,
@@ -74,7 +74,7 @@ export const filesRouter = router({
 			...projectArtifacts.map((item) => ({
 				id: item.id,
 				kind: "artifact" as const,
-				path: `/artifacts/${slugifySegment(item.title)}.md`,
+				path: `/artifacts/${slugifySegment(item.title)}-${item.id}.md`,
 				title: item.title,
 				type: item.type,
 				status: "ready" as const,

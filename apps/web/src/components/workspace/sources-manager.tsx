@@ -16,6 +16,7 @@ import {
 	EmptyState,
 	FieldErrors,
 	NativeSelect,
+	QueryErrorState,
 	StatusBadge,
 	formatBytes,
 	formatDate,
@@ -270,6 +271,12 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 								</CardHeader>
 							</Card>
 						))
+					) : sourcesQuery.isError ? (
+						<QueryErrorState
+							title="Sources unavailable"
+							description={sourcesQuery.error.message}
+							onRetry={() => void sourcesQuery.refetch()}
+						/>
 					) : sourcesQuery.data?.length ? (
 						sourcesQuery.data.map((item) => (
 							<Card key={item.id}>

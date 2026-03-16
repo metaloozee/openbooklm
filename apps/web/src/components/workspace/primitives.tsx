@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@openbooklm/ui/components/badge";
+import { Button } from "@openbooklm/ui/components/button";
 import {
 	Card,
 	CardContent,
@@ -64,6 +65,30 @@ export function EmptyState({
 			</CardHeader>
 			{action ? <CardContent>{action}</CardContent> : null}
 		</Card>
+	);
+}
+
+export function QueryErrorState({
+	title = "Unable to load data",
+	description,
+	onRetry,
+}: {
+	title?: string;
+	description: string;
+	onRetry?: () => void;
+}) {
+	return (
+		<EmptyState
+			title={title}
+			description={description}
+			action={
+				onRetry ? (
+					<Button variant="outline" onClick={onRetry}>
+						Retry
+					</Button>
+				) : undefined
+			}
+		/>
 	);
 }
 

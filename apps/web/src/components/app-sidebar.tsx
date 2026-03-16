@@ -33,9 +33,12 @@ import { usePathname } from "next/navigation";
 import { NavUser } from "./nav-user";
 import { trpc } from "@/utils/trpc";
 
+const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
+
 function getProjectIdFromPathname(pathname: string) {
 	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)/);
-	return match?.[1] ?? null;
+	const slug = match?.[1] ?? null;
+	return slug && !RESERVED_PROJECT_SEGMENTS.has(slug) ? slug : null;
 }
 
 export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
@@ -44,6 +47,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
 	const currentProject = projectsQuery.data?.find((project) => project.id === projectId);
 	const isProjectRoute = Boolean(projectId);
+	const projectsErrorMessage = projectsQuery.error?.message ?? "Project navigation is unavailable.";
 
 	const globalItems = [
 		{
@@ -124,6 +128,94 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 							</SidebarMenu>
 						</SidebarGroupContent>
 					</SidebarGroup>
+				) : projectsQuery.isError ? (
+					<>
+						{isProjectRoute ? (
+							<SidebarGroup>
+								<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
+								<SidebarGroupContent>
+									<SidebarMenu>
+										<SidebarMenuItem>
+											<SidebarMenuButton
+												asChild
+												isActive={pathname === "/dashboard"}
+												tooltip="Back to dashboard"
+											>
+												<Link href="/dashboard">
+													<ArrowLeftIcon />
+													<span>Back to dashboard</span>
+												</Link>
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+										{projectItems.map((item) => (
+											<SidebarMenuItem key={item.href}>
+												<SidebarMenuButton
+													asChild
+													isActive={
+														item.href === `/dashboard/projects/${projectId}`
+															? pathname === item.href
+															: pathname.startsWith(item.href)
+													}
+													tooltip={item.label}
+												>
+													<Link href={item.href}>
+														<item.icon />
+														<span>{item.label}</span>
+													</Link>
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										))}
+									</SidebarMenu>
+								</SidebarGroupContent>
+							</SidebarGroup>
+						) : (
+							<SidebarGroup>
+								<SidebarGroupLabel>Global</SidebarGroupLabel>
+								<SidebarGroupContent>
+									<SidebarMenu>
+										{globalItems.map((item) => (
+											<SidebarMenuItem key={item.href}>
+												<SidebarMenuButton
+													asChild
+													isActive={
+														item.href === "/dashboard"
+															? pathname === item.href
+															: pathname.startsWith(item.href)
+													}
+													tooltip={item.label}
+												>
+													<Link href={item.href}>
+														<item.icon />
+														<span>{item.label}</span>
+													</Link>
+												</SidebarMenuButton>
+											</SidebarMenuItem>
+										))}
+									</SidebarMenu>
+								</SidebarGroupContent>
+							</SidebarGroup>
+						)}
+						<SidebarGroup>
+							<SidebarGroupLabel>Projects unavailable</SidebarGroupLabel>
+							<SidebarGroupContent>
+								<SidebarMenu>
+									<SidebarMenuItem>
+										<div className="rounded-md border border-dashed p-2 text-xs/relaxed text-sidebar-foreground/70">
+											<p>{projectsErrorMessage}</p>
+											<Button
+												variant="outline"
+												size="sm"
+												className="mt-2 w-full"
+												onClick={() => void projectsQuery.refetch()}
+											>
+												Retry
+											</Button>
+										</div>
+									</SidebarMenuItem>
+								</SidebarMenu>
+							</SidebarGroupContent>
+						</SidebarGroup>
+					</>
 				) : isProjectRoute ? (
 					<>
 						<SidebarGroup>

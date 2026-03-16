@@ -37,7 +37,8 @@ export function NewProjectForm() {
 				router.push(`/dashboard/projects/${project.id}`);
 			},
 			onError: (error) => {
-				toast.error(error.message);
+				console.error("Project creation failed", error);
+				toast.error("Unable to create project, please try again.");
 			},
 		}),
 	);
