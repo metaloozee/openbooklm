@@ -75,8 +75,8 @@ export function CreateProjectDialog({
 				<DialogHeader>
 					<DialogTitle>New project</DialogTitle>
 					<DialogDescription>
-						Create a workspace with its own source inventory, model settings,
-						and artifact pipeline.
+						Create a workspace with its own source inventory, model settings, and
+						artifact pipeline.
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -98,9 +98,7 @@ export function CreateProjectDialog({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 										placeholder="AI research workspace"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
@@ -117,9 +115,7 @@ export function CreateProjectDialog({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 										maxLength={8}
 										className="text-center text-lg"
 									/>
@@ -138,9 +134,7 @@ export function CreateProjectDialog({
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) =>
-										field.handleChange(event.target.value)
-									}
+									onChange={(event) => field.handleChange(event.target.value)}
 									placeholder="Describe the research goal, source set, or operating context."
 									className="min-h-20 resize-none"
 								/>
@@ -213,9 +207,7 @@ export function CreateProjectDialog({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>

@@ -37,10 +37,7 @@ export function FieldErrors({
 	);
 }
 
-export function NativeSelect({
-	className,
-	...props
-}: React.ComponentPropsWithoutRef<"select">) {
+export function NativeSelect({ className, ...props }: React.ComponentPropsWithoutRef<"select">) {
 	return (
 		<select
 			className={cn(
@@ -74,9 +71,7 @@ export function EmptyState({
 				<CardTitle>{title}</CardTitle>
 				<CardDescription className="max-w-sm">{description}</CardDescription>
 			</CardHeader>
-			{action ? (
-				<CardContent className="flex justify-center">{action}</CardContent>
-			) : null}
+			{action ? <CardContent className="flex justify-center">{action}</CardContent> : null}
 		</Card>
 	);
 }
@@ -123,15 +118,11 @@ export function StatCard({
 			<CardHeader>
 				<div className="flex items-center justify-between">
 					<CardDescription>{label}</CardDescription>
-					{Icon ? (
-						<Icon className="size-4 text-muted-foreground" />
-					) : null}
+					{Icon ? <Icon className="size-4 text-muted-foreground" /> : null}
 				</div>
 				<CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
 			</CardHeader>
-			<CardContent className="pt-0 text-muted-foreground">
-				{description}
-			</CardContent>
+			<CardContent className="pt-0 text-muted-foreground">{description}</CardContent>
 		</Card>
 	);
 }

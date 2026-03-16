@@ -22,12 +22,7 @@ import {
 import Link from "next/link";
 import type { Route } from "next";
 
-import {
-	EmptyState,
-	StatCard,
-	StatusBadge,
-	formatDate,
-} from "@/components/workspace/primitives";
+import { EmptyState, StatCard, StatusBadge, formatDate } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 export function ProjectOverviewView({ projectId }: { projectId: string }) {
@@ -75,15 +70,9 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 						</span>
 						<div>
 							<div className="flex items-center gap-2">
-								<CardTitle className="text-base">
-									{project.name}
-								</CardTitle>
+								<CardTitle className="text-base">{project.name}</CardTitle>
 								<StatusBadge
-									status={
-										stats.pendingSourceCount > 0
-											? "pending"
-											: "ready"
-									}
+									status={stats.pendingSourceCount > 0 ? "pending" : "ready"}
 								/>
 							</div>
 							<CardDescription className="mt-0.5">
@@ -94,21 +83,13 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 					</div>
 					<div className="flex gap-2">
 						<Button variant="outline" size="sm" asChild>
-							<Link
-								href={
-									`/dashboard/projects/${projectId}/sources` as Route
-								}
-							>
+							<Link href={`/dashboard/projects/${projectId}/sources` as Route}>
 								<PlusIcon data-icon="inline-start" />
 								Add source
 							</Link>
 						</Button>
 						<Button size="sm" asChild>
-							<Link
-								href={
-									`/dashboard/projects/${projectId}/artifacts` as Route
-								}
-							>
+							<Link href={`/dashboard/projects/${projectId}/artifacts` as Route}>
 								<SparklesIcon data-icon="inline-start" />
 								Create artifact
 							</Link>
@@ -174,17 +155,15 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Recent sources</CardTitle>
-						<CardDescription>
-							Latest materials added to this workspace.
-						</CardDescription>
+						<CardDescription>Latest materials added to this workspace.</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-2">
 						{recentSources.length === 0 ? (
 							<div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center">
 								<BookOpenIcon className="size-5 text-muted-foreground" />
 								<p className="text-xs/relaxed text-muted-foreground">
-									Upload a source to start grounding artifacts and
-									future chat responses.
+									Upload a source to start grounding artifacts and future chat
+									responses.
 								</p>
 							</div>
 						) : (
@@ -196,9 +175,7 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 									<div className="flex items-start gap-2.5">
 										<FileTextIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
 										<div>
-											<p className="text-sm font-medium">
-												{item.title}
-											</p>
+											<p className="text-sm font-medium">{item.title}</p>
 											<p className="text-xs/relaxed text-muted-foreground">
 												{item.type} · {item.chunkCount} chunks ·{" "}
 												{formatDate(item.updatedAt)}
@@ -215,17 +192,14 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Recent artifacts</CardTitle>
-						<CardDescription>
-							Reusable outputs saved in this project.
-						</CardDescription>
+						<CardDescription>Reusable outputs saved in this project.</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-2">
 						{recentArtifacts.length === 0 ? (
 							<div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center">
 								<SparklesIcon className="size-5 text-muted-foreground" />
 								<p className="text-xs/relaxed text-muted-foreground">
-									Generate a summary, FAQ, or study guide from the
-									artifact page.
+									Generate a summary, FAQ, or study guide from the artifact page.
 								</p>
 							</div>
 						) : (
@@ -237,9 +211,7 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 									<div className="flex items-center justify-between gap-3">
 										<div className="flex items-center gap-2.5">
 											<SparklesIcon className="size-4 shrink-0 text-muted-foreground" />
-											<p className="text-sm font-medium">
-												{item.title}
-											</p>
+											<p className="text-sm font-medium">{item.title}</p>
 										</div>
 										<StatusBadge status="ready" />
 									</div>

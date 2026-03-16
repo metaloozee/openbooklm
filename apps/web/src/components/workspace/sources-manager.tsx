@@ -19,13 +19,7 @@ import { Spinner } from "@openbooklm/ui/components/spinner";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	BookOpenIcon,
-	FileTextIcon,
-	PlusIcon,
-	RefreshCwIcon,
-	Trash2Icon,
-} from "lucide-react";
+import { BookOpenIcon, FileTextIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -97,8 +91,7 @@ function AddSourceDialog({
 				<DialogHeader>
 					<DialogTitle>Add source</DialogTitle>
 					<DialogDescription>
-						Add a URL, note, markdown, or PDF placeholder to the project
-						knowledge base.
+						Add a URL, note, markdown, or PDF placeholder to the project knowledge base.
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -119,9 +112,7 @@ function AddSourceDialog({
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) =>
-										field.handleChange(event.target.value)
-									}
+									onChange={(event) => field.handleChange(event.target.value)}
 									placeholder="Paper, article, or note title"
 								/>
 								<FieldErrors errors={field.state.meta.errors} />
@@ -219,9 +210,7 @@ function AddSourceDialog({
 									}
 								/>
 								<div className="flex flex-col gap-0.5">
-									<Label htmlFor={field.name}>
-										Mark as ready for grounding
-									</Label>
+									<Label htmlFor={field.name}>Mark as ready for grounding</Label>
 									<p className="text-xs/relaxed text-muted-foreground">
 										The source is immediately counted as indexed.
 									</p>
@@ -320,8 +309,8 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 				<div>
 					<h1 className="text-lg font-semibold tracking-tight">Sources</h1>
 					<p className="text-sm text-muted-foreground">
-						Add URLs, notes, markdown, or PDF placeholders and manage their
-						indexing state.
+						Add URLs, notes, markdown, or PDF placeholders and manage their indexing
+						state.
 					</p>
 				</div>
 				<Button onClick={() => setIsAddOpen(true)}>
@@ -428,11 +417,7 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 				/>
 			)}
 
-			<AddSourceDialog
-				projectId={projectId}
-				open={isAddOpen}
-				onOpenChange={setIsAddOpen}
-			/>
+			<AddSourceDialog projectId={projectId} open={isAddOpen} onOpenChange={setIsAddOpen} />
 		</div>
 	);
 }

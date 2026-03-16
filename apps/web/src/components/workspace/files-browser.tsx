@@ -58,9 +58,7 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 									<div className="flex items-center gap-2.5">
 										<FolderIcon className="size-4 text-muted-foreground" />
 										<div>
-											<p className="text-xs font-medium">
-												{folder.label}
-											</p>
+											<p className="text-xs font-medium">{folder.label}</p>
 											<p className="text-xs/relaxed text-muted-foreground">
 												{folder.path}
 											</p>

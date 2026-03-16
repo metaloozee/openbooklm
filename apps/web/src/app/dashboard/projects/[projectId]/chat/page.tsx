@@ -1,11 +1,7 @@
 import { assertAuthenticated } from "@/lib/auth-guard";
 import { MessageSquareIcon } from "lucide-react";
 
-export default async function ChatPage({
-	params,
-}: {
-	params: Promise<{ projectId: string }>;
-}) {
+export default async function ChatPage({ params }: { params: Promise<{ projectId: string }> }) {
 	await assertAuthenticated();
 	const { projectId: _projectId } = await params;
 
@@ -25,9 +21,8 @@ export default async function ChatPage({
 				<div className="max-w-md">
 					<p className="text-sm font-medium">Coming soon</p>
 					<p className="mt-1 text-xs/relaxed text-muted-foreground">
-						Ask questions, request summaries, generate artifacts, and manage
-						project state — all grounded in your uploaded sources with inline
-						citations.
+						Ask questions, request summaries, generate artifacts, and manage project
+						state — all grounded in your uploaded sources with inline citations.
 					</p>
 				</div>
 			</div>

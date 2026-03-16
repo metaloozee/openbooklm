@@ -206,7 +206,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					</SidebarGroup>
 				) : projectsQuery.isError ? (
 					<>
-						{isProjectRoute ? renderProjectNavigation() : renderMenuGroup({ label: "Global", items: globalItems })}
+						{isProjectRoute
+							? renderProjectNavigation()
+							: renderMenuGroup({ label: "Global", items: globalItems })}
 						<SidebarGroup>
 							<SidebarGroupLabel>Projects unavailable</SidebarGroupLabel>
 							<SidebarGroupContent>

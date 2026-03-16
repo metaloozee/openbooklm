@@ -90,8 +90,8 @@ function CreateArtifactDialog({
 				<DialogHeader>
 					<DialogTitle>Create artifact</DialogTitle>
 					<DialogDescription>
-						Save a structured output from your sources — a summary, FAQ, study
-						guide, or report.
+						Save a structured output from your sources — a summary, FAQ, study guide, or
+						report.
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -113,9 +113,7 @@ function CreateArtifactDialog({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 										placeholder="Executive summary"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
@@ -160,9 +158,7 @@ function CreateArtifactDialog({
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) =>
-										field.handleChange(event.target.value)
-									}
+									onChange={(event) => field.handleChange(event.target.value)}
 									placeholder="Write the artifact body, notes, or generated content."
 									className="min-h-32 resize-none"
 								/>
@@ -315,8 +311,8 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 				<div>
 					<h1 className="text-lg font-semibold tracking-tight">Artifacts</h1>
 					<p className="text-sm text-muted-foreground">
-						Save structured outputs from your sources while the AI generation
-						layer is still being built.
+						Save structured outputs from your sources while the AI generation layer is
+						still being built.
 					</p>
 				</div>
 				<Button onClick={() => setIsCreateOpen(true)}>

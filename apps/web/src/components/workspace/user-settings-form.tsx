@@ -8,7 +8,13 @@ import {
 	userSettingsUpdateSchema,
 } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
@@ -90,8 +96,7 @@ function UserSettingsFormInner({
 			<div>
 				<h1 className="text-lg font-semibold tracking-tight">Settings</h1>
 				<p className="text-sm text-muted-foreground">
-					Manage account defaults and provider configuration used across
-					projects.
+					Manage account defaults and provider configuration used across projects.
 				</p>
 			</div>
 
@@ -107,9 +112,7 @@ function UserSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>Profile</CardTitle>
-						<CardDescription>
-							Your display name and email address.
-						</CardDescription>
+						<CardDescription>Your display name and email address.</CardDescription>
 					</CardHeader>
 					<CardContent className="grid gap-4 md:grid-cols-2">
 						<form.Field name="name">
@@ -121,9 +124,7 @@ function UserSettingsFormInner({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
@@ -202,9 +203,7 @@ function UserSettingsFormInner({
 							<form.Field name="defaultArtifactType">
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
-										<Label htmlFor={field.name}>
-											Default artifact type
-										</Label>
+										<Label htmlFor={field.name}>Default artifact type</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -233,9 +232,7 @@ function UserSettingsFormInner({
 							<form.Field name="defaultModelProvider">
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
-										<Label htmlFor={field.name}>
-											Default model provider
-										</Label>
+										<Label htmlFor={field.name}>Default model provider</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -289,12 +286,10 @@ function UserSettingsFormInner({
 										}
 									/>
 									<div className="flex flex-col gap-0.5">
-										<Label htmlFor={field.name}>
-											Open sidebar by default
-										</Label>
+										<Label htmlFor={field.name}>Open sidebar by default</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											This updates the persisted sidebar state for
-											future dashboard visits.
+											This updates the persisted sidebar state for future
+											dashboard visits.
 										</p>
 									</div>
 								</div>
@@ -310,8 +305,8 @@ function UserSettingsFormInner({
 							<CardTitle>Provider credentials</CardTitle>
 						</div>
 						<CardDescription>
-							API keys are encrypted and stored securely. They are never
-							displayed after saving.
+							API keys are encrypted and stored securely. They are never displayed
+							after saving.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-4">
@@ -464,9 +459,7 @@ function UserSettingsFormInner({
 										type="url"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 										placeholder="http://localhost:11434"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
@@ -487,9 +480,7 @@ function UserSettingsFormInner({
 							<Button
 								type="submit"
 								disabled={
-									!canSubmit ||
-									isSubmitting ||
-									updateSettingsMutation.isPending
+									!canSubmit || isSubmitting || updateSettingsMutation.isPending
 								}
 							>
 								{isSubmitting || updateSettingsMutation.isPending ? (
@@ -541,10 +532,7 @@ export function UserSettingsForm() {
 
 	return (
 		<UserSettingsFormInner
-			key={
-				settingsQuery.data.preferences.updatedAt ??
-				settingsQuery.data.profile.email
-			}
+			key={settingsQuery.data.preferences.updatedAt ?? settingsQuery.data.profile.email}
 			data={settingsQuery.data}
 		/>
 	);

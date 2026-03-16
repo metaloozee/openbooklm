@@ -12,13 +12,7 @@ import {
 import { Input } from "@openbooklm/ui/components/input";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
-import {
-	ArrowRightIcon,
-	FolderOpenIcon,
-	PlusIcon,
-	SearchIcon,
-	SettingsIcon,
-} from "lucide-react";
+import { ArrowRightIcon, FolderOpenIcon, PlusIcon, SearchIcon, SettingsIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 import { useMemo, useState } from "react";
@@ -58,8 +52,8 @@ export function DashboardProjectsView() {
 				<div>
 					<h1 className="text-lg font-semibold tracking-tight">Projects</h1>
 					<p className="text-sm text-muted-foreground">
-						Your research workspaces. Each project bundles sources, artifacts,
-						and grounded conversations.
+						Your research workspaces. Each project bundles sources, artifacts, and
+						grounded conversations.
 					</p>
 				</div>
 				<div className="flex items-center gap-2">
@@ -142,16 +136,13 @@ export function DashboardProjectsView() {
 												{project.name}
 											</CardTitle>
 											<CardDescription className="mt-0.5 line-clamp-2">
-												{project.description ||
-													"No description yet."}
+												{project.description || "No description yet."}
 											</CardDescription>
 										</div>
 									</div>
 									<StatusBadge
 										status={
-											project.pendingSourceCount > 0
-												? "pending"
-												: "ready"
+											project.pendingSourceCount > 0 ? "pending" : "ready"
 										}
 									/>
 								</div>
@@ -160,8 +151,7 @@ export function DashboardProjectsView() {
 								<div>
 									<p className="text-muted-foreground">Sources</p>
 									<p className="font-medium tabular-nums">
-										{project.indexedSourceCount}/{project.sourceCount}{" "}
-										indexed
+										{project.indexedSourceCount}/{project.sourceCount} indexed
 									</p>
 								</div>
 								<div>
@@ -172,34 +162,24 @@ export function DashboardProjectsView() {
 								</div>
 								<div>
 									<p className="text-muted-foreground">Model</p>
-									<p className="font-medium truncate">
-										{project.defaultModel}
-									</p>
+									<p className="font-medium truncate">{project.defaultModel}</p>
 								</div>
 								<div>
 									<p className="text-muted-foreground">Updated</p>
-									<p className="font-medium">
-										{formatDate(project.updatedAt)}
-									</p>
+									<p className="font-medium">{formatDate(project.updatedAt)}</p>
 								</div>
 							</CardContent>
 							<CardFooter className="justify-between gap-2">
 								<Button variant="ghost" size="sm" asChild>
 									<Link
-										href={
-											`/dashboard/projects/${project.id}/settings` as Route
-										}
+										href={`/dashboard/projects/${project.id}/settings` as Route}
 									>
 										<SettingsIcon data-icon="inline-start" />
 										Settings
 									</Link>
 								</Button>
 								<Button variant="outline" size="sm" asChild>
-									<Link
-										href={
-											`/dashboard/projects/${project.id}` as Route
-										}
-									>
+									<Link href={`/dashboard/projects/${project.id}` as Route}>
 										Open
 										<ArrowRightIcon data-icon="inline-end" />
 									</Link>
@@ -210,10 +190,7 @@ export function DashboardProjectsView() {
 				</div>
 			)}
 
-			<CreateProjectDialog
-				open={isCreateOpen}
-				onOpenChange={setIsCreateOpen}
-			/>
+			<CreateProjectDialog open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 		</div>
 	);
 }

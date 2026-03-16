@@ -6,7 +6,13 @@ import {
 	projectUpdateSchema,
 } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import {
 	Dialog,
@@ -172,9 +178,7 @@ function ProjectSettingsFormInner({
 	return (
 		<div className="flex flex-col gap-6">
 			<div>
-				<h1 className="text-lg font-semibold tracking-tight">
-					Project Settings
-				</h1>
+				<h1 className="text-lg font-semibold tracking-tight">Project Settings</h1>
 				<p className="text-sm text-muted-foreground">
 					Control the project metadata, model defaults, and indexing profile.
 				</p>
@@ -244,9 +248,7 @@ function ProjectSettingsFormInner({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 										className="min-h-20 resize-none"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
@@ -328,9 +330,7 @@ function ProjectSettingsFormInner({
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(event.target.value)
-										}
+										onChange={(event) => field.handleChange(event.target.value)}
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
@@ -351,9 +351,7 @@ function ProjectSettingsFormInner({
 							<form.Field name="embeddingProvider">
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
-										<Label htmlFor={field.name}>
-											Embedding provider
-										</Label>
+										<Label htmlFor={field.name}>Embedding provider</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -403,10 +401,7 @@ function ProjectSettingsFormInner({
 
 							<form.Field name="chunkOverlap">
 								{(field) => (
-									<BufferedNumberInput
-										field={field}
-										label="Chunk overlap"
-									/>
+									<BufferedNumberInput field={field} label="Chunk overlap" />
 								)}
 							</form.Field>
 						</div>
@@ -426,8 +421,8 @@ function ProjectSettingsFormInner({
 											Refresh index automatically
 										</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											Keep the project index current when sources are
-											added or updated.
+											Keep the project index current when sources are added or
+											updated.
 										</p>
 									</div>
 								</div>
@@ -447,9 +442,7 @@ function ProjectSettingsFormInner({
 							<Button
 								type="submit"
 								disabled={
-									!canSubmit ||
-									isSubmitting ||
-									updateProjectMutation.isPending
+									!canSubmit || isSubmitting || updateProjectMutation.isPending
 								}
 							>
 								{isSubmitting || updateProjectMutation.isPending ? (
@@ -482,8 +475,8 @@ function ProjectSettingsFormInner({
 					<div>
 						<p className="text-sm font-medium">Delete project</p>
 						<p className="text-xs/relaxed text-muted-foreground">
-							This removes the workspace and all related sources and
-							artifacts. This action cannot be undone.
+							This removes the workspace and all related sources and artifacts. This
+							action cannot be undone.
 						</p>
 					</div>
 					<Button
@@ -496,9 +489,7 @@ function ProjectSettingsFormInner({
 						}}
 					>
 						<Trash2Icon data-icon="inline-start" />
-						{deleteProjectMutation.isPending
-							? "Deleting..."
-							: "Delete project"}
+						{deleteProjectMutation.isPending ? "Deleting..." : "Delete project"}
 					</Button>
 				</CardContent>
 			</Card>
@@ -516,15 +507,11 @@ function ProjectSettingsFormInner({
 						</DialogDescription>
 					</DialogHeader>
 					<div className="flex flex-col gap-1.5">
-						<Label htmlFor="delete-project-confirmation">
-							Project name
-						</Label>
+						<Label htmlFor="delete-project-confirmation">Project name</Label>
 						<Input
 							id="delete-project-confirmation"
 							value={deleteConfirmationValue}
-							onChange={(event) =>
-								setDeleteConfirmationValue(event.target.value)
-							}
+							onChange={(event) => setDeleteConfirmationValue(event.target.value)}
 							placeholder={project.project.name}
 						/>
 					</div>
