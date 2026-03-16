@@ -10,6 +10,7 @@ import {
 	CardTitle,
 } from "@openbooklm/ui/components/card";
 import { cn } from "@openbooklm/ui/lib/utils";
+import { AlertCircleIcon, RefreshCwIcon } from "lucide-react";
 
 export function FieldErrors({
 	errors,
@@ -23,7 +24,7 @@ export function FieldErrors({
 	}
 
 	return (
-		<div className={cn("space-y-1", className)}>
+		<div className={cn("flex flex-col gap-1", className)}>
 			{errors.map((error, index) => (
 				<p
 					key={`${error?.message ?? "error"}-${index}`}
@@ -36,7 +37,10 @@ export function FieldErrors({
 	);
 }
 
-export function NativeSelect({ className, ...props }: React.ComponentPropsWithoutRef<"select">) {
+export function NativeSelect({
+	className,
+	...props
+}: React.ComponentPropsWithoutRef<"select">) {
 	return (
 		<select
 			className={cn(
@@ -49,21 +53,30 @@ export function NativeSelect({ className, ...props }: React.ComponentPropsWithou
 }
 
 export function EmptyState({
+	icon: Icon,
 	title,
 	description,
 	action,
 }: {
+	icon?: React.ComponentType<{ className?: string }>;
 	title: string;
 	description: string;
 	action?: React.ReactNode;
 }) {
 	return (
 		<Card className="border-dashed">
-			<CardHeader>
+			<CardHeader className="items-center text-center">
+				{Icon ? (
+					<div className="mb-1 flex size-10 items-center justify-center rounded-full bg-muted">
+						<Icon className="size-5 text-muted-foreground" />
+					</div>
+				) : null}
 				<CardTitle>{title}</CardTitle>
-				<CardDescription>{description}</CardDescription>
+				<CardDescription className="max-w-sm">{description}</CardDescription>
 			</CardHeader>
-			{action ? <CardContent>{action}</CardContent> : null}
+			{action ? (
+				<CardContent className="flex justify-center">{action}</CardContent>
+			) : null}
 		</Card>
 	);
 }
@@ -79,11 +92,13 @@ export function QueryErrorState({
 }) {
 	return (
 		<EmptyState
+			icon={AlertCircleIcon}
 			title={title}
 			description={description}
 			action={
 				onRetry ? (
-					<Button variant="outline" onClick={onRetry}>
+					<Button variant="outline" size="sm" onClick={onRetry}>
+						<RefreshCwIcon data-icon="inline-start" />
 						Retry
 					</Button>
 				) : undefined
@@ -96,18 +111,27 @@ export function StatCard({
 	label,
 	value,
 	description,
+	icon: Icon,
 }: {
 	label: string;
 	value: string | number;
 	description: string;
+	icon?: React.ComponentType<{ className?: string }>;
 }) {
 	return (
 		<Card size="sm">
 			<CardHeader>
-				<CardDescription>{label}</CardDescription>
-				<CardTitle className="text-2xl">{value}</CardTitle>
+				<div className="flex items-center justify-between">
+					<CardDescription>{label}</CardDescription>
+					{Icon ? (
+						<Icon className="size-4 text-muted-foreground" />
+					) : null}
+				</div>
+				<CardTitle className="text-2xl tabular-nums">{value}</CardTitle>
 			</CardHeader>
-			<CardContent className="pt-0 text-muted-foreground">{description}</CardContent>
+			<CardContent className="pt-0 text-muted-foreground">
+				{description}
+			</CardContent>
 		</Card>
 	);
 }

@@ -10,10 +10,24 @@ import {
 } from "@openbooklm/ui/components/card";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
+import {
+	BookOpenIcon,
+	ClockIcon,
+	FileTextIcon,
+	FolderOpenIcon,
+	LayersIcon,
+	PlusIcon,
+	SparklesIcon,
+} from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
 
-import { EmptyState, StatCard, StatusBadge, formatDate } from "@/components/workspace/primitives";
+import {
+	EmptyState,
+	StatCard,
+	StatusBadge,
+	formatDate,
+} from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 export function ProjectOverviewView({ projectId }: { projectId: string }) {
@@ -21,14 +35,17 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 
 	if (projectQuery.isPending) {
 		return (
-			<div className="space-y-4">
-				<Skeleton className="h-16 w-full" />
+			<div className="flex flex-col gap-6">
+				<Skeleton className="h-20 w-full" />
 				<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
 					{Array.from({ length: 4 }).map((_, index) => (
 						<Skeleton key={index} className="h-28 w-full" />
 					))}
 				</div>
-				<Skeleton className="h-72 w-full" />
+				<div className="grid gap-4 xl:grid-cols-2">
+					<Skeleton className="h-64 w-full" />
+					<Skeleton className="h-64 w-full" />
+				</div>
 			</div>
 		);
 	}
@@ -36,6 +53,7 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 	if (!projectQuery.data) {
 		return (
 			<EmptyState
+				icon={FolderOpenIcon}
 				title="Project unavailable"
 				description="The project could not be loaded."
 			/>
@@ -45,35 +63,59 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 	const { project, stats, recentSources, recentArtifacts } = projectQuery.data;
 
 	return (
-		<div className="space-y-4">
+		<div className="flex flex-col gap-6">
 			<Card>
-				<CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-					<div>
-						<div className="flex items-center gap-2">
-							<CardTitle>{project.name}</CardTitle>
-							<StatusBadge
-								status={stats.pendingSourceCount > 0 ? "pending" : "ready"}
-							/>
+				<CardHeader className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+					<div className="flex items-start gap-3">
+						<span
+							className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted text-lg"
+							aria-hidden
+						>
+							{project.icon || "📁"}
+						</span>
+						<div>
+							<div className="flex items-center gap-2">
+								<CardTitle className="text-base">
+									{project.name}
+								</CardTitle>
+								<StatusBadge
+									status={
+										stats.pendingSourceCount > 0
+											? "pending"
+											: "ready"
+									}
+								/>
+							</div>
+							<CardDescription className="mt-0.5">
+								{project.description ||
+									"No description yet. Add context in project settings."}
+							</CardDescription>
 						</div>
-						<CardDescription className="mt-1">
-							{project.description ||
-								"No description yet. Add context in project settings."}
-						</CardDescription>
 					</div>
 					<div className="flex gap-2">
-						<Button variant="outline" asChild>
-							<Link href={`/dashboard/projects/${projectId}/sources` as Route}>
+						<Button variant="outline" size="sm" asChild>
+							<Link
+								href={
+									`/dashboard/projects/${projectId}/sources` as Route
+								}
+							>
+								<PlusIcon data-icon="inline-start" />
 								Add source
 							</Link>
 						</Button>
-						<Button asChild>
-							<Link href={`/dashboard/projects/${projectId}/artifacts` as Route}>
+						<Button size="sm" asChild>
+							<Link
+								href={
+									`/dashboard/projects/${projectId}/artifacts` as Route
+								}
+							>
+								<SparklesIcon data-icon="inline-start" />
 								Create artifact
 							</Link>
 						</Button>
 					</div>
 				</CardHeader>
-				<CardContent className="grid gap-2 text-xs/relaxed text-muted-foreground sm:grid-cols-2">
+				<CardContent className="grid gap-x-6 gap-y-2 text-xs/relaxed text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
 					<div>
 						<p>Model</p>
 						<p className="font-medium text-foreground">
@@ -106,21 +148,25 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 					label="Sources"
 					value={stats.sourceCount}
 					description={`${stats.indexedSourceCount} ready for grounding`}
+					icon={BookOpenIcon}
 				/>
 				<StatCard
-					label="Pending sources"
+					label="Pending"
 					value={stats.pendingSourceCount}
 					description="Upload complete, indexing outstanding"
+					icon={ClockIcon}
 				/>
 				<StatCard
 					label="Artifacts"
 					value={stats.artifactCount}
-					description="Saved outputs derived from project sources"
+					description="Saved outputs from project sources"
+					icon={SparklesIcon}
 				/>
 				<StatCard
 					label="Chunk profile"
 					value={`${project.chunkSize}/${project.chunkOverlap}`}
-					description="Chunk size and overlap for source indexing"
+					description="Size and overlap for source indexing"
+					icon={LayersIcon}
 				/>
 			</div>
 
@@ -128,26 +174,36 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Recent sources</CardTitle>
-						<CardDescription>Latest materials added to this workspace.</CardDescription>
+						<CardDescription>
+							Latest materials added to this workspace.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-3">
+					<CardContent className="flex flex-col gap-2">
 						{recentSources.length === 0 ? (
-							<EmptyState
-								title="No sources yet"
-								description="Upload a source to start grounding artifacts and future chat responses."
-							/>
+							<div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center">
+								<BookOpenIcon className="size-5 text-muted-foreground" />
+								<p className="text-xs/relaxed text-muted-foreground">
+									Upload a source to start grounding artifacts and
+									future chat responses.
+								</p>
+							</div>
 						) : (
 							recentSources.map((item) => (
 								<div
 									key={item.id}
-									className="flex items-start justify-between gap-3 rounded-md border p-3"
+									className="flex items-start justify-between gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/30"
 								>
-									<div>
-										<p className="font-medium">{item.title}</p>
-										<p className="text-xs/relaxed text-muted-foreground">
-											{item.type} · {item.chunkCount} chunks · updated{" "}
-											{formatDate(item.updatedAt)}
-										</p>
+									<div className="flex items-start gap-2.5">
+										<FileTextIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+										<div>
+											<p className="text-sm font-medium">
+												{item.title}
+											</p>
+											<p className="text-xs/relaxed text-muted-foreground">
+												{item.type} · {item.chunkCount} chunks ·{" "}
+												{formatDate(item.updatedAt)}
+											</p>
+										</div>
 									</div>
 									<StatusBadge status={item.status} />
 								</div>
@@ -159,27 +215,40 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 				<Card>
 					<CardHeader>
 						<CardTitle>Recent artifacts</CardTitle>
-						<CardDescription>Reusable outputs saved in this project.</CardDescription>
+						<CardDescription>
+							Reusable outputs saved in this project.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-3">
+					<CardContent className="flex flex-col gap-2">
 						{recentArtifacts.length === 0 ? (
-							<EmptyState
-								title="No artifacts yet"
-								description="Generate a summary, FAQ, or study guide from the artifact page."
-							/>
+							<div className="flex flex-col items-center gap-2 rounded-lg border border-dashed p-6 text-center">
+								<SparklesIcon className="size-5 text-muted-foreground" />
+								<p className="text-xs/relaxed text-muted-foreground">
+									Generate a summary, FAQ, or study guide from the
+									artifact page.
+								</p>
+							</div>
 						) : (
 							recentArtifacts.map((item) => (
-								<div key={item.id} className="rounded-md border p-3">
+								<div
+									key={item.id}
+									className="rounded-lg border p-3 transition-colors hover:bg-muted/30"
+								>
 									<div className="flex items-center justify-between gap-3">
-										<p className="font-medium">{item.title}</p>
+										<div className="flex items-center gap-2.5">
+											<SparklesIcon className="size-4 shrink-0 text-muted-foreground" />
+											<p className="text-sm font-medium">
+												{item.title}
+											</p>
+										</div>
 										<StatusBadge status="ready" />
 									</div>
-									<p className="text-xs/relaxed text-muted-foreground">
-										{item.type} · {item.sourceCount} linked sources · updated{" "}
+									<p className="mt-1 pl-6.5 text-xs/relaxed text-muted-foreground">
+										{item.type} · {item.sourceCount} linked sources ·{" "}
 										{formatDate(item.updatedAt)}
 									</p>
 									{item.sourceTitles.length > 0 ? (
-										<p className="mt-1 text-xs/relaxed text-muted-foreground">
+										<p className="mt-0.5 pl-6.5 text-xs/relaxed text-muted-foreground">
 											Based on: {item.sourceTitles.join(", ")}
 										</p>
 									) : null}

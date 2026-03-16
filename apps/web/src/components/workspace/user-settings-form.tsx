@@ -8,12 +8,15 @@ import {
 	userSettingsUpdateSchema,
 } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
+import { Skeleton } from "@openbooklm/ui/components/skeleton";
+import { Spinner } from "@openbooklm/ui/components/spinner";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { KeyIcon, SaveIcon, SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { EmptyState, FieldErrors, NativeSelect } from "@/components/workspace/primitives";
@@ -83,17 +86,18 @@ function UserSettingsFormInner({
 	});
 
 	return (
-		<div className="space-y-4">
+		<div className="flex flex-col gap-6">
 			<div>
 				<h1 className="text-lg font-semibold tracking-tight">Settings</h1>
 				<p className="text-sm text-muted-foreground">
-					Manage account defaults and provider configuration used across projects.
+					Manage account defaults and provider configuration used across
+					projects.
 				</p>
 			</div>
 
 			<form
 				noValidate
-				className="space-y-4"
+				className="flex flex-col gap-4"
 				onSubmit={(event) => {
 					event.preventDefault();
 					event.stopPropagation();
@@ -103,24 +107,29 @@ function UserSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>Profile</CardTitle>
+						<CardDescription>
+							Your display name and email address.
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="grid gap-4 md:grid-cols-2">
 						<form.Field name="name">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Display name</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) =>
+											field.handleChange(event.target.value)
+										}
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
 						</form.Field>
-						<div className="space-y-2">
+						<div className="flex flex-col gap-1.5">
 							<Label>Email</Label>
 							<Input value={data.profile.email} disabled />
 						</div>
@@ -130,12 +139,15 @@ function UserSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>Preferences</CardTitle>
+						<CardDescription>
+							Interface appearance and default model settings.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="flex flex-col gap-4">
 						<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
 							<form.Field name="theme">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Theme</Label>
 										<NativeSelect
 											id={field.name}
@@ -162,7 +174,7 @@ function UserSettingsFormInner({
 
 							<form.Field name="density">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Density</Label>
 										<NativeSelect
 											id={field.name}
@@ -189,8 +201,10 @@ function UserSettingsFormInner({
 
 							<form.Field name="defaultArtifactType">
 								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Default artifact type</Label>
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>
+											Default artifact type
+										</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -218,8 +232,10 @@ function UserSettingsFormInner({
 						<div className="grid gap-4 md:grid-cols-2">
 							<form.Field name="defaultModelProvider">
 								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Default model provider</Label>
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>
+											Default model provider
+										</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -245,7 +261,7 @@ function UserSettingsFormInner({
 
 							<form.Field name="defaultModel">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Default model</Label>
 										<Input
 											id={field.name}
@@ -272,11 +288,13 @@ function UserSettingsFormInner({
 											field.handleChange(Boolean(checked))
 										}
 									/>
-									<div className="space-y-1">
-										<Label htmlFor={field.name}>Open sidebar by default</Label>
+									<div className="flex flex-col gap-0.5">
+										<Label htmlFor={field.name}>
+											Open sidebar by default
+										</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											This updates the persisted sidebar state for future
-											dashboard visits.
+											This updates the persisted sidebar state for
+											future dashboard visits.
 										</p>
 									</div>
 								</div>
@@ -287,16 +305,27 @@ function UserSettingsFormInner({
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Provider credentials</CardTitle>
+						<div className="flex items-center gap-2">
+							<KeyIcon className="size-4 text-muted-foreground" />
+							<CardTitle>Provider credentials</CardTitle>
+						</div>
+						<CardDescription>
+							API keys are encrypted and stored securely. They are never
+							displayed after saving.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="flex flex-col gap-4">
 						<div className="grid gap-4 md:grid-cols-2">
 							<form.Field name="openAIApiKey">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>
 											OpenAI API key{" "}
-											{data.preferences.hasOpenAIApiKey ? "(saved)" : ""}
+											{data.preferences.hasOpenAIApiKey ? (
+												<span className="text-xs text-muted-foreground">
+													(saved)
+												</span>
+											) : null}
 										</Label>
 										<Input
 											id={field.name}
@@ -315,8 +344,8 @@ function UserSettingsFormInner({
 							</form.Field>
 							<form.Field name="clearOpenAIApiKey">
 								{(field) => (
-									<div className="flex items-end">
-										<label className="flex items-center gap-3 rounded-md border p-3">
+									<div className="flex items-end pb-0.5">
+										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
 											<Checkbox
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
@@ -333,10 +362,14 @@ function UserSettingsFormInner({
 
 							<form.Field name="anthropicApiKey">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>
 											Anthropic API key{" "}
-											{data.preferences.hasAnthropicApiKey ? "(saved)" : ""}
+											{data.preferences.hasAnthropicApiKey ? (
+												<span className="text-xs text-muted-foreground">
+													(saved)
+												</span>
+											) : null}
 										</Label>
 										<Input
 											id={field.name}
@@ -354,8 +387,8 @@ function UserSettingsFormInner({
 							</form.Field>
 							<form.Field name="clearAnthropicApiKey">
 								{(field) => (
-									<div className="flex items-end">
-										<label className="flex items-center gap-3 rounded-md border p-3">
+									<div className="flex items-end pb-0.5">
+										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
 											<Checkbox
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
@@ -372,10 +405,14 @@ function UserSettingsFormInner({
 
 							<form.Field name="googleApiKey">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>
 											Google API key{" "}
-											{data.preferences.hasGoogleApiKey ? "(saved)" : ""}
+											{data.preferences.hasGoogleApiKey ? (
+												<span className="text-xs text-muted-foreground">
+													(saved)
+												</span>
+											) : null}
 										</Label>
 										<Input
 											id={field.name}
@@ -393,8 +430,8 @@ function UserSettingsFormInner({
 							</form.Field>
 							<form.Field name="clearGoogleApiKey">
 								{(field) => (
-									<div className="flex items-end">
-										<label className="flex items-center gap-3 rounded-md border p-3">
+									<div className="flex items-end pb-0.5">
+										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
 											<Checkbox
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
@@ -412,10 +449,14 @@ function UserSettingsFormInner({
 
 						<form.Field name="ollamaBaseUrl">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>
 										Ollama base URL{" "}
-										{data.preferences.hasOllamaBaseUrl ? "(saved)" : ""}
+										{data.preferences.hasOllamaBaseUrl ? (
+											<span className="text-xs text-muted-foreground">
+												(saved)
+											</span>
+										) : null}
 									</Label>
 									<Input
 										id={field.name}
@@ -423,7 +464,9 @@ function UserSettingsFormInner({
 										type="url"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) =>
+											field.handleChange(event.target.value)
+										}
 										placeholder="http://localhost:11434"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
@@ -444,12 +487,22 @@ function UserSettingsFormInner({
 							<Button
 								type="submit"
 								disabled={
-									!canSubmit || isSubmitting || updateSettingsMutation.isPending
+									!canSubmit ||
+									isSubmitting ||
+									updateSettingsMutation.isPending
 								}
 							>
-								{isSubmitting || updateSettingsMutation.isPending
-									? "Saving..."
-									: "Save settings"}
+								{isSubmitting || updateSettingsMutation.isPending ? (
+									<>
+										<Spinner data-icon="inline-start" />
+										Saving...
+									</>
+								) : (
+									<>
+										<SaveIcon data-icon="inline-start" />
+										Save settings
+									</>
+								)}
 							</Button>
 						)}
 					</form.Subscribe>
@@ -464,9 +517,14 @@ export function UserSettingsForm() {
 
 	if (settingsQuery.isPending) {
 		return (
-			<div className="space-y-4">
-				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-				<div className="h-72 w-full animate-pulse rounded-md bg-muted" />
+			<div className="flex flex-col gap-6">
+				<div className="flex flex-col gap-2">
+					<Skeleton className="h-6 w-28" />
+					<Skeleton className="h-4 w-64" />
+				</div>
+				<Skeleton className="h-40 w-full" />
+				<Skeleton className="h-64 w-full" />
+				<Skeleton className="h-64 w-full" />
 			</div>
 		);
 	}
@@ -474,6 +532,7 @@ export function UserSettingsForm() {
 	if (!settingsQuery.data) {
 		return (
 			<EmptyState
+				icon={SettingsIcon}
 				title="Settings unavailable"
 				description="The user settings could not be loaded."
 			/>
@@ -482,7 +541,10 @@ export function UserSettingsForm() {
 
 	return (
 		<UserSettingsFormInner
-			key={settingsQuery.data.preferences.updatedAt ?? settingsQuery.data.profile.email}
+			key={
+				settingsQuery.data.preferences.updatedAt ??
+				settingsQuery.data.profile.email
+			}
 			data={settingsQuery.data}
 		/>
 	);

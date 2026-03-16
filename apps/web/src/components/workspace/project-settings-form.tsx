@@ -6,20 +6,25 @@ import {
 	projectUpdateSchema,
 } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@openbooklm/ui/components/dialog";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
-import {
-	Sheet,
-	SheetContent,
-	SheetFooter,
-	SheetHeader,
-	SheetTitle,
-} from "@openbooklm/ui/components/sheet";
+import { Separator } from "@openbooklm/ui/components/separator";
+import { Skeleton } from "@openbooklm/ui/components/skeleton";
+import { Spinner } from "@openbooklm/ui/components/spinner";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertCircleIcon, SaveIcon, SettingsIcon, Trash2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -51,7 +56,7 @@ function BufferedNumberInput({
 	}, [field.state.value]);
 
 	return (
-		<div className="space-y-2">
+		<div className="flex flex-col gap-1.5">
 			<Label htmlFor={field.name}>{label}</Label>
 			<Input
 				id={field.name}
@@ -165,18 +170,19 @@ function ProjectSettingsFormInner({
 	});
 
 	return (
-		<div className="space-y-4">
+		<div className="flex flex-col gap-6">
 			<div>
-				<h1 className="text-lg font-semibold tracking-tight">Project Settings</h1>
+				<h1 className="text-lg font-semibold tracking-tight">
+					Project Settings
+				</h1>
 				<p className="text-sm text-muted-foreground">
-					Control the project metadata, model defaults, and indexing profile used across
-					the workspace.
+					Control the project metadata, model defaults, and indexing profile.
 				</p>
 			</div>
 
 			<form
 				noValidate
-				className="space-y-4"
+				className="flex flex-col gap-4"
 				onSubmit={(event) => {
 					event.preventDefault();
 					event.stopPropagation();
@@ -186,12 +192,15 @@ function ProjectSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>General</CardTitle>
+						<CardDescription>
+							Project name, description, and visibility settings.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
-						<div className="grid gap-4 md:grid-cols-[1fr_120px]">
+					<CardContent className="flex flex-col gap-4">
+						<div className="grid gap-4 md:grid-cols-[1fr_100px]">
 							<form.Field name="name">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Name</Label>
 										<Input
 											id={field.name}
@@ -208,7 +217,7 @@ function ProjectSettingsFormInner({
 							</form.Field>
 							<form.Field name="icon">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Icon</Label>
 										<Input
 											id={field.name}
@@ -218,6 +227,7 @@ function ProjectSettingsFormInner({
 											onChange={(event) =>
 												field.handleChange(event.target.value)
 											}
+											className="text-center text-lg"
 										/>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
@@ -227,14 +237,17 @@ function ProjectSettingsFormInner({
 
 						<form.Field name="description">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Description</Label>
 									<Textarea
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) =>
+											field.handleChange(event.target.value)
+										}
+										className="min-h-20 resize-none"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
@@ -243,7 +256,7 @@ function ProjectSettingsFormInner({
 
 						<form.Field name="visibility">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Visibility</Label>
 									<NativeSelect
 										id={field.name}
@@ -273,11 +286,15 @@ function ProjectSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>Model defaults</CardTitle>
+						<CardDescription>
+							Default provider and model used for conversations and artifact
+							generation.
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="grid gap-4 md:grid-cols-2">
 						<form.Field name="defaultModelProvider">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Default provider</Label>
 									<NativeSelect
 										id={field.name}
@@ -304,14 +321,16 @@ function ProjectSettingsFormInner({
 
 						<form.Field name="defaultModel">
 							{(field) => (
-								<div className="space-y-2">
+								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Default model</Label>
 									<Input
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) =>
+											field.handleChange(event.target.value)
+										}
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
@@ -323,13 +342,18 @@ function ProjectSettingsFormInner({
 				<Card>
 					<CardHeader>
 						<CardTitle>Indexing</CardTitle>
+						<CardDescription>
+							Embedding model and chunk settings for source processing.
+						</CardDescription>
 					</CardHeader>
-					<CardContent className="space-y-4">
+					<CardContent className="flex flex-col gap-4">
 						<div className="grid gap-4 md:grid-cols-2">
 							<form.Field name="embeddingProvider">
 								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Embedding provider</Label>
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>
+											Embedding provider
+										</Label>
 										<NativeSelect
 											id={field.name}
 											name={field.name}
@@ -355,7 +379,7 @@ function ProjectSettingsFormInner({
 
 							<form.Field name="embeddingModel">
 								{(field) => (
-									<div className="space-y-2">
+									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Embedding model</Label>
 										<Input
 											id={field.name}
@@ -379,7 +403,10 @@ function ProjectSettingsFormInner({
 
 							<form.Field name="chunkOverlap">
 								{(field) => (
-									<BufferedNumberInput field={field} label="Chunk overlap" />
+									<BufferedNumberInput
+										field={field}
+										label="Chunk overlap"
+									/>
 								)}
 							</form.Field>
 						</div>
@@ -394,13 +421,13 @@ function ProjectSettingsFormInner({
 											field.handleChange(checked === true)
 										}
 									/>
-									<div className="space-y-1">
+									<div className="flex flex-col gap-0.5">
 										<Label htmlFor={field.name}>
 											Refresh index automatically
 										</Label>
 										<p className="text-xs/relaxed text-muted-foreground">
-											Keep the project index current when sources are added or
-											updated.
+											Keep the project index current when sources are
+											added or updated.
 										</p>
 									</div>
 								</div>
@@ -420,67 +447,88 @@ function ProjectSettingsFormInner({
 							<Button
 								type="submit"
 								disabled={
-									!canSubmit || isSubmitting || updateProjectMutation.isPending
+									!canSubmit ||
+									isSubmitting ||
+									updateProjectMutation.isPending
 								}
 							>
-								{isSubmitting || updateProjectMutation.isPending
-									? "Saving..."
-									: "Save changes"}
+								{isSubmitting || updateProjectMutation.isPending ? (
+									<>
+										<Spinner data-icon="inline-start" />
+										Saving...
+									</>
+								) : (
+									<>
+										<SaveIcon data-icon="inline-start" />
+										Save changes
+									</>
+								)}
 							</Button>
 						)}
 					</form.Subscribe>
 				</div>
 			</form>
 
-			<Card className="border-destructive/20">
+			<Separator />
+
+			<Card className="border-destructive/30">
 				<CardHeader>
-					<CardTitle>Danger zone</CardTitle>
+					<div className="flex items-center gap-2">
+						<AlertCircleIcon className="size-4 text-destructive" />
+						<CardTitle>Danger zone</CardTitle>
+					</div>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 					<div>
-						<p className="font-medium">Delete project</p>
+						<p className="text-sm font-medium">Delete project</p>
 						<p className="text-xs/relaxed text-muted-foreground">
-							This removes the workspace and all related sources and artifacts.
+							This removes the workspace and all related sources and
+							artifacts. This action cannot be undone.
 						</p>
 					</div>
 					<Button
 						variant="destructive"
+						size="sm"
 						disabled={deleteProjectMutation.isPending}
 						onClick={() => {
 							setDeleteConfirmationValue("");
 							setIsDeleteDialogOpen(true);
 						}}
 					>
-						{deleteProjectMutation.isPending ? "Deleting..." : "Delete project"}
+						<Trash2Icon data-icon="inline-start" />
+						{deleteProjectMutation.isPending
+							? "Deleting..."
+							: "Delete project"}
 					</Button>
 				</CardContent>
 			</Card>
 
-			<Sheet open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<SheetContent className="w-full max-w-md p-0" showCloseButton={false}>
-					<SheetHeader>
-						<SheetTitle>Confirm project deletion</SheetTitle>
-					</SheetHeader>
-					<div className="space-y-4 px-6">
-						<p className="text-sm text-muted-foreground">
+			<Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Confirm project deletion</DialogTitle>
+						<DialogDescription>
 							Type{" "}
 							<span className="font-medium text-foreground">
 								{project.project.name}
 							</span>{" "}
-							to permanently delete this workspace.
-						</p>
-						<div className="space-y-2">
-							<Label htmlFor="delete-project-confirmation">Project name</Label>
-							<Input
-								id="delete-project-confirmation"
-								value={deleteConfirmationValue}
-								onChange={(event) =>
-									setDeleteConfirmationValue(event.target.value)
-								}
-							/>
-						</div>
+							to permanently delete this workspace and all its data.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex flex-col gap-1.5">
+						<Label htmlFor="delete-project-confirmation">
+							Project name
+						</Label>
+						<Input
+							id="delete-project-confirmation"
+							value={deleteConfirmationValue}
+							onChange={(event) =>
+								setDeleteConfirmationValue(event.target.value)
+							}
+							placeholder={project.project.name}
+						/>
 					</div>
-					<SheetFooter className="sm:flex-row sm:justify-end">
+					<DialogFooter>
 						<Button
 							variant="outline"
 							disabled={deleteProjectMutation.isPending}
@@ -505,11 +553,21 @@ function ProjectSettingsFormInner({
 								);
 							}}
 						>
-							{deleteProjectMutation.isPending ? "Deleting..." : "Confirm delete"}
+							{deleteProjectMutation.isPending ? (
+								<>
+									<Spinner data-icon="inline-start" />
+									Deleting...
+								</>
+							) : (
+								<>
+									<Trash2Icon data-icon="inline-start" />
+									Confirm delete
+								</>
+							)}
 						</Button>
-					</SheetFooter>
-				</SheetContent>
-			</Sheet>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
@@ -519,10 +577,14 @@ export function ProjectSettingsForm({ projectId }: { projectId: string }) {
 
 	if (projectQuery.isPending) {
 		return (
-			<div className="space-y-4">
-				<div className="h-12 w-full animate-pulse rounded-md bg-muted" />
-				<div className="h-72 w-full animate-pulse rounded-md bg-muted" />
-				<div className="h-72 w-full animate-pulse rounded-md bg-muted" />
+			<div className="flex flex-col gap-6">
+				<div className="flex flex-col gap-2">
+					<Skeleton className="h-6 w-40" />
+					<Skeleton className="h-4 w-72" />
+				</div>
+				<Skeleton className="h-64 w-full" />
+				<Skeleton className="h-48 w-full" />
+				<Skeleton className="h-48 w-full" />
 			</div>
 		);
 	}
@@ -540,6 +602,7 @@ export function ProjectSettingsForm({ projectId }: { projectId: string }) {
 	if (!projectQuery.data) {
 		return (
 			<EmptyState
+				icon={SettingsIcon}
 				title="Project unavailable"
 				description="The project settings could not be loaded."
 			/>

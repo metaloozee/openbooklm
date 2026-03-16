@@ -4,12 +4,29 @@ import { SOURCE_TYPE_OPTIONS, sourceCreateSchema } from "@openbooklm/api/contrac
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
 import { Checkbox } from "@openbooklm/ui/components/checkbox";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@openbooklm/ui/components/dialog";
 import { Input } from "@openbooklm/ui/components/input";
 import { Label } from "@openbooklm/ui/components/label";
+import { Skeleton } from "@openbooklm/ui/components/skeleton";
+import { Spinner } from "@openbooklm/ui/components/spinner";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { RefreshCwIcon, Trash2Icon } from "lucide-react";
+import {
+	BookOpenIcon,
+	FileTextIcon,
+	PlusIcon,
+	RefreshCwIcon,
+	Trash2Icon,
+} from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -23,9 +40,16 @@ import {
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
-export function SourcesManager({ projectId }: { projectId: string }) {
+function AddSourceDialog({
+	projectId,
+	open,
+	onOpenChange,
+}: {
+	projectId: string;
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+}) {
 	const queryClient = useQueryClient();
-	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
 
 	const invalidateProjectData = async () => {
 		await Promise.all([
@@ -42,30 +66,7 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 				await invalidateProjectData();
 				toast.success("Source saved");
 				form.reset();
-			},
-			onError: (error) => {
-				toast.error(error.message);
-			},
-		}),
-	);
-
-	const reindexSourceMutation = useMutation(
-		trpc.sources.reindex.mutationOptions({
-			onSuccess: async () => {
-				await invalidateProjectData();
-				toast.success("Source marked as indexed");
-			},
-			onError: (error) => {
-				toast.error(error.message);
-			},
-		}),
-	);
-
-	const deleteSourceMutation = useMutation(
-		trpc.sources.delete.mutationOptions({
-			onSuccess: async () => {
-				await invalidateProjectData();
-				toast.success("Source removed");
+				onOpenChange(false);
 			},
 			onError: (error) => {
 				toast.error(error.message);
@@ -91,257 +92,347 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 	});
 
 	return (
-		<div className="space-y-4">
-			<div>
-				<h1 className="text-lg font-semibold tracking-tight">Sources</h1>
-				<p className="text-sm text-muted-foreground">
-					Add URLs, notes, markdown, or PDF placeholders and keep their indexing state in
-					sync with the project overview.
-				</p>
-			</div>
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogContent className="sm:max-w-lg">
+				<DialogHeader>
+					<DialogTitle>Add source</DialogTitle>
+					<DialogDescription>
+						Add a URL, note, markdown, or PDF placeholder to the project
+						knowledge base.
+					</DialogDescription>
+				</DialogHeader>
+				<form
+					noValidate
+					className="flex flex-col gap-4"
+					onSubmit={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+						form.handleSubmit();
+					}}
+				>
+					<form.Field name="title">
+						{(field) => (
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor={field.name}>Title</Label>
+								<Input
+									id={field.name}
+									name={field.name}
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(event) =>
+										field.handleChange(event.target.value)
+									}
+									placeholder="Paper, article, or note title"
+								/>
+								<FieldErrors errors={field.state.meta.errors} />
+							</div>
+						)}
+					</form.Field>
 
-			<div className="grid gap-4 xl:grid-cols-[380px_minmax(0,1fr)]">
-				<Card>
-					<CardHeader>
-						<CardTitle>Add source</CardTitle>
-					</CardHeader>
-					<CardContent>
-						<form
-							noValidate
-							className="space-y-4"
-							onSubmit={(event) => {
-								event.preventDefault();
-								event.stopPropagation();
-								form.handleSubmit();
-							}}
-						>
-							<form.Field name="title">
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Title</Label>
-										<Input
-											id={field.name}
-											name={field.name}
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(event.target.value)
-											}
-											placeholder="Paper, article, or note title"
-										/>
-										<FieldErrors errors={field.state.meta.errors} />
-									</div>
-								)}
-							</form.Field>
+					<form.Field name="type">
+						{(field) => (
+							<div className="flex flex-col gap-1.5">
+								<Label htmlFor={field.name}>Type</Label>
+								<NativeSelect
+									id={field.name}
+									name={field.name}
+									value={field.state.value}
+									onBlur={field.handleBlur}
+									onChange={(event) =>
+										field.handleChange(
+											event.target
+												.value as (typeof SOURCE_TYPE_OPTIONS)[number],
+										)
+									}
+								>
+									{SOURCE_TYPE_OPTIONS.map((option) => (
+										<option key={option} value={option}>
+											{option}
+										</option>
+									))}
+								</NativeSelect>
+								<FieldErrors errors={field.state.meta.errors} />
+							</div>
+						)}
+					</form.Field>
 
-							<form.Field name="type">
-								{(field) => (
-									<div className="space-y-2">
-										<Label htmlFor={field.name}>Type</Label>
-										<NativeSelect
-											id={field.name}
-											name={field.name}
-											value={field.state.value}
-											onBlur={field.handleBlur}
-											onChange={(event) =>
-												field.handleChange(
-													event.target
-														.value as (typeof SOURCE_TYPE_OPTIONS)[number],
-												)
-											}
-										>
-											{SOURCE_TYPE_OPTIONS.map((option) => (
-												<option key={option} value={option}>
-													{option}
-												</option>
-											))}
-										</NativeSelect>
-										<FieldErrors errors={field.state.meta.errors} />
-									</div>
-								)}
-							</form.Field>
-
-							<form.Subscribe selector={(state) => state.values.type}>
-								{(type) =>
-									type === "url" ? (
-										<form.Field name="url">
-											{(field) => (
-												<div className="space-y-2">
-													<Label htmlFor={field.name}>URL</Label>
-													<Input
-														id={field.name}
-														name={field.name}
-														type="url"
-														value={field.state.value}
-														onBlur={field.handleBlur}
-														onChange={(event) =>
-															field.handleChange(event.target.value)
-														}
-														placeholder="https://example.com/article"
-													/>
-													<FieldErrors errors={field.state.meta.errors} />
-												</div>
-											)}
-										</form.Field>
-									) : (
-										<form.Field name="content">
-											{(field) => (
-												<div className="space-y-2">
-													<Label htmlFor={field.name}>
-														{type === "pdf" ? "Notes" : "Content"}
-													</Label>
-													<Textarea
-														id={field.name}
-														name={field.name}
-														value={field.state.value}
-														onBlur={field.handleBlur}
-														onChange={(event) =>
-															field.handleChange(event.target.value)
-														}
-														placeholder={
-															type === "pdf"
-																? "Optional notes or extracted text placeholder."
-																: "Paste the source body you want indexed."
-														}
-													/>
-													<FieldErrors errors={field.state.meta.errors} />
-												</div>
-											)}
-										</form.Field>
-									)
-								}
-							</form.Subscribe>
-
-							<form.Field name="indexNow">
-								{(field) => (
-									<div className="flex items-start gap-3 rounded-md border p-3">
-										<Checkbox
-											id={field.name}
-											checked={field.state.value}
-											onCheckedChange={(checked) =>
-												field.handleChange(Boolean(checked))
-											}
-										/>
-										<div className="space-y-1">
-											<Label htmlFor={field.name}>
-												Mark as ready for grounding
-											</Label>
-											<p className="text-xs/relaxed text-muted-foreground">
-												When enabled, the source is immediately counted as
-												indexed.
-											</p>
+					<form.Subscribe selector={(state) => state.values.type}>
+						{(type) =>
+							type === "url" ? (
+								<form.Field name="url">
+									{(field) => (
+										<div className="flex flex-col gap-1.5">
+											<Label htmlFor={field.name}>URL</Label>
+											<Input
+												id={field.name}
+												name={field.name}
+												type="url"
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+												placeholder="https://example.com/article"
+											/>
+											<FieldErrors errors={field.state.meta.errors} />
 										</div>
-									</div>
-								)}
-							</form.Field>
+									)}
+								</form.Field>
+							) : (
+								<form.Field name="content">
+									{(field) => (
+										<div className="flex flex-col gap-1.5">
+											<Label htmlFor={field.name}>
+												{type === "pdf" ? "Notes" : "Content"}
+											</Label>
+											<Textarea
+												id={field.name}
+												name={field.name}
+												value={field.state.value}
+												onBlur={field.handleBlur}
+												onChange={(event) =>
+													field.handleChange(event.target.value)
+												}
+												placeholder={
+													type === "pdf"
+														? "Optional notes or extracted text placeholder."
+														: "Paste the source body you want indexed."
+												}
+												className="min-h-28 resize-none"
+											/>
+											<FieldErrors errors={field.state.meta.errors} />
+										</div>
+									)}
+								</form.Field>
+							)
+						}
+					</form.Subscribe>
 
-							<form.Subscribe
-								selector={(state) => ({
-									canSubmit: state.canSubmit,
-									isSubmitting: state.isSubmitting,
-								})}
-							>
-								{({ canSubmit, isSubmitting }) => (
+					<form.Field name="indexNow">
+						{(field) => (
+							<div className="flex items-start gap-3 rounded-md border p-3">
+								<Checkbox
+									id={field.name}
+									checked={field.state.value}
+									onCheckedChange={(checked) =>
+										field.handleChange(Boolean(checked))
+									}
+								/>
+								<div className="flex flex-col gap-0.5">
+									<Label htmlFor={field.name}>
+										Mark as ready for grounding
+									</Label>
+									<p className="text-xs/relaxed text-muted-foreground">
+										The source is immediately counted as indexed.
+									</p>
+								</div>
+							</div>
+						)}
+					</form.Field>
+
+					<DialogFooter>
+						<form.Subscribe
+							selector={(state) => ({
+								canSubmit: state.canSubmit,
+								isSubmitting: state.isSubmitting,
+							})}
+						>
+							{({ canSubmit, isSubmitting }) => (
+								<>
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => onOpenChange(false)}
+									>
+										Cancel
+									</Button>
 									<Button
 										type="submit"
-										className="w-full"
 										disabled={
 											!canSubmit ||
 											isSubmitting ||
 											createSourceMutation.isPending
 										}
 									>
-										{isSubmitting || createSourceMutation.isPending
-											? "Saving..."
-											: "Save source"}
+										{isSubmitting || createSourceMutation.isPending ? (
+											<>
+												<Spinner data-icon="inline-start" />
+												Saving...
+											</>
+										) : (
+											<>
+												<PlusIcon data-icon="inline-start" />
+												Save source
+											</>
+										)}
 									</Button>
-								)}
-							</form.Subscribe>
-						</form>
-					</CardContent>
-				</Card>
+								</>
+							)}
+						</form.Subscribe>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
+	);
+}
 
-				<div className="space-y-4">
-					{sourcesQuery.isPending ? (
-						Array.from({ length: 3 }).map((_, index) => (
-							<Card key={index}>
-								<CardHeader className="space-y-2">
-									<div className="h-4 w-40 animate-pulse rounded-md bg-muted" />
-									<div className="h-3 w-64 animate-pulse rounded-md bg-muted" />
-								</CardHeader>
-							</Card>
-						))
-					) : sourcesQuery.isError ? (
-						<QueryErrorState
-							title="Sources unavailable"
-							description={sourcesQuery.error.message}
-							onRetry={() => void sourcesQuery.refetch()}
-						/>
-					) : sourcesQuery.data?.length ? (
-						sourcesQuery.data.map((item) => (
-							<Card key={item.id}>
-								<CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+export function SourcesManager({ projectId }: { projectId: string }) {
+	const queryClient = useQueryClient();
+	const [isAddOpen, setIsAddOpen] = useState(false);
+	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
+
+	const invalidateProjectData = async () => {
+		await Promise.all([
+			queryClient.invalidateQueries(trpc.sources.list.queryFilter({ projectId })),
+			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
+			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
+			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
+		]);
+	};
+
+	const reindexSourceMutation = useMutation(
+		trpc.sources.reindex.mutationOptions({
+			onSuccess: async () => {
+				await invalidateProjectData();
+				toast.success("Source marked as indexed");
+			},
+			onError: (error) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
+	const deleteSourceMutation = useMutation(
+		trpc.sources.delete.mutationOptions({
+			onSuccess: async () => {
+				await invalidateProjectData();
+				toast.success("Source removed");
+			},
+			onError: (error) => {
+				toast.error(error.message);
+			},
+		}),
+	);
+
+	return (
+		<div className="flex flex-col gap-6">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+				<div>
+					<h1 className="text-lg font-semibold tracking-tight">Sources</h1>
+					<p className="text-sm text-muted-foreground">
+						Add URLs, notes, markdown, or PDF placeholders and manage their
+						indexing state.
+					</p>
+				</div>
+				<Button onClick={() => setIsAddOpen(true)}>
+					<PlusIcon data-icon="inline-start" />
+					Add source
+				</Button>
+			</div>
+
+			{sourcesQuery.isPending ? (
+				<div className="flex flex-col gap-3">
+					{Array.from({ length: 3 }).map((_, index) => (
+						<Card key={index}>
+							<CardHeader className="flex flex-col gap-3">
+								<Skeleton className="h-5 w-40" />
+								<Skeleton className="h-3.5 w-64" />
+							</CardHeader>
+						</Card>
+					))}
+				</div>
+			) : sourcesQuery.isError ? (
+				<QueryErrorState
+					title="Sources unavailable"
+					description={sourcesQuery.error.message}
+					onRetry={() => void sourcesQuery.refetch()}
+				/>
+			) : sourcesQuery.data?.length ? (
+				<div className="flex flex-col gap-3">
+					{sourcesQuery.data.map((item) => (
+						<Card
+							key={item.id}
+							className="transition-colors hover:border-foreground/20"
+						>
+							<CardHeader className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+								<div className="flex items-start gap-3">
+									<div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+										<FileTextIcon className="size-4 text-muted-foreground" />
+									</div>
 									<div>
 										<div className="flex items-center gap-2">
 											<CardTitle>{item.title}</CardTitle>
 											<StatusBadge status={item.status} />
 										</div>
-										<p className="mt-1 text-xs/relaxed text-muted-foreground">
+										<p className="mt-0.5 text-xs/relaxed text-muted-foreground">
 											{item.type} · {formatBytes(item.contentBytes)} · updated{" "}
 											{formatDate(item.updatedAt)}
 										</p>
 									</div>
-									<div className="flex gap-2">
-										<Button
-											variant="outline"
-											size="sm"
-											disabled={reindexSourceMutation.isPending}
-											onClick={() =>
-												reindexSourceMutation.mutate({
-													projectId,
-													sourceId: item.id,
-												})
-											}
-										>
-											<RefreshCwIcon />
-											Re-index
-										</Button>
-										<Button
-											variant="destructive"
-											size="sm"
-											disabled={deleteSourceMutation.isPending}
-											onClick={() =>
-												deleteSourceMutation.mutate({
-													projectId,
-													sourceId: item.id,
-												})
-											}
-										>
-											<Trash2Icon />
-											Remove
-										</Button>
-									</div>
-								</CardHeader>
-								<CardContent className="space-y-3">
-									<p className="text-sm text-muted-foreground">
-										{item.excerpt || "No preview content saved yet."}
-									</p>
-									<div className="grid gap-2 text-xs/relaxed text-muted-foreground sm:grid-cols-3">
-										<p>Pages: {item.pageCount}</p>
-										<p>Chunks: {item.chunkCount}</p>
-										<p>Created: {formatDate(item.createdAt)}</p>
-									</div>
-								</CardContent>
-							</Card>
-						))
-					) : (
-						<EmptyState
-							title="No sources yet"
-							description="Add a source on the left to populate the project knowledge base."
-						/>
-					)}
+								</div>
+								<div className="flex gap-2">
+									<Button
+										variant="outline"
+										size="sm"
+										disabled={reindexSourceMutation.isPending}
+										onClick={() =>
+											reindexSourceMutation.mutate({
+												projectId,
+												sourceId: item.id,
+											})
+										}
+									>
+										<RefreshCwIcon data-icon="inline-start" />
+										Re-index
+									</Button>
+									<Button
+										variant="destructive"
+										size="sm"
+										disabled={deleteSourceMutation.isPending}
+										onClick={() =>
+											deleteSourceMutation.mutate({
+												projectId,
+												sourceId: item.id,
+											})
+										}
+									>
+										<Trash2Icon data-icon="inline-start" />
+										Remove
+									</Button>
+								</div>
+							</CardHeader>
+							<CardContent className="flex flex-col gap-2">
+								<p className="text-sm text-muted-foreground line-clamp-2">
+									{item.excerpt || "No preview content saved yet."}
+								</p>
+								<div className="flex flex-wrap gap-x-6 gap-y-1 text-xs/relaxed text-muted-foreground">
+									<span>Pages: {item.pageCount}</span>
+									<span>Chunks: {item.chunkCount}</span>
+									<span>Created: {formatDate(item.createdAt)}</span>
+								</div>
+							</CardContent>
+						</Card>
+					))}
 				</div>
-			</div>
+			) : (
+				<EmptyState
+					icon={BookOpenIcon}
+					title="No sources yet"
+					description="Add a source to populate the project knowledge base and enable grounded conversations."
+					action={
+						<Button onClick={() => setIsAddOpen(true)}>
+							<PlusIcon data-icon="inline-start" />
+							Add source
+						</Button>
+					}
+				/>
+			)}
+
+			<AddSourceDialog
+				projectId={projectId}
+				open={isAddOpen}
+				onOpenChange={setIsAddOpen}
+			/>
 		</div>
 	);
 }
