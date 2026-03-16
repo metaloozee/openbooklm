@@ -33,7 +33,13 @@ import {
 } from "@/components/workspace/primitives";
 import { useSourceInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
+import {
+	Empty,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+	EmptyDescription,
+} from "@openbooklm/ui/components/empty";
 
 export function AddSourceDialog({
 	projectId,
@@ -400,11 +406,11 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 						</EmptyMedia>
 						<EmptyTitle>No sources yet</EmptyTitle>
 						<EmptyDescription>
-							Add a source to populate the project knowledge base and enable grounded conversations.
+							Add a source to populate the project knowledge base and enable grounded
+							conversations.
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
-			
 			)}
 
 			<AddSourceDialog projectId={projectId} open={isAddOpen} onOpenChange={setIsAddOpen} />

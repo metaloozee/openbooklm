@@ -10,7 +10,13 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@openbooklm/ui/components/card";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@openbooklm/ui/components/empty";
 import {
 	Select as UiSelect,
 	SelectContent,
@@ -85,14 +91,10 @@ export function Select({
 			</SelectTrigger>
 			<SelectContent>
 				{options.map((option) => (
-					<SelectItem
-						key={option.value}
-						value={option.value}
-						disabled={option.disabled}
-					>
+					<SelectItem key={option.value} value={option.value} disabled={option.disabled}>
 						{option.label}
 					</SelectItem>
-					))}
+				))}
 			</SelectContent>
 		</UiSelect>
 	);

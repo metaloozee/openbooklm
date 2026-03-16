@@ -106,7 +106,8 @@ export function DashboardProjectsView() {
 						</EmptyMedia>
 						<EmptyTitle>No projects found</EmptyTitle>
 						<EmptyDescription>
-							You haven&apos;t created any projects yet. Get started by creating your first project.
+							You haven&apos;t created any projects yet. Get started by creating your
+							first project.
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>

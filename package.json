@@ -35,7 +35,8 @@
 		"db:studio": "turbo -F @openbooklm/db db:studio",
 		"db:generate": "turbo -F @openbooklm/db db:generate",
 		"db:migrate": "turbo -F @openbooklm/db db:migrate",
-		"check": "oxlint && oxfmt --write"
+		"check": "oxlint && oxfmt --write",
+		"postinstall": "lefthook install"
 	},
 	"dependencies": {
 		"@openbooklm/env": "workspace:*",

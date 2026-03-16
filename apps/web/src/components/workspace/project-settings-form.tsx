@@ -35,13 +35,15 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import {
-	FieldErrors,
-	Select,
-	QueryErrorState,
-} from "@/components/workspace/primitives";
+import { FieldErrors, Select, QueryErrorState } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
+import {
+	Empty,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+	EmptyDescription,
+} from "@openbooklm/ui/components/empty";
 
 function BufferedNumberInput({
 	field,
@@ -594,9 +596,7 @@ export function ProjectSettingsForm({ projectId }: { projectId: string }) {
 						<SettingsIcon />
 					</EmptyMedia>
 					<EmptyTitle>Project unavailable</EmptyTitle>
-					<EmptyDescription>
-						The project settings could not be loaded.
-					</EmptyDescription>
+					<EmptyDescription>The project settings could not be loaded.</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
 		);

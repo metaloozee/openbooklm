@@ -25,13 +25,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyIcon, SaveIcon, SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-	FieldErrors,
-	Select,
-	QueryErrorState,
-} from "@/components/workspace/primitives";
+import { FieldErrors, Select, QueryErrorState } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@openbooklm/ui/components/empty";
 
 type ClearKeyCheckboxField = {
 	name: string;
@@ -527,9 +529,7 @@ export function UserSettingsForm() {
 						<SettingsIcon />
 					</EmptyMedia>
 					<EmptyTitle>Settings unavailable</EmptyTitle>
-					<EmptyDescription>
-						The user settings could not be loaded.
-					</EmptyDescription>
+					<EmptyDescription>The user settings could not be loaded.</EmptyDescription>
 				</EmptyHeader>
 			</Empty>
 		);

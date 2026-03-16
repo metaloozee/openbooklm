@@ -32,7 +32,13 @@ import {
 } from "@/components/workspace/primitives";
 import { useArtifactInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
-import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
+import {
+	Empty,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+	EmptyDescription,
+} from "@openbooklm/ui/components/empty";
 
 export function CreateArtifactDialog({
 	projectId,
@@ -392,7 +398,8 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 						</EmptyMedia>
 						<EmptyTitle>No artifacts yet</EmptyTitle>
 						<EmptyDescription>
-							Create a summary, FAQ, study guide, or report once the source set is ready.
+							Create a summary, FAQ, study guide, or report once the source set is
+							ready.
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>
