@@ -13,14 +13,7 @@ import {
 	TooltipTrigger,
 } from "@openbooklm/ui/components/tooltip";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-	FileTextIcon,
-	FilesIcon,
-	PlusIcon,
-	SettingsIcon,
-	SparklesIcon,
-	Trash2Icon,
-} from "lucide-react";
+import { FileTextIcon, PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 import type { Route } from "next";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo } from "react";
@@ -108,10 +101,8 @@ export function ProjectWorkspaceTree({
 	const selectedPath = useMemo(() => {
 		if (pathname === base) return base;
 		const sub = pathname.slice(base.length);
-		if (sub.startsWith("/sources")) return `${base}/sources`;
+		if (sub.startsWith("/sources") || sub.startsWith("/files")) return `${base}/sources`;
 		if (sub.startsWith("/artifacts")) return `${base}/artifacts`;
-		if (sub.startsWith("/files")) return `${base}/files`;
-		if (sub.startsWith("/settings")) return `${base}/settings`;
 		return base;
 	}, [pathname, base]);
 
@@ -228,17 +219,6 @@ export function ProjectWorkspaceTree({
 					) : null}
 					<AddItemRow label="Create artifact" onClick={onAddArtifact} />
 				</FileTreeFolder>
-
-				<FileTreeFile
-					path={`${base}/files`}
-					name="Files"
-					icon={<FilesIcon className="size-4 text-muted-foreground" />}
-				/>
-				<FileTreeFile
-					path={`${base}/settings`}
-					name="Settings"
-					icon={<SettingsIcon className="size-4 text-muted-foreground" />}
-				/>
 			</FileTreeFolder>
 		</FileTree>
 	);
