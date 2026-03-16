@@ -147,7 +147,9 @@ export function DashboardProjectsView() {
 							</CardContent>
 							<CardFooter className="justify-between gap-2">
 								<Button variant="outline" asChild>
-									<Link href={`/dashboard/projects/${project.id}/settings` as Route}>
+									<Link
+										href={`/dashboard/projects/${project.id}/settings` as Route}
+									>
 										Settings
 									</Link>
 								</Button>

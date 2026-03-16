@@ -122,7 +122,10 @@ export const sourcesRouter = router({
 			.update(source)
 			.set({
 				status: trimmedPayload.length > 0 ? "indexed" : currentSource.status,
-				chunkCount: trimmedPayload.length > 0 ? estimateChunkCount(payload) : currentSource.chunkCount,
+				chunkCount:
+					trimmedPayload.length > 0
+						? estimateChunkCount(payload)
+						: currentSource.chunkCount,
 				indexedAt: trimmedPayload.length > 0 ? new Date() : currentSource.indexedAt,
 				contentBytes:
 					trimmedPayload.length > 0
@@ -131,7 +134,10 @@ export const sourcesRouter = router({
 				pageCount:
 					trimmedPayload.length > 0
 						? currentSource.type === "pdf"
-							? Math.max(0, Math.ceil(new TextEncoder().encode(payload).length / 4000))
+							? Math.max(
+									0,
+									Math.ceil(new TextEncoder().encode(payload).length / 4000),
+								)
 							: 1
 						: currentSource.pageCount,
 				updatedAt: new Date(),

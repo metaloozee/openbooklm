@@ -361,13 +361,13 @@ function ProjectSettingsFormInner({
 
 							<form.Field name="chunkSize">
 								{(field) => (
-								<BufferedNumberInput field={field} label="Chunk size" />
+									<BufferedNumberInput field={field} label="Chunk size" />
 								)}
 							</form.Field>
 
 							<form.Field name="chunkOverlap">
 								{(field) => (
-								<BufferedNumberInput field={field} label="Chunk overlap" />
+									<BufferedNumberInput field={field} label="Chunk overlap" />
 								)}
 							</form.Field>
 						</div>
@@ -452,7 +452,10 @@ function ProjectSettingsFormInner({
 						</CardHeader>
 						<CardContent className="space-y-4">
 							<p className="text-sm text-muted-foreground">
-								Type <span className="font-medium text-foreground">{project.project.name}</span>{" "}
+								Type{" "}
+								<span className="font-medium text-foreground">
+									{project.project.name}
+								</span>{" "}
 								to permanently delete this workspace.
 							</p>
 							<div className="space-y-2">
@@ -460,7 +463,9 @@ function ProjectSettingsFormInner({
 								<Input
 									id="delete-project-confirmation"
 									value={deleteConfirmationValue}
-									onChange={(event) => setDeleteConfirmationValue(event.target.value)}
+									onChange={(event) =>
+										setDeleteConfirmationValue(event.target.value)
+									}
 								/>
 							</div>
 							<div className="flex justify-end gap-2">
@@ -488,7 +493,9 @@ function ProjectSettingsFormInner({
 										);
 									}}
 								>
-									{deleteProjectMutation.isPending ? "Deleting..." : "Confirm delete"}
+									{deleteProjectMutation.isPending
+										? "Deleting..."
+										: "Confirm delete"}
 								</Button>
 							</div>
 						</CardContent>

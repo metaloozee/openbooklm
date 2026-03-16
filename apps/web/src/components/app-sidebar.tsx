@@ -14,6 +14,7 @@ import {
 	SidebarMenuSkeleton,
 	SidebarRail,
 } from "@openbooklm/ui/components/sidebar";
+import { Button } from "@openbooklm/ui/components/button";
 import { useQuery } from "@tanstack/react-query";
 import {
 	ArrowLeftIcon,
@@ -47,7 +48,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
 	const currentProject = projectsQuery.data?.find((project) => project.id === projectId);
 	const isProjectRoute = Boolean(projectId);
-	const projectsErrorMessage = projectsQuery.error?.message ?? "Project navigation is unavailable.";
+	const projectsErrorMessage =
+		projectsQuery.error?.message ?? "Project navigation is unavailable.";
 
 	const globalItems = [
 		{
@@ -132,7 +134,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 					<>
 						{isProjectRoute ? (
 							<SidebarGroup>
-								<SidebarGroupLabel>{currentProject?.name ?? "Project"}</SidebarGroupLabel>
+								<SidebarGroupLabel>
+									{currentProject?.name ?? "Project"}
+								</SidebarGroupLabel>
 								<SidebarGroupContent>
 									<SidebarMenu>
 										<SidebarMenuItem>
@@ -152,7 +156,8 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 												<SidebarMenuButton
 													asChild
 													isActive={
-														item.href === `/dashboard/projects/${projectId}`
+														item.href ===
+														`/dashboard/projects/${projectId}`
 															? pathname === item.href
 															: pathname.startsWith(item.href)
 													}
@@ -271,7 +276,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 													tooltip={project.name}
 												>
 													<Link
-														href={`/dashboard/projects/${project.id}` as Route}
+														href={
+															`/dashboard/projects/${project.id}` as Route
+														}
 													>
 														<FolderOpenIcon />
 														<span>{project.name}</span>
@@ -327,7 +334,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 													tooltip={project.name}
 												>
 													<Link
-														href={`/dashboard/projects/${project.id}` as Route}
+														href={
+															`/dashboard/projects/${project.id}` as Route
+														}
 													>
 														<FolderOpenIcon />
 														<span>{project.name}</span>
