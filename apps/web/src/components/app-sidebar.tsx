@@ -124,16 +124,24 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 								asChild
 								isActive={pathname === "/dashboard"}
 								tooltip="Back to dashboard"
-								variant={"outline"}
 							>
 								<Link href="/dashboard">
-									<ArrowLeftIcon />
+									<ArrowLeftIcon className="size-3" />
 									<span>Back to dashboard</span>
 								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarGroupContent>
+			</SidebarGroup>
+			<SidebarGroup className="group-data-[collapsible=icon]:block hidden">
+				<SidebarMenuItem>
+					<SidebarMenuButton asChild tooltip={"Workspace Settings"}>
+						<Link href={`/dashboard/projects/${projectId}/settings` as Route}>
+							<SettingsIcon className="size-3" />
+						</Link>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
 			</SidebarGroup>
 			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 				<SidebarGroupLabel className="flex items-center justify-between">
@@ -218,7 +226,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 						<>
 							{renderProjectNavigation()}
 
-							{projectsQuery.data?.length ? (
+							{/* {projectsQuery.data?.length ? (
 								<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 									<SidebarGroupLabel>Switch project</SidebarGroupLabel>
 									<SidebarGroupContent>
@@ -244,7 +252,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 										</SidebarMenu>
 									</SidebarGroupContent>
 								</SidebarGroup>
-							) : null}
+							) : null} */}
 						</>
 					) : (
 						<>
