@@ -33,6 +33,32 @@ import {
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
+type ClearKeyCheckboxField = {
+	name: string;
+	state: {
+		value: boolean;
+	};
+	handleChange: (value: boolean) => void;
+};
+
+function ClearKeyCheckbox({ field, provider }: { field: ClearKeyCheckboxField; provider: string }) {
+	return (
+		<div className="flex items-end pb-0.5">
+			<Label
+				htmlFor={field.name}
+				className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
+			>
+				<Checkbox
+					id={field.name}
+					checked={field.state.value}
+					onCheckedChange={(checked) => field.handleChange(Boolean(checked))}
+				/>
+				<span className="text-xs/relaxed">Clear saved {provider} key</span>
+			</Label>
+		</div>
+	);
+}
+
 function UserSettingsFormInner({
 	data,
 }: {
@@ -343,25 +369,7 @@ function UserSettingsFormInner({
 								)}
 							</form.Field>
 							<form.Field name="clearOpenAIApiKey">
-								{(field) => (
-									<div className="flex items-end pb-0.5">
-										<label
-											htmlFor={field.name}
-											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
-										>
-											<Checkbox
-												id={field.name}
-												checked={field.state.value}
-												onCheckedChange={(checked) =>
-													field.handleChange(Boolean(checked))
-												}
-											/>
-											<span className="text-xs/relaxed">
-												Clear saved OpenAI key
-											</span>
-										</label>
-									</div>
-								)}
+								{(field) => <ClearKeyCheckbox field={field} provider="OpenAI" />}
 							</form.Field>
 
 							<form.Field name="anthropicApiKey">
@@ -390,25 +398,7 @@ function UserSettingsFormInner({
 								)}
 							</form.Field>
 							<form.Field name="clearAnthropicApiKey">
-								{(field) => (
-									<div className="flex items-end pb-0.5">
-										<label
-											htmlFor={field.name}
-											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
-										>
-											<Checkbox
-												id={field.name}
-												checked={field.state.value}
-												onCheckedChange={(checked) =>
-													field.handleChange(Boolean(checked))
-												}
-											/>
-											<span className="text-xs/relaxed">
-												Clear saved Anthropic key
-											</span>
-										</label>
-									</div>
-								)}
+								{(field) => <ClearKeyCheckbox field={field} provider="Anthropic" />}
 							</form.Field>
 
 							<form.Field name="googleApiKey">
@@ -437,25 +427,7 @@ function UserSettingsFormInner({
 								)}
 							</form.Field>
 							<form.Field name="clearGoogleApiKey">
-								{(field) => (
-									<div className="flex items-end pb-0.5">
-										<label
-											htmlFor={field.name}
-											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
-										>
-											<Checkbox
-												id={field.name}
-												checked={field.state.value}
-												onCheckedChange={(checked) =>
-													field.handleChange(Boolean(checked))
-												}
-											/>
-											<span className="text-xs/relaxed">
-												Clear saved Google key
-											</span>
-										</label>
-									</div>
-								)}
+								{(field) => <ClearKeyCheckbox field={field} provider="Google" />}
 							</form.Field>
 						</div>
 

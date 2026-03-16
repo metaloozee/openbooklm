@@ -211,19 +211,21 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 									<div className="flex items-center justify-between gap-3">
 										<div className="flex items-center gap-2.5">
 											<SparklesIcon className="size-4 shrink-0 text-muted-foreground" />
-											<p className="text-sm font-medium">{item.title}</p>
+											<div className="flex flex-col pl-[1.625rem]">
+												<p className="text-sm font-medium">{item.title}</p>
+												<p className="text-xs/relaxed text-muted-foreground">
+													{item.type} · {item.sourceCount} linked sources
+													· {formatDate(item.updatedAt)}
+												</p>
+												{item.sourceTitles.length > 0 ? (
+													<p className="mt-0.5 text-xs/relaxed text-muted-foreground">
+														Based on: {item.sourceTitles.join(", ")}
+													</p>
+												) : null}
+											</div>
 										</div>
 										<StatusBadge status="ready" />
 									</div>
-									<p className="mt-1 pl-[1.625rem] text-xs/relaxed text-muted-foreground">
-										{item.type} · {item.sourceCount} linked sources ·{" "}
-										{formatDate(item.updatedAt)}
-									</p>
-									{item.sourceTitles.length > 0 ? (
-										<p className="mt-0.5 pl-[1.625rem] text-xs/relaxed text-muted-foreground">
-											Based on: {item.sourceTitles.join(", ")}
-										</p>
-									) : null}
 								</div>
 							))
 						)}

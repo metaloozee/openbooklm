@@ -9,6 +9,16 @@ import { useState } from "react";
 export function ChatPanel({ projectId: _projectId }: { projectId: string }) {
 	const [draft, setDraft] = useState("");
 
+	const handleSubmit = () => {
+		const nextDraft = draft.trim();
+
+		if (!nextDraft) {
+			return;
+		}
+
+		// TODO: send nextDraft via chat API, then setDraft("") on success.
+	};
+
 	return (
 		<div className="flex h-full flex-col">
 			<div className="flex h-10 shrink-0 items-center gap-2 px-4">
@@ -37,16 +47,16 @@ export function ChatPanel({ projectId: _projectId }: { projectId: string }) {
 						onKeyDown={(e) => {
 							if (e.key === "Enter" && !e.shiftKey) {
 								e.preventDefault();
-								// TODO: call handleSubmit() once chat API is wired (see SendIcon button below)
+								handleSubmit();
 							}
 						}}
 					/>
 					<Button
 						size="icon"
+						aria-label="Send message"
+						title="Send message"
 						disabled={!draft.trim()}
-						onClick={() => {
-							// TODO: send draft via chat API, then setDraft("")
-						}}
+						onClick={handleSubmit}
 					>
 						<SendIcon />
 					</Button>

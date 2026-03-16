@@ -1,15 +1,21 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 
 import { trpc } from "@/utils/trpc";
+
+async function invalidateProjectContext(queryClient: QueryClient, projectId: string) {
+	await Promise.all([
+		queryClient.invalidateQueries(trpc.sources.list.queryFilter({ projectId })),
+		queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
+		queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
+	]);
+}
 
 export function useSourceInvalidation(projectId: string) {
 	const queryClient = useQueryClient();
 	return useCallback(async () => {
 		await Promise.all([
-			queryClient.invalidateQueries(trpc.sources.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
+			invalidateProjectContext(queryClient, projectId),
 			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
 		]);
 	}, [queryClient, projectId]);
@@ -20,8 +26,7 @@ export function useArtifactInvalidation(projectId: string) {
 	return useCallback(async () => {
 		await Promise.all([
 			queryClient.invalidateQueries(trpc.artifacts.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
+			invalidateProjectContext(queryClient, projectId),
 			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
 		]);
 	}, [queryClient, projectId]);

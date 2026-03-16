@@ -116,6 +116,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 								asChild
 								isActive={pathname === "/dashboard"}
 								tooltip="Back to dashboard"
+								variant={"outline"}
 							>
 								<Link href="/dashboard">
 									<ArrowLeftIcon />
@@ -153,9 +154,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<>
-			<Sidebar collapsible="icon" variant="inset" {...props}>
+			<Sidebar collapsible="icon" {...props}>
 				<SidebarHeader>
-					<Link href="/" className="mx-auto flex items-center justify-center gap-2 p-1">
+					<Link href="/" className="flex items-center justify-start gap-2 p-1">
 						<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
 							<BookOpenIcon className="size-3.5" />
 						</div>
@@ -274,15 +275,10 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 											))
 										) : (
 											<SidebarMenuItem>
-												<SidebarMenuButton
-													asChild
-													tooltip="Create your first project"
-												>
-													<Link href="/dashboard/projects/new">
-														<PlusIcon />
-														<span>Create project</span>
-													</Link>
-												</SidebarMenuButton>
+												<div className="rounded-md border border-dashed p-2 text-xs/relaxed text-sidebar-foreground/70">
+													No projects available. Create one to get
+													started.
+												</div>
 											</SidebarMenuItem>
 										)}
 									</SidebarMenu>

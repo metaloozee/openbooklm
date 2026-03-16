@@ -49,10 +49,12 @@ export function DashboardProjectsView() {
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
 
 	useEffect(() => {
-		if (searchParams.get("create") === "true") {
-			setIsCreateOpen(true);
-			router.replace("/dashboard", { scroll: false });
+		if (searchParams.get("create") !== "true") {
+			return;
 		}
+
+		setIsCreateOpen(true);
+		router.replace("/dashboard", { scroll: false });
 	}, [searchParams, router]);
 
 	const filteredProjects = useMemo(() => {
@@ -138,23 +140,7 @@ export function DashboardProjectsView() {
 							href={`/dashboard/projects/${project.id}` as Route}
 							className="block outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-lg"
 						>
-							<PerspectiveBook className={pickCoverColor(project.id)}>
-								<BookHeader>
-									<Badge
-										variant={
-											project.pendingSourceCount > 0 ? "warning" : "success"
-										}
-										className="text-[10px]"
-									>
-										{project.pendingSourceCount > 0 ? "pending" : "ready"}
-									</Badge>
-									<Badge
-										variant="outline"
-										className="border-white/30 bg-white/10 text-[10px] text-inherit"
-									>
-										{project.sourceCount} sources
-									</Badge>
-								</BookHeader>
+							<PerspectiveBook>
 								<BookTitle>{project.name}</BookTitle>
 								<BookDescription>
 									{project.description || "No description yet."}
