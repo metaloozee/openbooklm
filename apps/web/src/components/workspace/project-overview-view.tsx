@@ -215,12 +215,12 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 										</div>
 										<StatusBadge status="ready" />
 									</div>
-									<p className="mt-1 pl-6.5 text-xs/relaxed text-muted-foreground">
+									<p className="mt-1 pl-[1.625rem] text-xs/relaxed text-muted-foreground">
 										{item.type} · {item.sourceCount} linked sources ·{" "}
 										{formatDate(item.updatedAt)}
 									</p>
 									{item.sourceTitles.length > 0 ? (
-										<p className="mt-0.5 pl-6.5 text-xs/relaxed text-muted-foreground">
+										<p className="mt-0.5 pl-[1.625rem] text-xs/relaxed text-muted-foreground">
 											Based on: {item.sourceTitles.join(", ")}
 										</p>
 									) : null}

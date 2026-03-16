@@ -56,10 +56,12 @@ export const FileTree = ({
 			} else {
 				newExpanded.add(path);
 			}
-			setInternalExpanded(newExpanded);
+			if (controlledExpanded === undefined) {
+				setInternalExpanded(newExpanded);
+			}
 			onExpandedChange?.(newExpanded);
 		},
-		[expandedPaths, onExpandedChange],
+		[expandedPaths, controlledExpanded, onExpandedChange],
 	);
 
 	const contextValue = useMemo(
@@ -140,7 +142,13 @@ export const FileTreeFolder = ({
 	return (
 		<FileTreeFolderContext.Provider value={folderContextValue}>
 			<Collapsible onOpenChange={handleOpenChange} open={isExpanded}>
-				<div className={cn("", className)} role="treeitem" tabIndex={0} {...props}>
+				<div
+					className={cn("", className)}
+					role="treeitem"
+					aria-expanded={isExpanded}
+					tabIndex={0}
+					{...props}
+				>
 					<div
 						className={cn(
 							"flex w-full items-center gap-1 rounded px-2 py-1 text-left transition-colors hover:bg-muted/50",
@@ -218,6 +226,7 @@ export const FileTreeFile = ({
 	const handleKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "Enter" || e.key === " ") {
+				if (e.key === " ") e.preventDefault();
 				onSelect?.(path);
 			}
 		},

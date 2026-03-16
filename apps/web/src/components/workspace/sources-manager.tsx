@@ -18,7 +18,7 @@ import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { Spinner } from "@openbooklm/ui/components/spinner";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { BookOpenIcon, FileTextIcon, PlusIcon, RefreshCwIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ import {
 	formatBytes,
 	formatDate,
 } from "@/components/workspace/primitives";
+import { useSourceInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
 
 export function AddSourceDialog({
@@ -43,16 +44,7 @@ export function AddSourceDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const queryClient = useQueryClient();
-
-	const invalidateProjectData = async () => {
-		await Promise.all([
-			queryClient.invalidateQueries(trpc.sources.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
-			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
-		]);
-	};
+	const invalidateProjectData = useSourceInvalidation(projectId);
 
 	const createSourceMutation = useMutation(
 		trpc.sources.create.mutationOptions({
@@ -266,18 +258,9 @@ export function AddSourceDialog({
 }
 
 export function SourcesManager({ projectId }: { projectId: string }) {
-	const queryClient = useQueryClient();
 	const [isAddOpen, setIsAddOpen] = useState(false);
 	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
-
-	const invalidateProjectData = async () => {
-		await Promise.all([
-			queryClient.invalidateQueries(trpc.sources.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
-			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
-		]);
-	};
+	const invalidateProjectData = useSourceInvalidation(projectId);
 
 	const reindexSourceMutation = useMutation(
 		trpc.sources.reindex.mutationOptions({
@@ -378,12 +361,18 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 										variant="destructive"
 										size="sm"
 										disabled={deleteSourceMutation.isPending}
-										onClick={() =>
-											deleteSourceMutation.mutate({
-												projectId,
-												sourceId: item.id,
-											})
-										}
+										onClick={() => {
+											if (
+												window.confirm(
+													`Remove "${item.title}"? This is irreversible and may delete indexed data.`,
+												)
+											) {
+												deleteSourceMutation.mutate({
+													projectId,
+													sourceId: item.id,
+												});
+											}
+										}}
 									>
 										<Trash2Icon data-icon="inline-start" />
 										Remove

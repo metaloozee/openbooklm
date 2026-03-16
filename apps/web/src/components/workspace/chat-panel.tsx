@@ -37,10 +37,17 @@ export function ChatPanel({ projectId: _projectId }: { projectId: string }) {
 						onKeyDown={(e) => {
 							if (e.key === "Enter" && !e.shiftKey) {
 								e.preventDefault();
+								// TODO: call handleSubmit() once chat API is wired (see SendIcon button below)
 							}
 						}}
 					/>
-					<Button size="icon" disabled={!draft.trim()}>
+					<Button
+						size="icon"
+						disabled={!draft.trim()}
+						onClick={() => {
+							// TODO: send draft via chat API, then setDraft("")
+						}}
+					>
 						<SendIcon />
 					</Button>
 				</div>

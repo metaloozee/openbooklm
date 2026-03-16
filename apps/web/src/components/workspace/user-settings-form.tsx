@@ -25,7 +25,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyIcon, SaveIcon, SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { EmptyState, FieldErrors, NativeSelect } from "@/components/workspace/primitives";
+import {
+	EmptyState,
+	FieldErrors,
+	NativeSelect,
+	QueryErrorState,
+} from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 function UserSettingsFormInner({
@@ -340,8 +345,12 @@ function UserSettingsFormInner({
 							<form.Field name="clearOpenAIApiKey">
 								{(field) => (
 									<div className="flex items-end pb-0.5">
-										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
+										<label
+											htmlFor={field.name}
+											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
+										>
 											<Checkbox
+												id={field.name}
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
 													field.handleChange(Boolean(checked))
@@ -383,8 +392,12 @@ function UserSettingsFormInner({
 							<form.Field name="clearAnthropicApiKey">
 								{(field) => (
 									<div className="flex items-end pb-0.5">
-										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
+										<label
+											htmlFor={field.name}
+											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
+										>
 											<Checkbox
+												id={field.name}
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
 													field.handleChange(Boolean(checked))
@@ -426,8 +439,12 @@ function UserSettingsFormInner({
 							<form.Field name="clearGoogleApiKey">
 								{(field) => (
 									<div className="flex items-end pb-0.5">
-										<label className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30">
+										<label
+											htmlFor={field.name}
+											className="flex items-center gap-3 rounded-md border p-2.5 transition-colors hover:bg-muted/30"
+										>
 											<Checkbox
+												id={field.name}
 												checked={field.state.value}
 												onCheckedChange={(checked) =>
 													field.handleChange(Boolean(checked))
@@ -517,6 +534,16 @@ export function UserSettingsForm() {
 				<Skeleton className="h-64 w-full" />
 				<Skeleton className="h-64 w-full" />
 			</div>
+		);
+	}
+
+	if (settingsQuery.isError) {
+		return (
+			<QueryErrorState
+				title="Settings unavailable"
+				description={settingsQuery.error.message}
+				onRetry={() => void settingsQuery.refetch()}
+			/>
 		);
 	}
 

@@ -129,15 +129,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 				<SidebarGroupLabel className="flex items-center justify-between">
 					<span>Workspace</span>
-					{projectId ? (
-						<Link
-							href={`/dashboard/projects/${projectId}/settings` as Route}
-							className="inline-flex size-5 items-center justify-center rounded-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
-						>
-							<SettingsIcon className="size-3.5" />
-							<span className="sr-only">Project settings</span>
-						</Link>
-					) : null}
+					<Link
+						href={`/dashboard/projects/${projectId}/settings` as Route}
+						className="inline-flex size-5 items-center justify-center rounded-sm text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground"
+					>
+						<SettingsIcon className="size-3.5" />
+						<span className="sr-only">Project settings</span>
+					</Link>
 				</SidebarGroupLabel>
 				<SidebarGroupContent>
 					{projectId ? (

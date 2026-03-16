@@ -160,7 +160,6 @@ export function ProjectWorkspaceTree({
 							key={source.id}
 							path={`${base}/sources#${source.id}`}
 							name={source.title}
-							icon={<FileTextIcon className="size-4 text-muted-foreground" />}
 						>
 							<span className="size-4 shrink-0" />
 							<FileTextIcon className="size-4 shrink-0 text-muted-foreground" />
@@ -193,7 +192,6 @@ export function ProjectWorkspaceTree({
 							key={artifact.id}
 							path={`${base}/artifacts#${artifact.id}`}
 							name={artifact.title}
-							icon={<SparklesIcon className="size-4 text-muted-foreground" />}
 						>
 							<span className="size-4 shrink-0" />
 							<SparklesIcon className="size-4 shrink-0 text-muted-foreground" />

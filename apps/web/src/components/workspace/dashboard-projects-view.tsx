@@ -14,7 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import { FolderOpenIcon, PlusIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import { EmptyState, QueryErrorState } from "@/components/workspace/primitives";
 import { CreateProjectDialog } from "@/components/workspace/new-project-form";
@@ -43,7 +44,16 @@ function pickCoverColor(id: string) {
 export function DashboardProjectsView() {
 	const [search, setSearch] = useState("");
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
+	const searchParams = useSearchParams();
+	const router = useRouter();
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
+
+	useEffect(() => {
+		if (searchParams.get("create") === "true") {
+			setIsCreateOpen(true);
+			router.replace("/dashboard", { scroll: false });
+		}
+	}, [searchParams, router]);
 
 	const filteredProjects = useMemo(() => {
 		const normalizedSearch = search.trim().toLowerCase();

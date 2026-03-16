@@ -18,7 +18,7 @@ import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { Spinner } from "@openbooklm/ui/components/spinner";
 import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -31,6 +31,7 @@ import {
 	StatusBadge,
 	formatDate,
 } from "@/components/workspace/primitives";
+import { useArtifactInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
 
 export function CreateArtifactDialog({
@@ -42,17 +43,8 @@ export function CreateArtifactDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
-	const queryClient = useQueryClient();
 	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
-
-	const invalidateProjectData = async () => {
-		await Promise.all([
-			queryClient.invalidateQueries(trpc.artifacts.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
-			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
-		]);
-	};
+	const invalidateProjectData = useArtifactInvalidation(projectId);
 
 	const createArtifactMutation = useMutation(
 		trpc.artifacts.create.mutationOptions({
@@ -172,7 +164,7 @@ export function CreateArtifactDialog({
 							<div className="flex flex-col gap-1.5">
 								<Label>Linked sources</Label>
 								<div className="flex flex-col gap-2 rounded-md border p-3 max-h-40 overflow-y-auto">
-									{sourcesQuery.isPending || sourcesQuery.isFetching ? (
+									{sourcesQuery.isPending ? (
 										<p className="text-xs/relaxed text-muted-foreground">
 											Loading sources...
 										</p>
@@ -280,18 +272,9 @@ export function CreateArtifactDialog({
 }
 
 export function ArtifactsManager({ projectId }: { projectId: string }) {
-	const queryClient = useQueryClient();
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const artifactsQuery = useQuery(trpc.artifacts.list.queryOptions({ projectId }));
-
-	const invalidateProjectData = async () => {
-		await Promise.all([
-			queryClient.invalidateQueries(trpc.artifacts.list.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.byId.queryFilter({ projectId })),
-			queryClient.invalidateQueries(trpc.projects.list.queryFilter()),
-			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
-		]);
-	};
+	const invalidateProjectData = useArtifactInvalidation(projectId);
 
 	const deleteArtifactMutation = useMutation(
 		trpc.artifacts.delete.mutationOptions({
@@ -364,12 +347,18 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									variant="destructive"
 									size="sm"
 									disabled={deleteArtifactMutation.isPending}
-									onClick={() =>
-										deleteArtifactMutation.mutate({
-											projectId,
-											artifactId: item.id,
-										})
-									}
+									onClick={() => {
+										if (
+											window.confirm(
+												`Delete "${item.title}"? This is irreversible.`,
+											)
+										) {
+											deleteArtifactMutation.mutate({
+												projectId,
+												artifactId: item.id,
+											});
+										}
+									}}
 								>
 									<Trash2Icon data-icon="inline-start" />
 									Delete
