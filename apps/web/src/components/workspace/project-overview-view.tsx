@@ -22,8 +22,9 @@ import {
 import Link from "next/link";
 import type { Route } from "next";
 
-import { EmptyState, StatCard, StatusBadge, formatDate } from "@/components/workspace/primitives";
+import { StatCard, StatusBadge, formatDate } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
 
 export function ProjectOverviewView({ projectId }: { projectId: string }) {
 	const projectQuery = useQuery(trpc.projects.byId.queryOptions({ projectId }));
@@ -47,11 +48,18 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 
 	if (!projectQuery.data) {
 		return (
-			<EmptyState
-				icon={FolderOpenIcon}
-				title="Project unavailable"
-				description="The project could not be loaded."
-			/>
+			<Empty className="border">
+				<EmptyHeader>
+					<EmptyMedia variant={"icon"}>
+						<FolderOpenIcon />
+					</EmptyMedia>
+					<EmptyTitle>Project unavailable</EmptyTitle>
+					<EmptyDescription>
+						The project could not be loaded.
+					</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
+		
 		);
 	}
 

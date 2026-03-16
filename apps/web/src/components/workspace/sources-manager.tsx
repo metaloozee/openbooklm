@@ -24,9 +24,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import {
-	EmptyState,
 	FieldErrors,
-	NativeSelect,
+	Select,
 	QueryErrorState,
 	StatusBadge,
 	formatBytes,
@@ -34,6 +33,7 @@ import {
 } from "@/components/workspace/primitives";
 import { useSourceInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 export function AddSourceDialog({
 	projectId,
@@ -116,7 +116,7 @@ export function AddSourceDialog({
 						{(field) => (
 							<div className="flex flex-col gap-1.5">
 								<Label htmlFor={field.name}>Type</Label>
-								<NativeSelect
+								<Select
 									id={field.name}
 									name={field.name}
 									value={field.state.value}
@@ -133,7 +133,7 @@ export function AddSourceDialog({
 											{option}
 										</option>
 									))}
-								</NativeSelect>
+								</Select>
 								<FieldErrors errors={field.state.meta.errors} />
 							</div>
 						)}
@@ -393,17 +393,18 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 					))}
 				</div>
 			) : (
-				<EmptyState
-					icon={BookOpenIcon}
-					title="No sources yet"
-					description="Add a source to populate the project knowledge base and enable grounded conversations."
-					action={
-						<Button onClick={() => setIsAddOpen(true)}>
-							<PlusIcon data-icon="inline-start" />
-							Add source
-						</Button>
-					}
-				/>
+				<Empty className="border">
+					<EmptyHeader>
+						<EmptyMedia variant={"icon"}>
+							<BookOpenIcon />
+						</EmptyMedia>
+						<EmptyTitle>No sources yet</EmptyTitle>
+						<EmptyDescription>
+							Add a source to populate the project knowledge base and enable grounded conversations.
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
+			
 			)}
 
 			<AddSourceDialog projectId={projectId} open={isAddOpen} onOpenChange={setIsAddOpen} />

@@ -36,12 +36,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import {
-	EmptyState,
 	FieldErrors,
-	NativeSelect,
+	Select,
 	QueryErrorState,
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 function BufferedNumberInput({
 	field,
@@ -260,7 +260,7 @@ function ProjectSettingsFormInner({
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Visibility</Label>
-									<NativeSelect
+									<Select
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
@@ -277,7 +277,7 @@ function ProjectSettingsFormInner({
 												{option}
 											</option>
 										))}
-									</NativeSelect>
+									</Select>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
@@ -298,7 +298,7 @@ function ProjectSettingsFormInner({
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Default provider</Label>
-									<NativeSelect
+									<Select
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
@@ -315,7 +315,7 @@ function ProjectSettingsFormInner({
 												{option}
 											</option>
 										))}
-									</NativeSelect>
+									</Select>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
@@ -352,7 +352,7 @@ function ProjectSettingsFormInner({
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Embedding provider</Label>
-										<NativeSelect
+										<Select
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
@@ -369,7 +369,7 @@ function ProjectSettingsFormInner({
 													{option}
 												</option>
 											))}
-										</NativeSelect>
+										</Select>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
 								)}
@@ -588,11 +588,17 @@ export function ProjectSettingsForm({ projectId }: { projectId: string }) {
 
 	if (!projectQuery.data) {
 		return (
-			<EmptyState
-				icon={SettingsIcon}
-				title="Project unavailable"
-				description="The project settings could not be loaded."
-			/>
+			<Empty className="border">
+				<EmptyHeader>
+					<EmptyMedia variant={"icon"}>
+						<SettingsIcon />
+					</EmptyMedia>
+					<EmptyTitle>Project unavailable</EmptyTitle>
+					<EmptyDescription>
+						The project settings could not be loaded.
+					</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		);
 	}
 

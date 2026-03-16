@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Badge } from "@openbooklm/ui/components/badge";
 import { Button } from "@openbooklm/ui/components/button";
 import {
@@ -9,8 +10,93 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@openbooklm/ui/components/card";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
+import {
+	Select as UiSelect,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@openbooklm/ui/components/select";
 import { cn } from "@openbooklm/ui/lib/utils";
 import { AlertCircleIcon, RefreshCwIcon } from "lucide-react";
+
+type SelectProps = {
+	id?: string;
+	name?: string;
+	value?: string;
+	defaultValue?: string;
+	disabled?: boolean;
+	placeholder?: string;
+	children?: React.ReactNode;
+	onBlur?: () => void;
+	onChange?: (event: React.ChangeEvent<HTMLSelectElement>) => void;
+};
+
+export function Select({
+	id,
+	name,
+	value,
+	defaultValue,
+	disabled,
+	placeholder,
+	children,
+	onBlur,
+	onChange,
+}: SelectProps) {
+	const options = React.Children.toArray(children)
+		.filter((child): child is React.ReactElement => React.isValidElement(child))
+		.filter((child) => child.type === "option")
+		.map((child) => {
+			const childProps = child.props as {
+				value?: string;
+				disabled?: boolean;
+				children?: React.ReactNode;
+			};
+
+			return {
+				value: String(childProps.value ?? ""),
+				disabled: childProps.disabled,
+				label: childProps.children,
+			};
+		});
+
+	const selectedLabel = options.find((option) => option.value === value)?.label;
+
+	return (
+		<UiSelect
+			name={name}
+			value={value}
+			defaultValue={defaultValue}
+			disabled={disabled}
+			onValueChange={(nextValue) => {
+				onChange?.({
+					target: {
+						value: nextValue,
+						name,
+					},
+				} as React.ChangeEvent<HTMLSelectElement>);
+			}}
+		>
+			<SelectTrigger id={id} onBlur={onBlur} className="w-full">
+				<SelectValue placeholder={placeholder ?? "Select an option"}>
+					{selectedLabel}
+				</SelectValue>
+			</SelectTrigger>
+			<SelectContent>
+				{options.map((option) => (
+					<SelectItem
+						key={option.value}
+						value={option.value}
+						disabled={option.disabled}
+					>
+						{option.label}
+					</SelectItem>
+					))}
+			</SelectContent>
+		</UiSelect>
+	);
+}
 
 export function FieldErrors({
 	errors,
@@ -37,45 +123,6 @@ export function FieldErrors({
 	);
 }
 
-export function NativeSelect({ className, ...props }: React.ComponentPropsWithoutRef<"select">) {
-	return (
-		<select
-			className={cn(
-				"h-7 w-full min-w-0 rounded-md border border-input bg-input/20 px-2 py-0.5 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-xs/relaxed dark:bg-input/30",
-				className,
-			)}
-			{...props}
-		/>
-	);
-}
-
-export function EmptyState({
-	icon: Icon,
-	title,
-	description,
-	action,
-}: {
-	icon?: React.ComponentType<{ className?: string }>;
-	title: string;
-	description: string;
-	action?: React.ReactNode;
-}) {
-	return (
-		<Card className="border-dashed">
-			<CardHeader className="items-center text-center">
-				{Icon ? (
-					<div className="mb-1 flex size-10 items-center justify-center rounded-full bg-muted">
-						<Icon className="size-5 text-muted-foreground" />
-					</div>
-				) : null}
-				<CardTitle>{title}</CardTitle>
-				<CardDescription className="max-w-sm">{description}</CardDescription>
-			</CardHeader>
-			{action ? <CardContent className="flex justify-center">{action}</CardContent> : null}
-		</Card>
-	);
-}
-
 export function QueryErrorState({
 	title = "Unable to load data",
 	description,
@@ -86,19 +133,21 @@ export function QueryErrorState({
 	onRetry?: () => void;
 }) {
 	return (
-		<EmptyState
-			icon={AlertCircleIcon}
-			title={title}
-			description={description}
-			action={
-				onRetry ? (
-					<Button variant="outline" size="sm" onClick={onRetry}>
-						<RefreshCwIcon data-icon="inline-start" />
-						Retry
-					</Button>
-				) : undefined
-			}
-		/>
+		<Empty className="border">
+			<EmptyHeader>
+				<EmptyMedia variant={"icon"}>
+					<AlertCircleIcon />
+				</EmptyMedia>
+				<EmptyTitle>{title}</EmptyTitle>
+				<EmptyDescription>{description}</EmptyDescription>
+			</EmptyHeader>
+			{onRetry ? (
+				<Button variant="outline" size="sm" onClick={onRetry}>
+					<RefreshCwIcon data-icon="inline-start" />
+					Retry
+				</Button>
+			) : null}
+		</Empty>
 	);
 }
 

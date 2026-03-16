@@ -34,6 +34,7 @@ import { AddSourceDialog } from "@/components/workspace/sources-manager";
 import { CreateArtifactDialog } from "@/components/workspace/artifacts-manager";
 import { ProjectWorkspaceTree } from "@/components/workspace/project-workspace-tree";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
 
 const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
 
@@ -173,7 +174,6 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 								<SidebarMenu>
 									{Array.from({ length: 6 }).map((_, index) => (
 										<SidebarMenuItem key={index}>
-											<SidebarMenuSkeleton showIcon />
 										</SidebarMenuItem>
 									))}
 								</SidebarMenu>
@@ -275,10 +275,13 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 											))
 										) : (
 											<SidebarMenuItem>
-												<div className="rounded-md border border-dashed p-2 text-xs/relaxed text-sidebar-foreground/70">
-													No projects available. Create one to get
-													started.
-												</div>
+												<Empty className="border px-2 py-4 group-data-[collapsible=icon]:hidden">
+													<EmptyContent>
+														<EmptyDescription className="text-xs">
+															You haven&apos;t created any projects yet.
+														</EmptyDescription>
+													</EmptyContent>
+												</Empty>
 											</SidebarMenuItem>
 										)}
 									</SidebarMenu>

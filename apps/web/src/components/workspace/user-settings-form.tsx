@@ -26,12 +26,12 @@ import { KeyIcon, SaveIcon, SettingsIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import {
-	EmptyState,
 	FieldErrors,
-	NativeSelect,
+	Select,
 	QueryErrorState,
 } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@openbooklm/ui/components/empty";
 
 type ClearKeyCheckboxField = {
 	name: string;
@@ -181,7 +181,7 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Theme</Label>
-										<NativeSelect
+										<Select
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
@@ -198,7 +198,7 @@ function UserSettingsFormInner({
 													{option}
 												</option>
 											))}
-										</NativeSelect>
+										</Select>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
 								)}
@@ -208,7 +208,7 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Density</Label>
-										<NativeSelect
+										<Select
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
@@ -225,7 +225,7 @@ function UserSettingsFormInner({
 													{option}
 												</option>
 											))}
-										</NativeSelect>
+										</Select>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
 								)}
@@ -235,7 +235,7 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Default artifact type</Label>
-										<NativeSelect
+										<Select
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
@@ -252,7 +252,7 @@ function UserSettingsFormInner({
 													{option}
 												</option>
 											))}
-										</NativeSelect>
+										</Select>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
 								)}
@@ -264,7 +264,7 @@ function UserSettingsFormInner({
 								{(field) => (
 									<div className="flex flex-col gap-1.5">
 										<Label htmlFor={field.name}>Default model provider</Label>
-										<NativeSelect
+										<Select
 											id={field.name}
 											name={field.name}
 											value={field.state.value}
@@ -281,7 +281,7 @@ function UserSettingsFormInner({
 													{option}
 												</option>
 											))}
-										</NativeSelect>
+										</Select>
 										<FieldErrors errors={field.state.meta.errors} />
 									</div>
 								)}
@@ -521,11 +521,17 @@ export function UserSettingsForm() {
 
 	if (!settingsQuery.data) {
 		return (
-			<EmptyState
-				icon={SettingsIcon}
-				title="Settings unavailable"
-				description="The user settings could not be loaded."
-			/>
+			<Empty className="border">
+				<EmptyHeader>
+					<EmptyMedia variant={"icon"}>
+						<SettingsIcon />
+					</EmptyMedia>
+					<EmptyTitle>Settings unavailable</EmptyTitle>
+					<EmptyDescription>
+						The user settings could not be loaded.
+					</EmptyDescription>
+				</EmptyHeader>
+			</Empty>
 		);
 	}
 

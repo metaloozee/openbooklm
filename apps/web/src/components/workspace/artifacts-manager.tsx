@@ -24,15 +24,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import {
-	EmptyState,
 	FieldErrors,
-	NativeSelect,
+	Select,
 	QueryErrorState,
 	StatusBadge,
 	formatDate,
 } from "@/components/workspace/primitives";
 import { useArtifactInvalidation } from "@/lib/invalidation";
 import { trpc } from "@/utils/trpc";
+import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 export function CreateArtifactDialog({
 	projectId,
@@ -117,7 +117,7 @@ export function CreateArtifactDialog({
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Type</Label>
-									<NativeSelect
+									<Select
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
@@ -134,7 +134,7 @@ export function CreateArtifactDialog({
 												{option}
 											</option>
 										))}
-									</NativeSelect>
+									</Select>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
@@ -385,17 +385,17 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 					))}
 				</div>
 			) : (
-				<EmptyState
-					icon={SparklesIcon}
-					title="No artifacts yet"
-					description="Create a summary, FAQ, study guide, or report once the source set is ready."
-					action={
-						<Button onClick={() => setIsCreateOpen(true)}>
-							<PlusIcon data-icon="inline-start" />
-							Create artifact
-						</Button>
-					}
-				/>
+				<Empty className="border">
+					<EmptyHeader>
+						<EmptyMedia variant={"icon"}>
+							<SparklesIcon />
+						</EmptyMedia>
+						<EmptyTitle>No artifacts yet</EmptyTitle>
+						<EmptyDescription>
+							Create a summary, FAQ, study guide, or report once the source set is ready.
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			)}
 
 			<CreateArtifactDialog

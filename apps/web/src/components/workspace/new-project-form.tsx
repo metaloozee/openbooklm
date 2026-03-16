@@ -24,7 +24,7 @@ import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { FieldErrors, NativeSelect } from "@/components/workspace/primitives";
+import { FieldErrors, Select } from "@/components/workspace/primitives";
 import { trpc } from "@/utils/trpc";
 
 export function CreateProjectDialog({
@@ -148,7 +148,7 @@ export function CreateProjectDialog({
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Visibility</Label>
-									<NativeSelect
+									<Select
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
@@ -165,7 +165,7 @@ export function CreateProjectDialog({
 												{option}
 											</option>
 										))}
-									</NativeSelect>
+									</Select>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
@@ -175,7 +175,7 @@ export function CreateProjectDialog({
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
 									<Label htmlFor={field.name}>Provider</Label>
-									<NativeSelect
+									<Select
 										id={field.name}
 										name={field.name}
 										value={field.state.value}
@@ -192,7 +192,7 @@ export function CreateProjectDialog({
 												{option}
 											</option>
 										))}
-									</NativeSelect>
+									</Select>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}

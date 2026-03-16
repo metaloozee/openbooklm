@@ -1,11 +1,9 @@
 "use client";
 
-import { Badge } from "@openbooklm/ui/components/badge";
 import { Button } from "@openbooklm/ui/components/button";
 import { Input } from "@openbooklm/ui/components/input";
 import {
 	PerspectiveBook,
-	BookHeader,
 	BookTitle,
 	BookDescription,
 } from "@openbooklm/ui/components/perspective-book";
@@ -17,29 +15,17 @@ import type { Route } from "next";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-import { EmptyState, QueryErrorState } from "@/components/workspace/primitives";
+import {
+	Empty,
+	EmptyContent,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@openbooklm/ui/components/empty";
+import { QueryErrorState } from "@/components/workspace/primitives";
 import { CreateProjectDialog } from "@/components/workspace/new-project-form";
 import { trpc } from "@/utils/trpc";
-
-const COVER_PALETTES = [
-	"bg-gradient-to-br from-rose-500 to-orange-400 text-white",
-	"bg-gradient-to-br from-violet-600 to-indigo-500 text-white",
-	"bg-gradient-to-br from-emerald-500 to-teal-400 text-white",
-	"bg-gradient-to-br from-sky-500 to-cyan-400 text-white",
-	"bg-gradient-to-br from-amber-500 to-yellow-400 text-white",
-	"bg-gradient-to-br from-fuchsia-500 to-pink-400 text-white",
-	"bg-gradient-to-br from-slate-700 to-slate-500 text-white",
-	"bg-gradient-to-br from-lime-500 to-green-400 text-white",
-];
-
-function pickCoverColor(id: string) {
-	let hash = 0;
-	for (let i = 0; i < id.length; i++) {
-		hash = (hash << 5) - hash + id.charCodeAt(i);
-		hash |= 0;
-	}
-	return COVER_PALETTES[Math.abs(hash) % COVER_PALETTES.length];
-}
 
 export function DashboardProjectsView() {
 	const [search, setSearch] = useState("");
@@ -113,25 +99,17 @@ export function DashboardProjectsView() {
 					onRetry={() => void projectsQuery.refetch()}
 				/>
 			) : filteredProjects.length === 0 ? (
-				<EmptyState
-					icon={FolderOpenIcon}
-					title={
-						projectsQuery.data?.length
-							? "No matching projects"
-							: "Create your first project"
-					}
-					description={
-						projectsQuery.data?.length
-							? "Adjust the search term or create a new workspace."
-							: "Projects are the top-level workspaces for sources, artifacts, and settings."
-					}
-					action={
-						<Button onClick={() => setIsCreateOpen(true)}>
-							<PlusIcon data-icon="inline-start" />
-							New project
-						</Button>
-					}
-				/>
+				<Empty className="border-2">
+					<EmptyHeader>
+						<EmptyMedia variant={"icon"}>
+							<FolderOpenIcon />
+						</EmptyMedia>
+						<EmptyTitle>No projects found</EmptyTitle>
+						<EmptyDescription>
+							You haven&apos;t created any projects yet. Get started by creating your first project.
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			) : (
 				<div className="flex flex-wrap gap-8">
 					{filteredProjects.map((project) => (
