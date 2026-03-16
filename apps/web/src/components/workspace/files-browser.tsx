@@ -1,12 +1,18 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
+import {
+	Empty,
+	EmptyDescription,
+	EmptyHeader,
+	EmptyMedia,
+	EmptyTitle,
+} from "@openbooklm/ui/components/empty";
 import { Skeleton } from "@openbooklm/ui/components/skeleton";
 import { useQuery } from "@tanstack/react-query";
 import { FileTextIcon, FilesIcon, FolderIcon } from "lucide-react";
 
 import {
-	EmptyState,
 	QueryErrorState,
 	StatusBadge,
 	formatBytes,
@@ -38,11 +44,17 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 					onRetry={() => void filesQuery.refetch()}
 				/>
 			) : !filesQuery.data?.items.length ? (
-				<EmptyState
-					icon={FilesIcon}
-					title="No virtual files yet"
-					description="Files appear here as soon as the project has sources or artifacts."
-				/>
+				<Empty className="border">
+					<EmptyHeader>
+						<EmptyMedia variant={"icon"}>
+							<FilesIcon />
+						</EmptyMedia>
+						<EmptyTitle>No virtual files yet</EmptyTitle>
+						<EmptyDescription>
+							Files appear here as soon as the project has sources or artifacts.
+						</EmptyDescription>
+					</EmptyHeader>
+				</Empty>
 			) : (
 				<div className="grid gap-4 xl:grid-cols-[240px_minmax(0,1fr)]">
 					<Card>
