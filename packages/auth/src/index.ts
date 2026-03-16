@@ -25,9 +25,7 @@ export const auth = betterAuth({
 	emailAndPassword: {
 		enabled: true,
 	},
-	socialProviders: {
-		...(googleProvider ? { google: googleProvider } : {}),
-	},
+	socialProviders: googleProvider ? { google: googleProvider } : {},
 	secret: env.BETTER_AUTH_SECRET,
 	baseURL: env.BETTER_AUTH_URL,
 	advanced: {
