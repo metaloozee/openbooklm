@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+
+@plugin "@egoist/tailwindcss-icons";
+
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";
 
@@ -126,6 +129,60 @@
 	}
 	html {
 		@apply font-sans;
+	}
+
+	.ProseMirror {
+		@apply text-foreground;
+	}
+
+	.ProseMirror h1 {
+		@apply mt-6 mb-3 text-3xl font-semibold tracking-tight;
+	}
+
+	.ProseMirror h2 {
+		@apply mt-5 mb-3 text-2xl font-semibold tracking-tight;
+	}
+
+	.ProseMirror h3 {
+		@apply mt-4 mb-2 text-xl font-semibold tracking-tight;
+	}
+
+	.ProseMirror p {
+		@apply my-3 leading-7;
+	}
+
+	.ProseMirror ul,
+	.ProseMirror ol {
+		@apply my-3 pl-6;
+	}
+
+	.ProseMirror li {
+		@apply my-1;
+	}
+
+	.ProseMirror blockquote {
+		@apply my-4 border-l-4 border-border pl-4 italic text-muted-foreground;
+	}
+
+	.ProseMirror pre {
+		@apply my-4 overflow-x-auto rounded-lg border bg-muted px-4 py-3 text-sm;
+	}
+
+	.ProseMirror code {
+		@apply rounded bg-muted px-1.5 py-0.5 text-[0.9em];
+	}
+
+	.ProseMirror table {
+		@apply my-4 w-full border-collapse overflow-hidden rounded-lg border;
+	}
+
+	.ProseMirror th,
+	.ProseMirror td {
+		@apply border px-3 py-2 text-left align-top;
+	}
+
+	.ProseMirror th {
+		@apply bg-muted font-medium;
 	}
 }
 

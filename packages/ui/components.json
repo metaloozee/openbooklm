@@ -24,6 +24,7 @@
 	"registries": {
 		"@spell": "https://spell.sh/r/{name}.json",
 		"@magicui": "https://magicui.design/r/{name}",
-		"@ai-elements": "https://ai-sdk.dev/elements/api/registry/{name}.json"
+		"@ai-elements": "https://ai-sdk.dev/elements/api/registry/{name}.json",
+		"@prosekit": "https://prosekit.dev/r/{name}.json"
 	}
 }

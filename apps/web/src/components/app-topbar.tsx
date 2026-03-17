@@ -42,10 +42,29 @@ function getProjectIdFromPathname(pathname: string) {
 	return slug && !RESERVED_PROJECT_SEGMENTS.has(slug) ? slug : null;
 }
 
+function getArtifactParamsFromPathname(pathname: string) {
+	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)\/artifacts\/([^/]+)/);
+	if (!match) {
+		return null;
+	}
+
+	const [, projectId, artifactId] = match;
+	if (!projectId || !artifactId) {
+		return null;
+	}
+
+	return { projectId, artifactId };
+}
+
 export function AppTopbar() {
 	const pathname = usePathname();
 	const currentProjectId = getProjectIdFromPathname(pathname);
+	const artifactParams = getArtifactParamsFromPathname(pathname);
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
+	const artifactQuery = useQuery({
+		...trpc.artifacts.byId.queryOptions(artifactParams ?? { projectId: "", artifactId: "" }),
+		enabled: Boolean(artifactParams),
+	});
 	const segments = pathname.split("/").filter(Boolean);
 
 	return (
@@ -63,7 +82,11 @@ export function AppTopbar() {
 									? (projectsQuery.data?.find(
 											(project) => project.id === currentProjectId,
 										)?.name ?? formatSegment(segment))
-									: formatSegment(segment);
+									: index === 4 &&
+										  artifactParams &&
+										  segment === artifactParams.artifactId
+										? (artifactQuery.data?.title ?? "Artifact")
+										: formatSegment(segment);
 
 							return (
 								<Fragment key={href}>

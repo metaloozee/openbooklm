@@ -115,6 +115,7 @@ export const artifact = pgTable(
 		title: text("title").notNull(),
 		type: artifactTypeEnum("type").notNull(),
 		content: text("content").notNull().default(""),
+		contentJson: text("content_json"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()

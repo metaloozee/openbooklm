@@ -20,6 +20,8 @@ import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
+import Link from "next/link";
+import type { Route } from "next";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -341,7 +343,16 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									</div>
 									<div>
 										<div className="flex items-center gap-2">
-											<CardTitle>{item.title}</CardTitle>
+											<CardTitle>
+												<Link
+													href={
+														`/dashboard/projects/${projectId}/artifacts/${item.id}` as Route
+													}
+													className="transition-colors hover:text-primary"
+												>
+													{item.title}
+												</Link>
+											</CardTitle>
 											<StatusBadge status="ready" />
 										</div>
 										<p className="mt-0.5 text-xs/relaxed text-muted-foreground">

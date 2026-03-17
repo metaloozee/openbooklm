@@ -133,8 +133,19 @@ export function ProjectWorkspaceTree({
 
 	const deleteArtifactMutation = useMutation(
 		trpc.artifacts.delete.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: async (_, variables) => {
+				await queryClient.invalidateQueries(
+					trpc.artifacts.byId.queryFilter({
+						projectId,
+						artifactId: variables.artifactId,
+					}),
+				);
 				await invalidateAll();
+
+				if (pathname.startsWith(`${base}/artifacts/${variables.artifactId}`)) {
+					router.push(`${base}/artifacts` as Route);
+				}
+
 				toast.success("Artifact removed");
 			},
 			onError: (error) => toast.error(error.message),
@@ -142,7 +153,6 @@ export function ProjectWorkspaceTree({
 	);
 
 	const handleSelect = (path: string) => {
-		if (path.includes("#")) return;
 		router.push(path as Route);
 	};
 
@@ -190,7 +200,7 @@ export function ProjectWorkspaceTree({
 					{artifactsQuery.data?.map((artifact) => (
 						<FileTreeFile
 							key={artifact.id}
-							path={`${base}/artifacts#${artifact.id}`}
+							path={`${base}/artifacts/${artifact.id}`}
 							name={artifact.title}
 						>
 							<span className="size-4 shrink-0" />

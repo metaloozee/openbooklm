@@ -21,13 +21,23 @@ export function useSourceInvalidation(projectId: string) {
 	}, [queryClient, projectId]);
 }
 
-export function useArtifactInvalidation(projectId: string) {
+export function useArtifactInvalidation(projectId: string, artifactId?: string) {
 	const queryClient = useQueryClient();
 	return useCallback(async () => {
-		await Promise.all([
+		const invalidations = [
 			queryClient.invalidateQueries(trpc.artifacts.list.queryFilter({ projectId })),
 			invalidateProjectContext(queryClient, projectId),
 			queryClient.invalidateQueries(trpc.files.list.queryFilter({ projectId })),
-		]);
-	}, [queryClient, projectId]);
+		];
+
+		if (artifactId) {
+			invalidations.push(
+				queryClient.invalidateQueries(
+					trpc.artifacts.byId.queryFilter({ projectId, artifactId }),
+				),
+			);
+		}
+
+		await Promise.all(invalidations);
+	}, [artifactId, queryClient, projectId]);
 }
