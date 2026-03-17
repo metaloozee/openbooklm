@@ -114,6 +114,7 @@ export const artifact = pgTable(
 			.references(() => user.id, { onDelete: "cascade" }),
 		title: text("title").notNull(),
 		type: artifactTypeEnum("type").notNull(),
+		instructions: text("instructions"),
 		content: text("content").notNull().default(""),
 		contentJson: text("content_json"),
 		createdAt: timestamp("created_at").defaultNow().notNull(),

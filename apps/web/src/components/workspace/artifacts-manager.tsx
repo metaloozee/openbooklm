@@ -3,7 +3,18 @@
 import { ARTIFACT_TYPE_OPTIONS, artifactCreateSchema } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
-import { Checkbox } from "@openbooklm/ui/components/checkbox";
+import {
+	Combobox,
+	ComboboxChip,
+	ComboboxChips,
+	ComboboxChipsInput,
+	ComboboxContent,
+	ComboboxEmpty,
+	ComboboxItem,
+	ComboboxList,
+	ComboboxValue,
+	useComboboxAnchor,
+} from "@openbooklm/ui/components/combobox";
 import {
 	Dialog,
 	DialogContent,
@@ -22,7 +33,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -53,6 +64,20 @@ export function CreateArtifactDialog({
 }) {
 	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
 	const invalidateProjectData = useArtifactInvalidation(projectId);
+	const sourceOptions = useMemo(
+		() =>
+			(sourcesQuery.data ?? []).map((item) => ({
+				id: item.id,
+				title: item.title,
+			})),
+		[sourcesQuery.data],
+	);
+	const sourceIds = useMemo(() => sourceOptions.map((item) => item.id), [sourceOptions]);
+	const sourceTitlesById = useMemo(
+		() => new Map(sourceOptions.map((item) => [item.id, item.title])),
+		[sourceOptions],
+	);
+	const sourceAnchor = useComboboxAnchor();
 
 	const createArtifactMutation = useMutation(
 		trpc.artifacts.create.mutationOptions({
@@ -73,7 +98,7 @@ export function CreateArtifactDialog({
 			projectId,
 			title: "",
 			type: "summary" as (typeof ARTIFACT_TYPE_OPTIONS)[number],
-			content: "",
+			instructions: "",
 			sourceIds: [] as string[],
 		},
 		validators: {
@@ -84,14 +109,22 @@ export function CreateArtifactDialog({
 		},
 	});
 
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen) {
+			form.reset();
+		}
+
+		onOpenChange(nextOpen);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-lg">
 				<DialogHeader>
 					<DialogTitle>Create artifact</DialogTitle>
 					<DialogDescription>
-						Save a structured output from your sources — a summary, FAQ, study guide, or
-						report.
+						Create an AI-generated artifact from selected sources and optional
+						instructions.
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -149,85 +182,88 @@ export function CreateArtifactDialog({
 						</form.Field>
 					</div>
 
-					<form.Field name="content">
+					<form.Field name="sourceIds">
 						{(field) => (
 							<div className="flex flex-col gap-1.5">
-								<Label htmlFor={field.name}>Content</Label>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-									placeholder="Write the artifact body, notes, or generated content."
-									className="min-h-32 resize-none"
-								/>
+								<Label>Linked sources</Label>
+								{sourcesQuery.isPending ? (
+									<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
+										Loading sources...
+									</p>
+								) : sourcesQuery.isError ? (
+									<div className="flex flex-col gap-2 rounded-md border border-dashed p-3 text-xs/relaxed text-destructive">
+										<p>{sourcesQuery.error.message}</p>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => void sourcesQuery.refetch()}
+										>
+											Retry
+										</Button>
+									</div>
+								) : sourceOptions.length ? (
+									<Combobox
+										items={sourceIds}
+										multiple
+										value={field.state.value ?? []}
+										onValueChange={(nextValue) => field.handleChange(nextValue)}
+										autoHighlight
+										itemToStringValue={(sourceId) =>
+											sourceTitlesById.get(sourceId) ?? sourceId
+										}
+									>
+										<ComboboxChips
+											ref={sourceAnchor}
+											aria-label="Linked sources"
+										>
+											<ComboboxValue>
+												{(selectedSourceIds: string[]) => (
+													<>
+														{selectedSourceIds.map((sourceId) => (
+															<ComboboxChip key={sourceId}>
+																{sourceTitlesById.get(sourceId) ??
+																	sourceId}
+															</ComboboxChip>
+														))}
+													</>
+												)}
+											</ComboboxValue>
+											<ComboboxChipsInput placeholder="Select sources..." />
+										</ComboboxChips>
+										<ComboboxContent anchor={sourceAnchor}>
+											<ComboboxEmpty>No matching sources.</ComboboxEmpty>
+											<ComboboxList>
+												{(sourceId) => (
+													<ComboboxItem key={sourceId} value={sourceId}>
+														{sourceTitlesById.get(sourceId) ?? sourceId}
+													</ComboboxItem>
+												)}
+											</ComboboxList>
+										</ComboboxContent>
+									</Combobox>
+								) : (
+									<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
+										Add sources first to link provenance to artifacts.
+									</p>
+								)}
 								<FieldErrors errors={field.state.meta.errors} />
 							</div>
 						)}
 					</form.Field>
 
-					<form.Field name="sourceIds">
+					<form.Field name="instructions">
 						{(field) => (
 							<div className="flex flex-col gap-1.5">
-								<Label>Linked sources</Label>
-								<div className="flex flex-col gap-2 rounded-md border p-3 max-h-40 overflow-y-auto">
-									{sourcesQuery.isPending ? (
-										<p className="text-xs/relaxed text-muted-foreground">
-											Loading sources...
-										</p>
-									) : sourcesQuery.isError ? (
-										<div className="flex flex-col gap-2 rounded-md border border-dashed p-3 text-xs/relaxed text-destructive">
-											<p>{sourcesQuery.error.message}</p>
-											<Button
-												variant="outline"
-												size="sm"
-												onClick={() => void sourcesQuery.refetch()}
-											>
-												Retry
-											</Button>
-										</div>
-									) : sourcesQuery.data?.length ? (
-										sourcesQuery.data.map((item) => {
-											const checked = field.state.value.includes(item.id);
-											return (
-												<label
-													key={item.id}
-													className="flex items-start gap-3 rounded-md border p-2 transition-colors hover:bg-muted/50"
-												>
-													<Checkbox
-														checked={checked}
-														onCheckedChange={(nextChecked) => {
-															field.handleChange(
-																nextChecked === true
-																	? [
-																			...field.state.value,
-																			item.id,
-																		]
-																	: field.state.value.filter(
-																			(value) =>
-																				value !== item.id,
-																		),
-															);
-														}}
-													/>
-													<div>
-														<p className="text-xs font-medium">
-															{item.title}
-														</p>
-														<p className="text-xs/relaxed text-muted-foreground">
-															{item.type} · {item.status}
-														</p>
-													</div>
-												</label>
-											);
-										})
-									) : (
-										<p className="text-xs/relaxed text-muted-foreground">
-											Add sources first to link provenance to artifacts.
-										</p>
-									)}
-								</div>
+								<Label htmlFor={field.name}>Instructions (optional)</Label>
+								<Textarea
+									id={field.name}
+									name={field.name}
+									value={field.state.value ?? ""}
+									onBlur={field.handleBlur}
+									onChange={(event) => field.handleChange(event.target.value)}
+									placeholder="Suggest tone, focus areas, structure, or constraints for generation."
+									className="min-h-32 resize-none"
+								/>
 								<FieldErrors errors={field.state.meta.errors} />
 							</div>
 						)}
@@ -245,7 +281,7 @@ export function CreateArtifactDialog({
 									<Button
 										type="button"
 										variant="outline"
-										onClick={() => onOpenChange(false)}
+										onClick={() => handleOpenChange(false)}
 									>
 										Cancel
 									</Button>
@@ -256,17 +292,16 @@ export function CreateArtifactDialog({
 											isSubmitting ||
 											createArtifactMutation.isPending
 										}
+										size={
+											isSubmitting || createArtifactMutation.isPending
+												? "icon"
+												: "default"
+										}
 									>
 										{isSubmitting || createArtifactMutation.isPending ? (
-											<>
-												<Spinner data-icon="inline-start" />
-												Saving...
-											</>
+											<Spinner />
 										) : (
-											<>
-												<PlusIcon data-icon="inline-start" />
-												Save artifact
-											</>
+											"Save artifact"
 										)}
 									</Button>
 								</>

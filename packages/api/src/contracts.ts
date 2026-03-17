@@ -81,7 +81,7 @@ export const sourceActionSchema = projectIdSchema.extend({
 export const artifactCreateSchema = projectIdSchema.extend({
 	title: requiredText("Artifact title", 160),
 	type: z.enum(ARTIFACT_TYPE_OPTIONS),
-	content: requiredText("Artifact content", 20000),
+	instructions: shortText(4000),
 	sourceIds: z.array(z.string().trim().min(1)),
 });
 

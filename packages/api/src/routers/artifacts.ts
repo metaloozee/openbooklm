@@ -16,6 +16,9 @@ function toIsoString(value: Date) {
 	return value.toISOString();
 }
 
+const ARTIFACT_CONTENT_PLACEHOLDER =
+	"Artifact generation pending. AI generation is not implemented yet.";
+
 function getContentPreview(content: string) {
 	return content.length > 180 ? `${content.slice(0, 177)}...` : content;
 }
@@ -119,6 +122,9 @@ export const artifactsRouter = router({
 
 		const artifactId = crypto.randomUUID();
 		const timestamp = new Date();
+
+		// TODO: Replace placeholder content with AI-generated artifact output using
+		// input.type, input.sourceIds, and optional input.instructions.
 		await ctx.db.batch([
 			ctx.db.insert(artifact).values({
 				id: artifactId,
@@ -126,7 +132,8 @@ export const artifactsRouter = router({
 				createdByUserId: ctx.userId,
 				title: input.title,
 				type: input.type,
-				content: input.content,
+				instructions: input.instructions?.trim() || null,
+				content: ARTIFACT_CONTENT_PLACEHOLDER,
 				contentJson: null,
 				createdAt: timestamp,
 				updatedAt: timestamp,

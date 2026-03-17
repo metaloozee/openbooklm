@@ -14,6 +14,7 @@
 		"check-types": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@base-ui/react": "^1.3.0",
 		"@egoist/tailwindcss-icons": "^1.9.2",
 		"@iconify-json/lucide": "^1.2.98",
 		"class-variance-authority": "^0.7.1",
