@@ -102,6 +102,10 @@ export function ProjectWorkspaceTree({
 		if (pathname === base) return base;
 		const sub = pathname.slice(base.length);
 		if (sub.startsWith("/sources") || sub.startsWith("/files")) return `${base}/sources`;
+		const artifactMatch = pathname.match(
+			new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/artifacts/([^/]+)$`),
+		);
+		if (artifactMatch?.[1]) return `${base}/artifacts/${artifactMatch[1]}`;
 		if (sub.startsWith("/artifacts")) return `${base}/artifacts`;
 		return base;
 	}, [pathname, base]);
@@ -133,8 +137,19 @@ export function ProjectWorkspaceTree({
 
 	const deleteArtifactMutation = useMutation(
 		trpc.artifacts.delete.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: async (_, variables) => {
+				await queryClient.invalidateQueries(
+					trpc.artifacts.byId.queryFilter({
+						projectId,
+						artifactId: variables.artifactId,
+					}),
+				);
 				await invalidateAll();
+
+				if (pathname === `${base}/artifacts/${variables.artifactId}`) {
+					router.push(`${base}/artifacts` as Route);
+				}
+
 				toast.success("Artifact removed");
 			},
 			onError: (error) => toast.error(error.message),
@@ -142,7 +157,6 @@ export function ProjectWorkspaceTree({
 	);
 
 	const handleSelect = (path: string) => {
-		if (path.includes("#")) return;
 		router.push(path as Route);
 	};
 
@@ -190,7 +204,7 @@ export function ProjectWorkspaceTree({
 					{artifactsQuery.data?.map((artifact) => (
 						<FileTreeFile
 							key={artifact.id}
-							path={`${base}/artifacts#${artifact.id}`}
+							path={`${base}/artifacts/${artifact.id}`}
 							name={artifact.title}
 						>
 							<span className="size-4 shrink-0" />

@@ -11,7 +11,6 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarMenuSkeleton,
 	SidebarRail,
 } from "@openbooklm/ui/components/sidebar";
 import { Button } from "@openbooklm/ui/components/button";
@@ -21,7 +20,6 @@ import {
 	BookOpenIcon,
 	FolderOpenIcon,
 	LayoutDashboardIcon,
-	PlusIcon,
 	SettingsIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -34,14 +32,7 @@ import { AddSourceDialog } from "@/components/workspace/sources-manager";
 import { CreateArtifactDialog } from "@/components/workspace/artifacts-manager";
 import { ProjectWorkspaceTree } from "@/components/workspace/project-workspace-tree";
 import { trpc } from "@/utils/trpc";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@openbooklm/ui/components/empty";
+import { Empty, EmptyContent, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
 
@@ -124,16 +115,24 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 								asChild
 								isActive={pathname === "/dashboard"}
 								tooltip="Back to dashboard"
-								variant={"outline"}
 							>
 								<Link href="/dashboard">
-									<ArrowLeftIcon />
+									<ArrowLeftIcon className="size-3" />
 									<span>Back to dashboard</span>
 								</Link>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarGroupContent>
+			</SidebarGroup>
+			<SidebarGroup className="group-data-[collapsible=icon]:block hidden">
+				<SidebarMenuItem>
+					<SidebarMenuButton asChild tooltip={"Workspace Settings"}>
+						<Link href={`/dashboard/projects/${projectId}/settings` as Route}>
+							<SettingsIcon className="size-3" />
+						</Link>
+					</SidebarMenuButton>
+				</SidebarMenuItem>
 			</SidebarGroup>
 			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 				<SidebarGroupLabel className="flex items-center justify-between">
@@ -162,7 +161,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<>
-			<Sidebar collapsible="icon" {...props}>
+			<Sidebar {...props}>
 				<SidebarHeader>
 					<Link href="/" className="flex items-center justify-start gap-2 p-1">
 						<div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-foreground text-background">
@@ -215,37 +214,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 							</SidebarGroup>
 						</>
 					) : isProjectRoute ? (
-						<>
-							{renderProjectNavigation()}
-
-							{projectsQuery.data?.length ? (
-								<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-									<SidebarGroupLabel>Switch project</SidebarGroupLabel>
-									<SidebarGroupContent>
-										<SidebarMenu>
-											{projectsQuery.data.map((project) => (
-												<SidebarMenuItem key={project.id}>
-													<SidebarMenuButton
-														asChild
-														isActive={project.id === projectId}
-														tooltip={project.name}
-													>
-														<Link
-															href={
-																`/dashboard/projects/${project.id}` as Route
-															}
-														>
-															<FolderOpenIcon />
-															<span>{project.name}</span>
-														</Link>
-													</SidebarMenuButton>
-												</SidebarMenuItem>
-											))}
-										</SidebarMenu>
-									</SidebarGroupContent>
-								</SidebarGroup>
-							) : null}
-						</>
+						<>{renderProjectNavigation()}</>
 					) : (
 						<>
 							{renderMenuGroup({

@@ -20,7 +20,9 @@ import { Textarea } from "@openbooklm/ui/components/textarea";
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+import Link from "next/link";
+import type { Route } from "next";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -51,6 +53,14 @@ export function CreateArtifactDialog({
 }) {
 	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
 	const invalidateProjectData = useArtifactInvalidation(projectId);
+	const sourceOptions = useMemo(
+		() =>
+			(sourcesQuery.data ?? []).map((item) => ({
+				id: item.id,
+				title: item.title,
+			})),
+		[sourcesQuery.data],
+	);
 
 	const createArtifactMutation = useMutation(
 		trpc.artifacts.create.mutationOptions({
@@ -71,7 +81,7 @@ export function CreateArtifactDialog({
 			projectId,
 			title: "",
 			type: "summary" as (typeof ARTIFACT_TYPE_OPTIONS)[number],
-			content: "",
+			instructions: "",
 			sourceIds: [] as string[],
 		},
 		validators: {
@@ -82,96 +92,88 @@ export function CreateArtifactDialog({
 		},
 	});
 
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen) {
+			form.reset();
+		}
+
+		onOpenChange(nextOpen);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
+		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Create artifact</DialogTitle>
-					<DialogDescription>
-						Save a structured output from your sources — a summary, FAQ, study guide, or
-						report.
-					</DialogDescription>
-				</DialogHeader>
-				<form
-					noValidate
-					className="flex flex-col gap-4"
-					onSubmit={(event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						form.handleSubmit();
-					}}
-				>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.Field name="title">
+				<div className="flex flex-col gap-4">
+					<DialogHeader>
+						<DialogTitle>Create artifact</DialogTitle>
+						<DialogDescription>
+							Create an AI-generated artifact from selected sources and optional
+							instructions.
+						</DialogDescription>
+					</DialogHeader>
+					<form
+						noValidate
+						className="flex flex-col gap-4"
+						onSubmit={(event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							form.handleSubmit();
+						}}
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<form.Field name="title">
+								{(field) => (
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>Title</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+											placeholder="Executive summary"
+										/>
+										<FieldErrors errors={field.state.meta.errors} />
+									</div>
+								)}
+							</form.Field>
+
+							<form.Field name="type">
+								{(field) => (
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>Type</Label>
+										<Select
+											id={field.name}
+											name={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(
+													event.target
+														.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
+												)
+											}
+										>
+											{ARTIFACT_TYPE_OPTIONS.map((option) => (
+												<option key={option} value={option}>
+													{option}
+												</option>
+											))}
+										</Select>
+										<FieldErrors errors={field.state.meta.errors} />
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<form.Field name="sourceIds">
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
-									<Label htmlFor={field.name}>Title</Label>
-									<Input
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
-										placeholder="Executive summary"
-									/>
-									<FieldErrors errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
-
-						<form.Field name="type">
-							{(field) => (
-								<div className="flex flex-col gap-1.5">
-									<Label htmlFor={field.name}>Type</Label>
-									<Select
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(
-												event.target
-													.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
-											)
-										}
-									>
-										{ARTIFACT_TYPE_OPTIONS.map((option) => (
-											<option key={option} value={option}>
-												{option}
-											</option>
-										))}
-									</Select>
-									<FieldErrors errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
-					</div>
-
-					<form.Field name="content">
-						{(field) => (
-							<div className="flex flex-col gap-1.5">
-								<Label htmlFor={field.name}>Content</Label>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									value={field.state.value}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-									placeholder="Write the artifact body, notes, or generated content."
-									className="min-h-32 resize-none"
-								/>
-								<FieldErrors errors={field.state.meta.errors} />
-							</div>
-						)}
-					</form.Field>
-
-					<form.Field name="sourceIds">
-						{(field) => (
-							<div className="flex flex-col gap-1.5">
-								<Label>Linked sources</Label>
-								<div className="flex flex-col gap-2 rounded-md border p-3 max-h-40 overflow-y-auto">
+									<Label>Linked sources</Label>
 									{sourcesQuery.isPending ? (
-										<p className="text-xs/relaxed text-muted-foreground">
+										<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
 											Loading sources...
 										</p>
 									) : sourcesQuery.isError ? (
@@ -185,93 +187,127 @@ export function CreateArtifactDialog({
 												Retry
 											</Button>
 										</div>
-									) : sourcesQuery.data?.length ? (
-										sourcesQuery.data.map((item) => {
-											const checked = field.state.value.includes(item.id);
-											return (
-												<label
-													key={item.id}
-													className="flex items-start gap-3 rounded-md border p-2 transition-colors hover:bg-muted/50"
-												>
-													<Checkbox
-														checked={checked}
-														onCheckedChange={(nextChecked) => {
-															field.handleChange(
-																nextChecked === true
-																	? [
-																			...field.state.value,
-																			item.id,
-																		]
-																	: field.state.value.filter(
-																			(value) =>
-																				value !== item.id,
-																		),
-															);
-														}}
-													/>
-													<div>
-														<p className="text-xs font-medium">
-															{item.title}
-														</p>
-														<p className="text-xs/relaxed text-muted-foreground">
-															{item.type} · {item.status}
-														</p>
-													</div>
-												</label>
-											);
-										})
+									) : sourceOptions.length ? (
+										<div className="rounded-md border">
+											<div className="border-b px-3 py-2 text-xs/relaxed text-muted-foreground">
+												{field.state.value?.length
+													? `${field.state.value.length} source${field.state.value.length === 1 ? "" : "s"} selected`
+													: "Select one or more sources to link provenance to this artifact."}
+											</div>
+											<div className="max-h-48 space-y-2 overflow-y-auto p-3">
+												{sourceOptions.map((source) => {
+													const checked =
+														field.state.value?.includes(source.id) ??
+														false;
+
+													return (
+														<label
+															key={source.id}
+															className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/30"
+														>
+															<Checkbox
+																checked={checked}
+																onCheckedChange={(nextChecked) => {
+																	const currentValue =
+																		field.state.value ?? [];
+																	field.handleChange(
+																		nextChecked
+																			? [
+																					...currentValue,
+																					source.id,
+																				]
+																			: currentValue.filter(
+																					(sourceId) =>
+																						sourceId !==
+																						source.id,
+																				),
+																	);
+																}}
+															/>
+															<div className="min-w-0">
+																<p className="truncate text-xs font-medium">
+																	{source.title}
+																</p>
+																<p className="text-xs/relaxed text-muted-foreground">
+																	{source.id}
+																</p>
+															</div>
+														</label>
+													);
+												})}
+											</div>
+										</div>
 									) : (
-										<p className="text-xs/relaxed text-muted-foreground">
+										<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
 											Add sources first to link provenance to artifacts.
 										</p>
 									)}
+									<FieldErrors errors={field.state.meta.errors} />
 								</div>
-								<FieldErrors errors={field.state.meta.errors} />
-							</div>
-						)}
-					</form.Field>
-
-					<DialogFooter>
-						<form.Subscribe
-							selector={(state) => ({
-								canSubmit: state.canSubmit,
-								isSubmitting: state.isSubmitting,
-							})}
-						>
-							{({ canSubmit, isSubmitting }) => (
-								<>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => onOpenChange(false)}
-									>
-										Cancel
-									</Button>
-									<Button
-										type="submit"
-										disabled={
-											!canSubmit ||
-											isSubmitting ||
-											createArtifactMutation.isPending
-										}
-									>
-										{isSubmitting || createArtifactMutation.isPending ? (
-											<>
-												<Spinner data-icon="inline-start" />
-												Saving...
-											</>
-										) : (
-											<>
-												<PlusIcon data-icon="inline-start" />
-												Save artifact
-											</>
-										)}
-									</Button>
-								</>
 							)}
-						</form.Subscribe>
-					</DialogFooter>
-				</form>
+						</form.Field>
+
+						<form.Field name="instructions">
+							{(field) => (
+								<div className="flex flex-col gap-1.5">
+									<Label htmlFor={field.name}>Instructions (optional)</Label>
+									<Textarea
+										id={field.name}
+										name={field.name}
+										value={field.state.value ?? ""}
+										onBlur={field.handleBlur}
+										onChange={(event) => field.handleChange(event.target.value)}
+										placeholder="Suggest tone, focus areas, structure, or constraints for generation."
+										className="min-h-32 resize-none"
+									/>
+									<FieldErrors errors={field.state.meta.errors} />
+								</div>
+							)}
+						</form.Field>
+
+						<DialogFooter>
+							<form.Subscribe
+								selector={(state) => ({
+									canSubmit: state.canSubmit,
+									isSubmitting: state.isSubmitting,
+								})}
+							>
+								{({ canSubmit, isSubmitting }) => (
+									<>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => handleOpenChange(false)}
+										>
+											Cancel
+										</Button>
+										<Button
+											type="submit"
+											disabled={
+												!canSubmit ||
+												isSubmitting ||
+												createArtifactMutation.isPending
+											}
+											size="default"
+											aria-busy={
+												isSubmitting || createArtifactMutation.isPending
+											}
+											className="min-w-28"
+										>
+											<span className="inline-flex items-center justify-center gap-1">
+												{isSubmitting ||
+												createArtifactMutation.isPending ? (
+													<Spinner />
+												) : null}
+												<span>Save artifact</span>
+											</span>
+										</Button>
+									</>
+								)}
+							</form.Subscribe>
+						</DialogFooter>
+					</form>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);
@@ -341,7 +377,16 @@ export function ArtifactsManager({ projectId }: { projectId: string }) {
 									</div>
 									<div>
 										<div className="flex items-center gap-2">
-											<CardTitle>{item.title}</CardTitle>
+											<CardTitle>
+												<Link
+													href={
+														`/dashboard/projects/${projectId}/artifacts/${item.id}` as Route
+													}
+													className="transition-colors hover:text-primary"
+												>
+													{item.title}
+												</Link>
+											</CardTitle>
 											<StatusBadge status="ready" />
 										</div>
 										<p className="mt-0.5 text-xs/relaxed text-muted-foreground">

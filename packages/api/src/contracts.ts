@@ -62,7 +62,7 @@ export const sourceCreateSchema = projectIdSchema
 		type: z.enum(SOURCE_TYPE_OPTIONS),
 		url: urlOrEmpty("Enter a valid URL"),
 		content: shortText(20000),
-		indexNow: z.boolean(),
+		indexNow: z.boolean().optional(),
 	})
 	.superRefine((value, ctx) => {
 		if (value.type === "url" && !value.url) {
@@ -81,12 +81,22 @@ export const sourceActionSchema = projectIdSchema.extend({
 export const artifactCreateSchema = projectIdSchema.extend({
 	title: requiredText("Artifact title", 160),
 	type: z.enum(ARTIFACT_TYPE_OPTIONS),
-	content: requiredText("Artifact content", 20000),
+	instructions: shortText(4000),
 	sourceIds: z.array(z.string().trim().min(1)),
 });
 
 export const artifactActionSchema = projectIdSchema.extend({
 	artifactId: z.string().trim().min(1, "Artifact id is required"),
+});
+
+export const artifactUpdateSchema = artifactActionSchema.extend({
+	title: requiredText("Artifact title", 160).optional(),
+	content: z.string().trim().max(200000, "Artifact content is too long"),
+	contentJson: z
+		.string()
+		.trim()
+		.min(1, "Artifact document JSON is required")
+		.max(2_000_000, "Artifact document JSON is too large"),
 });
 
 export const userSettingsUpdateSchema = z.object({

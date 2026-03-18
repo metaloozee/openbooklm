@@ -42,10 +42,29 @@ function getProjectIdFromPathname(pathname: string) {
 	return slug && !RESERVED_PROJECT_SEGMENTS.has(slug) ? slug : null;
 }
 
+function getArtifactParamsFromPathname(pathname: string) {
+	const match = pathname.match(/^\/dashboard\/projects\/([^/]+)\/artifacts\/([^/]+)/);
+	if (!match) {
+		return null;
+	}
+
+	const [, projectId, artifactId] = match;
+	if (!projectId || !artifactId) {
+		return null;
+	}
+
+	return { projectId, artifactId };
+}
+
 export function AppTopbar() {
 	const pathname = usePathname();
 	const currentProjectId = getProjectIdFromPathname(pathname);
+	const artifactParams = getArtifactParamsFromPathname(pathname);
 	const projectsQuery = useQuery(trpc.projects.list.queryOptions());
+	const artifactQuery = useQuery({
+		...trpc.artifacts.byId.queryOptions(artifactParams ?? { projectId: "", artifactId: "" }),
+		enabled: Boolean(artifactParams),
+	});
 	const segments = pathname.split("/").filter(Boolean);
 
 	return (
@@ -58,12 +77,17 @@ export function AppTopbar() {
 						{segments.map((segment, index) => {
 							const href = `/${segments.slice(0, index + 1).join("/")}`;
 							const isLast = index === segments.length - 1;
+							const previousSegment = index > 0 ? segments[index - 1] : null;
 							const label =
 								index === 2 && currentProjectId && segment === currentProjectId
 									? (projectsQuery.data?.find(
 											(project) => project.id === currentProjectId,
 										)?.name ?? formatSegment(segment))
-									: formatSegment(segment);
+									: previousSegment === "artifacts" &&
+										  artifactParams &&
+										  segment === artifactParams.artifactId
+										? (artifactQuery.data?.title ?? "Artifact")
+										: formatSegment(segment);
 
 							return (
 								<Fragment key={href}>
@@ -85,7 +109,7 @@ export function AppTopbar() {
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
-			<AnimatedThemeToggler variant={"ghost"} />
+			<AnimatedThemeToggler variant="ghost" />
 		</header>
 	);
 }

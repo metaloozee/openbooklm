@@ -3,7 +3,6 @@
 import { SOURCE_TYPE_OPTIONS, sourceCreateSchema } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
-import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -41,6 +40,28 @@ import {
 	EmptyDescription,
 } from "@openbooklm/ui/components/empty";
 
+type TextSourceInputMode = "upload" | "paste";
+
+function isTextSourceType(type: (typeof SOURCE_TYPE_OPTIONS)[number]) {
+	return type === "text" || type === "markdown";
+}
+
+function getTypeLabel(type: (typeof SOURCE_TYPE_OPTIONS)[number]) {
+	if (type === "markdown") {
+		return "Markdown";
+	}
+
+	if (type === "pdf") {
+		return "PDF";
+	}
+
+	if (type === "url") {
+		return "URL";
+	}
+
+	return "Text";
+}
+
 export function AddSourceDialog({
 	projectId,
 	open,
@@ -51,12 +72,25 @@ export function AddSourceDialog({
 	onOpenChange: (open: boolean) => void;
 }) {
 	const invalidateProjectData = useSourceInvalidation(projectId);
+	const [textInputMode, setTextInputMode] = useState<TextSourceInputMode>("paste");
+	const [uploadedTextFile, setUploadedTextFile] = useState<{
+		name: string;
+		bytes: number;
+	} | null>(null);
+	const [uploadedPdfFile, setUploadedPdfFile] = useState<File | null>(null);
+
+	const resetTransientState = () => {
+		setTextInputMode("paste");
+		setUploadedTextFile(null);
+		setUploadedPdfFile(null);
+	};
 
 	const createSourceMutation = useMutation(
 		trpc.sources.create.mutationOptions({
 			onSuccess: async () => {
 				await invalidateProjectData();
 				toast.success("Source saved");
+				resetTransientState();
 				form.reset();
 				onOpenChange(false);
 			},
@@ -73,23 +107,66 @@ export function AddSourceDialog({
 			type: "text" as (typeof SOURCE_TYPE_OPTIONS)[number],
 			url: "",
 			content: "",
-			indexNow: true,
 		},
 		validators: {
 			onSubmit: sourceCreateSchema,
 		},
 		onSubmit: async ({ value }) => {
-			await createSourceMutation.mutateAsync(value);
+			if (value.type === "pdf" && !uploadedPdfFile) {
+				toast.error("Choose a PDF document before saving.");
+				return;
+			}
+
+			if (value.type === "pdf") {
+				toast.error(
+					"PDF uploads are not available yet. Use a text, markdown, or URL source for now.",
+				);
+				return;
+			}
+
+			if (isTextSourceType(value.type) && textInputMode === "upload" && !uploadedTextFile) {
+				toast.error(
+					`Choose a ${getTypeLabel(value.type).toLowerCase()} file or paste content.`,
+				);
+				return;
+			}
+
+			if (
+				isTextSourceType(value.type) &&
+				textInputMode !== "upload" &&
+				!value.content.trim()
+			) {
+				toast.error(
+					`Choose a ${getTypeLabel(value.type).toLowerCase()} file or paste content.`,
+				);
+				return;
+			}
+
+			await createSourceMutation.mutateAsync({
+				...value,
+				url: value.type === "url" ? value.url : "",
+				content: value.type === "url" ? "" : value.content,
+			});
 		},
 	});
 
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (!nextOpen) {
+			resetTransientState();
+			form.reset();
+		}
+
+		onOpenChange(nextOpen);
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="sm:max-w-lg">
+		<Dialog open={open} onOpenChange={handleOpenChange}>
+			<DialogContent className="sm:max-w-xl">
 				<DialogHeader>
 					<DialogTitle>Add source</DialogTitle>
 					<DialogDescription>
-						Add a URL, note, markdown, or PDF placeholder to the project knowledge base.
+						Add a source by linking a URL or providing content that can be uploaded or
+						extracted for grounding.
 					</DialogDescription>
 				</DialogHeader>
 				<form
@@ -127,12 +204,13 @@ export function AddSourceDialog({
 									name={field.name}
 									value={field.state.value}
 									onBlur={field.handleBlur}
-									onChange={(event) =>
+									onChange={(event) => {
+										resetTransientState();
 										field.handleChange(
 											event.target
 												.value as (typeof SOURCE_TYPE_OPTIONS)[number],
-										)
-									}
+										);
+									}}
 								>
 									{SOURCE_TYPE_OPTIONS.map((option) => (
 										<option key={option} value={option}>
@@ -163,32 +241,152 @@ export function AddSourceDialog({
 												}
 												placeholder="https://example.com/article"
 											/>
+											<p className="text-xs/relaxed text-muted-foreground">
+												Paste any link here. The backend will determine what
+												the URL points to.
+											</p>
 											<FieldErrors errors={field.state.meta.errors} />
 										</div>
 									)}
 								</form.Field>
+							) : type === "pdf" ? (
+								<div className="flex flex-col gap-3 rounded-md border p-3">
+									<div className="flex flex-col gap-0.5">
+										<Label htmlFor="source-pdf-upload">Upload document</Label>
+										<p className="text-xs/relaxed text-muted-foreground">
+											Choose the PDF document you want this source to
+											represent.
+										</p>
+									</div>
+									<Input
+										id="source-pdf-upload"
+										type="file"
+										accept=".pdf,application/pdf"
+										onChange={(event) => {
+											const file = event.target.files?.[0];
+
+											setUploadedPdfFile(file ?? null);
+										}}
+									/>
+									{uploadedPdfFile ? (
+										<p className="rounded-md bg-muted px-2 py-1.5 text-xs/relaxed text-muted-foreground">
+											{uploadedPdfFile.name} ·{" "}
+											{formatBytes(uploadedPdfFile.size)}
+										</p>
+									) : null}
+									<p className="text-xs/relaxed text-muted-foreground">
+										PDF selection is preserved locally, but saving stays
+										disabled until the upload flow exists on the backend.
+									</p>
+								</div>
 							) : (
 								<form.Field name="content">
 									{(field) => (
-										<div className="flex flex-col gap-1.5">
-											<Label htmlFor={field.name}>
-												{type === "pdf" ? "Notes" : "Content"}
-											</Label>
-											<Textarea
-												id={field.name}
-												name={field.name}
-												value={field.state.value}
-												onBlur={field.handleBlur}
-												onChange={(event) =>
-													field.handleChange(event.target.value)
-												}
-												placeholder={
-													type === "pdf"
-														? "Optional notes or extracted text placeholder."
-														: "Paste the source body you want indexed."
-												}
-												className="min-h-28 resize-none"
-											/>
+										<div className="flex flex-col gap-3">
+											<div className="flex flex-col gap-2 rounded-md border p-3">
+												<div className="flex flex-col gap-0.5">
+													<Label>Input method</Label>
+													<p className="text-xs/relaxed text-muted-foreground">
+														Upload a {getTypeLabel(type).toLowerCase()}{" "}
+														file or paste the content directly.
+													</p>
+												</div>
+												<div className="flex flex-wrap gap-2">
+													<Button
+														type="button"
+														size="sm"
+														variant={
+															textInputMode === "paste"
+																? "default"
+																: "outline"
+														}
+														onClick={() => setTextInputMode("paste")}
+													>
+														Paste content
+													</Button>
+													<Button
+														type="button"
+														size="sm"
+														variant={
+															textInputMode === "upload"
+																? "default"
+																: "outline"
+														}
+														onClick={() => setTextInputMode("upload")}
+													>
+														Upload file
+													</Button>
+												</div>
+											</div>
+
+											{textInputMode === "upload" ? (
+												<div className="flex flex-col gap-1.5 rounded-md border p-3">
+													<Label htmlFor={`source-${type}-upload`}>
+														Upload {getTypeLabel(type)} file
+													</Label>
+													<Input
+														id={`source-${type}-upload`}
+														type="file"
+														accept={
+															type === "markdown"
+																? ".md,.markdown,text/markdown,text/plain"
+																: ".txt,text/plain"
+														}
+														onChange={async (event) => {
+															const file = event.target.files?.[0];
+
+															if (!file) {
+																setUploadedTextFile(null);
+																field.handleChange("");
+																return;
+															}
+
+															try {
+																const nextContent =
+																	await file.text();
+
+																setUploadedTextFile({
+																	name: file.name,
+																	bytes: file.size,
+																});
+																field.handleChange(nextContent);
+															} catch {
+																setUploadedTextFile(null);
+																field.handleChange("");
+																toast.error(
+																	`Unable to read ${file.name}. Try another file.`,
+																);
+															}
+														}}
+													/>
+													<p className="text-xs/relaxed text-muted-foreground">
+														We will use the file contents as the source
+														body.
+													</p>
+													{uploadedTextFile ? (
+														<p className="rounded-md bg-muted px-2 py-1.5 text-xs/relaxed text-muted-foreground">
+															{uploadedTextFile.name} ·{" "}
+															{formatBytes(uploadedTextFile.bytes)}
+														</p>
+													) : null}
+												</div>
+											) : (
+												<div className="flex flex-col gap-1.5">
+													<Label htmlFor={field.name}>Content</Label>
+													<Textarea
+														id={field.name}
+														name={field.name}
+														value={field.state.value}
+														onBlur={field.handleBlur}
+														onChange={(event) =>
+															field.handleChange(event.target.value)
+														}
+														placeholder={`Paste the ${getTypeLabel(type).toLowerCase()} content you want indexed.`}
+														className="min-h-28 resize-none"
+													/>
+												</div>
+											)}
+
 											<FieldErrors errors={field.state.meta.errors} />
 										</div>
 									)}
@@ -197,39 +395,20 @@ export function AddSourceDialog({
 						}
 					</form.Subscribe>
 
-					<form.Field name="indexNow">
-						{(field) => (
-							<div className="flex items-start gap-3 rounded-md border p-3">
-								<Checkbox
-									id={field.name}
-									checked={field.state.value}
-									onCheckedChange={(checked) =>
-										field.handleChange(Boolean(checked))
-									}
-								/>
-								<div className="flex flex-col gap-0.5">
-									<Label htmlFor={field.name}>Mark as ready for grounding</Label>
-									<p className="text-xs/relaxed text-muted-foreground">
-										The source is immediately counted as indexed.
-									</p>
-								</div>
-							</div>
-						)}
-					</form.Field>
-
 					<DialogFooter>
 						<form.Subscribe
 							selector={(state) => ({
 								canSubmit: state.canSubmit,
 								isSubmitting: state.isSubmitting,
+								type: state.values.type,
 							})}
 						>
-							{({ canSubmit, isSubmitting }) => (
+							{({ canSubmit, isSubmitting, type }) => (
 								<>
 									<Button
 										type="button"
 										variant="outline"
-										onClick={() => onOpenChange(false)}
+										onClick={() => handleOpenChange(false)}
 									>
 										Cancel
 									</Button>
@@ -237,20 +416,20 @@ export function AddSourceDialog({
 										type="submit"
 										disabled={
 											!canSubmit ||
+											type === "pdf" ||
 											isSubmitting ||
 											createSourceMutation.isPending
 										}
+										size={
+											isSubmitting || createSourceMutation.isPending
+												? "icon"
+												: "default"
+										}
 									>
 										{isSubmitting || createSourceMutation.isPending ? (
-											<>
-												<Spinner data-icon="inline-start" />
-												Saving...
-											</>
+											<Spinner />
 										) : (
-											<>
-												<PlusIcon data-icon="inline-start" />
-												Save source
-											</>
+											"Save source"
 										)}
 									</Button>
 								</>
@@ -298,7 +477,7 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 				<div>
 					<h1 className="text-lg font-semibold tracking-tight">Sources</h1>
 					<p className="text-sm text-muted-foreground">
-						Add URLs, notes, markdown, or PDF placeholders and manage their indexing
+						Add links, uploaded documents, or pasted content and manage their indexing
 						state.
 					</p>
 				</div>
@@ -386,9 +565,6 @@ export function SourcesManager({ projectId }: { projectId: string }) {
 								</div>
 							</CardHeader>
 							<CardContent className="flex flex-col gap-2">
-								<p className="text-sm text-muted-foreground line-clamp-2">
-									{item.excerpt || "No preview content saved yet."}
-								</p>
 								<div className="flex flex-wrap gap-x-6 gap-y-1 text-xs/relaxed text-muted-foreground">
 									<span>Pages: {item.pageCount}</span>
 									<span>Chunks: {item.chunkCount}</span>

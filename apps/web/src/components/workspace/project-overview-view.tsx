@@ -215,8 +215,11 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 							</div>
 						) : (
 							recentArtifacts.map((item) => (
-								<div
+								<Link
 									key={item.id}
+									href={
+										`/dashboard/projects/${projectId}/artifacts/${item.id}` as Route
+									}
 									className="rounded-lg border p-3 transition-colors hover:bg-muted/30"
 								>
 									<div className="flex items-center justify-between gap-3">
@@ -237,7 +240,7 @@ export function ProjectOverviewView({ projectId }: { projectId: string }) {
 										</div>
 										<StatusBadge status="ready" />
 									</div>
-								</div>
+								</Link>
 							))
 						)}
 					</CardContent>
