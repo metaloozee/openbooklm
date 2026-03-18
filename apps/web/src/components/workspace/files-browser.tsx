@@ -46,7 +46,7 @@ export function FilesBrowser({ projectId }: { projectId: string }) {
 			) : !filesQuery.data?.items.length ? (
 				<Empty className="border">
 					<EmptyHeader>
-						<EmptyMedia variant={"icon"}>
+						<EmptyMedia variant="icon">
 							<FilesIcon />
 						</EmptyMedia>
 						<EmptyTitle>No virtual files yet</EmptyTitle>

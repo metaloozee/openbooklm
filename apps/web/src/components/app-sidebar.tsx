@@ -11,7 +11,6 @@ import {
 	SidebarMenu,
 	SidebarMenuButton,
 	SidebarMenuItem,
-	SidebarMenuSkeleton,
 	SidebarRail,
 } from "@openbooklm/ui/components/sidebar";
 import { Button } from "@openbooklm/ui/components/button";
@@ -21,7 +20,6 @@ import {
 	BookOpenIcon,
 	FolderOpenIcon,
 	LayoutDashboardIcon,
-	PlusIcon,
 	SettingsIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -34,14 +32,7 @@ import { AddSourceDialog } from "@/components/workspace/sources-manager";
 import { CreateArtifactDialog } from "@/components/workspace/artifacts-manager";
 import { ProjectWorkspaceTree } from "@/components/workspace/project-workspace-tree";
 import { trpc } from "@/utils/trpc";
-import {
-	Empty,
-	EmptyContent,
-	EmptyDescription,
-	EmptyHeader,
-	EmptyMedia,
-	EmptyTitle,
-} from "@openbooklm/ui/components/empty";
+import { Empty, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
 
@@ -223,37 +214,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
 							</SidebarGroup>
 						</>
 					) : isProjectRoute ? (
-						<>
-							{renderProjectNavigation()}
-
-							{/* {projectsQuery.data?.length ? (
-								<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-									<SidebarGroupLabel>Switch project</SidebarGroupLabel>
-									<SidebarGroupContent>
-										<SidebarMenu>
-											{projectsQuery.data.map((project) => (
-												<SidebarMenuItem key={project.id}>
-													<SidebarMenuButton
-														asChild
-														isActive={project.id === projectId}
-														tooltip={project.name}
-													>
-														<Link
-															href={
-																`/dashboard/projects/${project.id}` as Route
-															}
-														>
-															<FolderOpenIcon />
-															<span>{project.name}</span>
-														</Link>
-													</SidebarMenuButton>
-												</SidebarMenuItem>
-											))}
-										</SidebarMenu>
-									</SidebarGroupContent>
-								</SidebarGroup>
-							) : null} */}
-						</>
+						<>{renderProjectNavigation()}</>
 					) : (
 						<>
 							{renderMenuGroup({

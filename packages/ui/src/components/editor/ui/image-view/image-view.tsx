@@ -14,6 +14,9 @@ export default function ImageView(props: ReactNodeViewProps) {
 	const [progress, setProgress] = useState(0);
 
 	useEffect(() => {
+		setError(undefined);
+		setProgress(0);
+
 		if (!uploading) return;
 
 		const uploadTask = UploadTask.get<string>(url);

@@ -75,13 +75,13 @@ interface SpinnerProps extends Omit<React.ComponentPropsWithoutRef<"svg">, "disp
 export const Spinner = React.forwardRef<React.ComponentRef<typeof SpinnerPrimitive>, SpinnerProps>(
 	({ className, size = "md", speed = "normal", ...props }, ref) => {
 		return (
-			<span data-spinner className={cn("inline-block", speedClasses[speed], className)}>
+			<span data-spinner className={cn("inline-block", speedClasses[speed])}>
 				<SpinnerPrimitive
 					ref={ref}
 					aria-hidden
 					aria-label="Loading"
 					role="presentation"
-					className={cn(sizeClasses[size], "")}
+					className={cn(sizeClasses[size], className)}
 					{...props}
 				/>
 			</span>

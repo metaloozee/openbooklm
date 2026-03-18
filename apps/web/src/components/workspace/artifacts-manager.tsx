@@ -3,18 +3,7 @@
 import { ARTIFACT_TYPE_OPTIONS, artifactCreateSchema } from "@openbooklm/api/contracts";
 import { Button } from "@openbooklm/ui/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@openbooklm/ui/components/card";
-import {
-	Combobox,
-	ComboboxChip,
-	ComboboxChips,
-	ComboboxChipsInput,
-	ComboboxContent,
-	ComboboxEmpty,
-	ComboboxItem,
-	ComboboxList,
-	ComboboxValue,
-	useComboboxAnchor,
-} from "@openbooklm/ui/components/combobox";
+import { Checkbox } from "@openbooklm/ui/components/checkbox";
 import {
 	Dialog,
 	DialogContent,
@@ -72,12 +61,6 @@ export function CreateArtifactDialog({
 			})),
 		[sourcesQuery.data],
 	);
-	const sourceIds = useMemo(() => sourceOptions.map((item) => item.id), [sourceOptions]);
-	const sourceTitlesById = useMemo(
-		() => new Map(sourceOptions.map((item) => [item.id, item.title])),
-		[sourceOptions],
-	);
-	const sourceAnchor = useComboboxAnchor();
 
 	const createArtifactMutation = useMutation(
 		trpc.artifacts.create.mutationOptions({
@@ -120,195 +103,211 @@ export function CreateArtifactDialog({
 	return (
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-lg">
-				<DialogHeader>
-					<DialogTitle>Create artifact</DialogTitle>
-					<DialogDescription>
-						Create an AI-generated artifact from selected sources and optional
-						instructions.
-					</DialogDescription>
-				</DialogHeader>
-				<form
-					noValidate
-					className="flex flex-col gap-4"
-					onSubmit={(event) => {
-						event.preventDefault();
-						event.stopPropagation();
-						form.handleSubmit();
-					}}
-				>
-					<div className="grid gap-4 sm:grid-cols-2">
-						<form.Field name="title">
+				<div className="flex flex-col gap-4">
+					<DialogHeader>
+						<DialogTitle>Create artifact</DialogTitle>
+						<DialogDescription>
+							Create an AI-generated artifact from selected sources and optional
+							instructions.
+						</DialogDescription>
+					</DialogHeader>
+					<form
+						noValidate
+						className="flex flex-col gap-4"
+						onSubmit={(event) => {
+							event.preventDefault();
+							event.stopPropagation();
+							form.handleSubmit();
+						}}
+					>
+						<div className="grid gap-4 sm:grid-cols-2">
+							<form.Field name="title">
+								{(field) => (
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>Title</Label>
+										<Input
+											id={field.name}
+											name={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(event.target.value)
+											}
+											placeholder="Executive summary"
+										/>
+										<FieldErrors errors={field.state.meta.errors} />
+									</div>
+								)}
+							</form.Field>
+
+							<form.Field name="type">
+								{(field) => (
+									<div className="flex flex-col gap-1.5">
+										<Label htmlFor={field.name}>Type</Label>
+										<Select
+											id={field.name}
+											name={field.name}
+											value={field.state.value}
+											onBlur={field.handleBlur}
+											onChange={(event) =>
+												field.handleChange(
+													event.target
+														.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
+												)
+											}
+										>
+											{ARTIFACT_TYPE_OPTIONS.map((option) => (
+												<option key={option} value={option}>
+													{option}
+												</option>
+											))}
+										</Select>
+										<FieldErrors errors={field.state.meta.errors} />
+									</div>
+								)}
+							</form.Field>
+						</div>
+
+						<form.Field name="sourceIds">
 							{(field) => (
 								<div className="flex flex-col gap-1.5">
-									<Label htmlFor={field.name}>Title</Label>
-									<Input
+									<Label>Linked sources</Label>
+									{sourcesQuery.isPending ? (
+										<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
+											Loading sources...
+										</p>
+									) : sourcesQuery.isError ? (
+										<div className="flex flex-col gap-2 rounded-md border border-dashed p-3 text-xs/relaxed text-destructive">
+											<p>{sourcesQuery.error.message}</p>
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={() => void sourcesQuery.refetch()}
+											>
+												Retry
+											</Button>
+										</div>
+									) : sourceOptions.length ? (
+										<div className="rounded-md border">
+											<div className="border-b px-3 py-2 text-xs/relaxed text-muted-foreground">
+												{field.state.value?.length
+													? `${field.state.value.length} source${field.state.value.length === 1 ? "" : "s"} selected`
+													: "Select one or more sources to link provenance to this artifact."}
+											</div>
+											<div className="max-h-48 space-y-2 overflow-y-auto p-3">
+												{sourceOptions.map((source) => {
+													const checked =
+														field.state.value?.includes(source.id) ??
+														false;
+
+													return (
+														<label
+															key={source.id}
+															className="flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2 transition-colors hover:bg-muted/30"
+														>
+															<Checkbox
+																checked={checked}
+																onCheckedChange={(nextChecked) => {
+																	const currentValue =
+																		field.state.value ?? [];
+																	field.handleChange(
+																		nextChecked
+																			? [
+																					...currentValue,
+																					source.id,
+																				]
+																			: currentValue.filter(
+																					(sourceId) =>
+																						sourceId !==
+																						source.id,
+																				),
+																	);
+																}}
+															/>
+															<div className="min-w-0">
+																<p className="truncate text-xs font-medium">
+																	{source.title}
+																</p>
+																<p className="text-xs/relaxed text-muted-foreground">
+																	{source.id}
+																</p>
+															</div>
+														</label>
+													);
+												})}
+											</div>
+										</div>
+									) : (
+										<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
+											Add sources first to link provenance to artifacts.
+										</p>
+									)}
+									<FieldErrors errors={field.state.meta.errors} />
+								</div>
+							)}
+						</form.Field>
+
+						<form.Field name="instructions">
+							{(field) => (
+								<div className="flex flex-col gap-1.5">
+									<Label htmlFor={field.name}>Instructions (optional)</Label>
+									<Textarea
 										id={field.name}
 										name={field.name}
-										value={field.state.value}
+										value={field.state.value ?? ""}
 										onBlur={field.handleBlur}
 										onChange={(event) => field.handleChange(event.target.value)}
-										placeholder="Executive summary"
+										placeholder="Suggest tone, focus areas, structure, or constraints for generation."
+										className="min-h-32 resize-none"
 									/>
 									<FieldErrors errors={field.state.meta.errors} />
 								</div>
 							)}
 						</form.Field>
 
-						<form.Field name="type">
-							{(field) => (
-								<div className="flex flex-col gap-1.5">
-									<Label htmlFor={field.name}>Type</Label>
-									<Select
-										id={field.name}
-										name={field.name}
-										value={field.state.value}
-										onBlur={field.handleBlur}
-										onChange={(event) =>
-											field.handleChange(
-												event.target
-													.value as (typeof ARTIFACT_TYPE_OPTIONS)[number],
-											)
-										}
-									>
-										{ARTIFACT_TYPE_OPTIONS.map((option) => (
-											<option key={option} value={option}>
-												{option}
-											</option>
-										))}
-									</Select>
-									<FieldErrors errors={field.state.meta.errors} />
-								</div>
-							)}
-						</form.Field>
-					</div>
-
-					<form.Field name="sourceIds">
-						{(field) => (
-							<div className="flex flex-col gap-1.5">
-								<Label>Linked sources</Label>
-								{sourcesQuery.isPending ? (
-									<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
-										Loading sources...
-									</p>
-								) : sourcesQuery.isError ? (
-									<div className="flex flex-col gap-2 rounded-md border border-dashed p-3 text-xs/relaxed text-destructive">
-										<p>{sourcesQuery.error.message}</p>
+						<DialogFooter>
+							<form.Subscribe
+								selector={(state) => ({
+									canSubmit: state.canSubmit,
+									isSubmitting: state.isSubmitting,
+								})}
+							>
+								{({ canSubmit, isSubmitting }) => (
+									<>
 										<Button
+											type="button"
 											variant="outline"
-											size="sm"
-											onClick={() => void sourcesQuery.refetch()}
+											onClick={() => handleOpenChange(false)}
 										>
-											Retry
+											Cancel
 										</Button>
-									</div>
-								) : sourceOptions.length ? (
-									<Combobox
-										items={sourceIds}
-										multiple
-										value={field.state.value ?? []}
-										onValueChange={(nextValue) => field.handleChange(nextValue)}
-										autoHighlight
-										itemToStringValue={(sourceId) =>
-											sourceTitlesById.get(sourceId) ?? sourceId
-										}
-									>
-										<ComboboxChips
-											ref={sourceAnchor}
-											aria-label="Linked sources"
+										<Button
+											type="submit"
+											disabled={
+												!canSubmit ||
+												isSubmitting ||
+												createArtifactMutation.isPending
+											}
+											size="default"
+											aria-busy={
+												isSubmitting || createArtifactMutation.isPending
+											}
+											className="min-w-28"
 										>
-											<ComboboxValue>
-												{(selectedSourceIds: string[]) => (
-													<>
-														{selectedSourceIds.map((sourceId) => (
-															<ComboboxChip key={sourceId}>
-																{sourceTitlesById.get(sourceId) ??
-																	sourceId}
-															</ComboboxChip>
-														))}
-													</>
-												)}
-											</ComboboxValue>
-											<ComboboxChipsInput placeholder="Select sources..." />
-										</ComboboxChips>
-										<ComboboxContent anchor={sourceAnchor}>
-											<ComboboxEmpty>No matching sources.</ComboboxEmpty>
-											<ComboboxList>
-												{(sourceId) => (
-													<ComboboxItem key={sourceId} value={sourceId}>
-														{sourceTitlesById.get(sourceId) ?? sourceId}
-													</ComboboxItem>
-												)}
-											</ComboboxList>
-										</ComboboxContent>
-									</Combobox>
-								) : (
-									<p className="rounded-md border px-3 py-2 text-xs/relaxed text-muted-foreground">
-										Add sources first to link provenance to artifacts.
-									</p>
+											<span className="inline-flex items-center justify-center gap-1">
+												{isSubmitting ||
+												createArtifactMutation.isPending ? (
+													<Spinner />
+												) : null}
+												<span>Save artifact</span>
+											</span>
+										</Button>
+									</>
 								)}
-								<FieldErrors errors={field.state.meta.errors} />
-							</div>
-						)}
-					</form.Field>
-
-					<form.Field name="instructions">
-						{(field) => (
-							<div className="flex flex-col gap-1.5">
-								<Label htmlFor={field.name}>Instructions (optional)</Label>
-								<Textarea
-									id={field.name}
-									name={field.name}
-									value={field.state.value ?? ""}
-									onBlur={field.handleBlur}
-									onChange={(event) => field.handleChange(event.target.value)}
-									placeholder="Suggest tone, focus areas, structure, or constraints for generation."
-									className="min-h-32 resize-none"
-								/>
-								<FieldErrors errors={field.state.meta.errors} />
-							</div>
-						)}
-					</form.Field>
-
-					<DialogFooter>
-						<form.Subscribe
-							selector={(state) => ({
-								canSubmit: state.canSubmit,
-								isSubmitting: state.isSubmitting,
-							})}
-						>
-							{({ canSubmit, isSubmitting }) => (
-								<>
-									<Button
-										type="button"
-										variant="outline"
-										onClick={() => handleOpenChange(false)}
-									>
-										Cancel
-									</Button>
-									<Button
-										type="submit"
-										disabled={
-											!canSubmit ||
-											isSubmitting ||
-											createArtifactMutation.isPending
-										}
-										size={
-											isSubmitting || createArtifactMutation.isPending
-												? "icon"
-												: "default"
-										}
-									>
-										{isSubmitting || createArtifactMutation.isPending ? (
-											<Spinner />
-										) : (
-											"Save artifact"
-										)}
-									</Button>
-								</>
-							)}
-						</form.Subscribe>
-					</DialogFooter>
-				</form>
+							</form.Subscribe>
+						</DialogFooter>
+					</form>
+				</div>
 			</DialogContent>
 		</Dialog>
 	);

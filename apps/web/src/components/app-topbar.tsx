@@ -77,12 +77,13 @@ export function AppTopbar() {
 						{segments.map((segment, index) => {
 							const href = `/${segments.slice(0, index + 1).join("/")}`;
 							const isLast = index === segments.length - 1;
+							const previousSegment = index > 0 ? segments[index - 1] : null;
 							const label =
 								index === 2 && currentProjectId && segment === currentProjectId
 									? (projectsQuery.data?.find(
 											(project) => project.id === currentProjectId,
 										)?.name ?? formatSegment(segment))
-									: index === 4 &&
+									: previousSegment === "artifacts" &&
 										  artifactParams &&
 										  segment === artifactParams.artifactId
 										? (artifactQuery.data?.title ?? "Artifact")
@@ -108,7 +109,7 @@ export function AppTopbar() {
 					</BreadcrumbList>
 				</Breadcrumb>
 			</div>
-			<AnimatedThemeToggler variant={"ghost"} />
+			<AnimatedThemeToggler variant="ghost" />
 		</header>
 	);
 }

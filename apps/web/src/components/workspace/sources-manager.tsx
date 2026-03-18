@@ -77,10 +77,7 @@ export function AddSourceDialog({
 		name: string;
 		bytes: number;
 	} | null>(null);
-	const [uploadedPdfFile, setUploadedPdfFile] = useState<{
-		name: string;
-		bytes: number;
-	} | null>(null);
+	const [uploadedPdfFile, setUploadedPdfFile] = useState<File | null>(null);
 
 	const resetTransientState = () => {
 		setTextInputMode("paste");
@@ -117,6 +114,13 @@ export function AddSourceDialog({
 		onSubmit: async ({ value }) => {
 			if (value.type === "pdf" && !uploadedPdfFile) {
 				toast.error("Choose a PDF document before saving.");
+				return;
+			}
+
+			if (value.type === "pdf") {
+				toast.error(
+					"PDF uploads are not available yet. Use a text, markdown, or URL source for now.",
+				);
 				return;
 			}
 
@@ -250,25 +254,18 @@ export function AddSourceDialog({
 										onChange={(event) => {
 											const file = event.target.files?.[0];
 
-											setUploadedPdfFile(
-												file
-													? {
-															name: file.name,
-															bytes: file.size,
-														}
-													: null,
-											);
+											setUploadedPdfFile(file ?? null);
 										}}
 									/>
 									{uploadedPdfFile ? (
 										<p className="rounded-md bg-muted px-2 py-1.5 text-xs/relaxed text-muted-foreground">
 											{uploadedPdfFile.name} ·{" "}
-											{formatBytes(uploadedPdfFile.bytes)}
+											{formatBytes(uploadedPdfFile.size)}
 										</p>
 									) : null}
 									<p className="text-xs/relaxed text-muted-foreground">
-										The frontend now captures the selected PDF. File ingestion
-										will plug in once the upload flow exists on the backend.
+										PDF selection is preserved locally, but saving stays
+										disabled until the upload flow exists on the backend.
 									</p>
 								</div>
 							) : (

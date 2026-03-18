@@ -142,7 +142,7 @@ export function ProjectWorkspaceTree({
 				);
 				await invalidateAll();
 
-				if (pathname.startsWith(`${base}/artifacts/${variables.artifactId}`)) {
+				if (pathname === `${base}/artifacts/${variables.artifactId}`) {
 					router.push(`${base}/artifacts` as Route);
 				}
 

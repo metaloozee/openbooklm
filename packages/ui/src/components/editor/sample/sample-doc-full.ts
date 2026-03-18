@@ -165,7 +165,7 @@ export const sampleContent: NodeJSON = {
 		{
 			type: "image",
 			attrs: {
-				src: "https://static.photos/season/320x240/107",
+				src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 240'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f4d35e'/%3E%3Cstop offset='100%25' stop-color='%23ee964b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='320' height='240' fill='url(%23bg)'/%3E%3Ccircle cx='242' cy='72' r='28' fill='%23fff7d6'/%3E%3Cpath d='M0 198 72 138l48 36 58-70 60 54 40-26 42 66H0Z' fill='%23375a7f' opacity='.88'/%3E%3Cpath d='M0 216 86 152l54 42 46-30 50 26 30-18 54 44H0Z' fill='%232f4858' opacity='.92'/%3E%3C/svg%3E",
 			},
 		},
 		{

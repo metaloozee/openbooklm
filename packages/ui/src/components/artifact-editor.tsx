@@ -119,7 +119,7 @@ function SaveIndicator({ state, updatedAtLabel }: { state: SaveState; updatedAtL
 }
 
 function getSaveButtonTooltip(state: SaveState, updatedAtLabel: string) {
-	return SaveIndicator({ state, updatedAtLabel });
+	return <SaveIndicator state={state} updatedAtLabel={updatedAtLabel} />;
 }
 
 function ToolbarToggle({
@@ -437,6 +437,7 @@ export function ArtifactEditor({
 		[content, contentJson],
 	);
 
+	// eslint-disable-next-line react-hooks/exhaustive-deps -- keep useMemo/createEditor/defineExtension stable so initialContent and uploader do not recreate the editor and wipe editor state after mount.
 	const editor = useMemo(
 		() =>
 			createEditor({

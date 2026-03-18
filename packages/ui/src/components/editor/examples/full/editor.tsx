@@ -5,7 +5,7 @@ import "prosekit/basic/typography.css";
 
 import { createEditor, type NodeJSON } from "prosekit/core";
 import { ProseKit } from "prosekit/react";
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 
 import { sampleContent } from "../../sample/sample-doc-full";
 import { tags } from "../../sample/sample-tag-data";
@@ -27,11 +27,11 @@ interface EditorProps {
 }
 
 export default function Editor(props: EditorProps) {
-	const defaultContent = props.initialContent ?? sampleContent;
+	const initialContentRef = useRef<NodeJSON>(props.initialContent ?? sampleContent);
 	const editor = useMemo(() => {
 		const extension = defineExtension({ uploader: sampleUploader });
-		return createEditor({ extension, defaultContent });
-	}, [defaultContent]);
+		return createEditor({ extension, defaultContent: initialContentRef.current });
+	}, []);
 
 	return (
 		<ProseKit editor={editor}>

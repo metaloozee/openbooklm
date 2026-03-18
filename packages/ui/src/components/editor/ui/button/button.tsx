@@ -12,6 +12,7 @@ export default function Button(props: {
 		<TooltipRoot>
 			<TooltipTrigger className="block">
 				<button
+					type="button"
 					data-state={props.pressed ? "on" : "off"}
 					disabled={props.disabled}
 					onClick={props.onClick}

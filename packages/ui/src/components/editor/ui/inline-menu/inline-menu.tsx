@@ -72,6 +72,7 @@ function getCurrentLink(state: EditorState): string | undefined {
 export default function InlineMenu() {
 	const editor = useEditor<BasicExtension>();
 	const items = useEditorDerivedValue(getInlineMenuItems);
+	const linkItem = items.link;
 
 	const [linkMenuOpen, setLinkMenuOpen] = useState(false);
 	const toggleLinkMenuOpen = () => setLinkMenuOpen((open) => !open);
@@ -148,11 +149,11 @@ export default function InlineMenu() {
 						<div className="i-lucide-code size-5 block"></div>
 					</Button>
 				)}
-				{items.link && items.link.canExec && (
+				{linkItem && linkItem.canExec && (
 					<Button
-						pressed={items.link.isActive}
+						pressed={linkItem.isActive}
 						onClick={() => {
-							items.link?.command?.();
+							linkItem.command();
 							toggleLinkMenuOpen();
 						}}
 						tooltip="Link"
@@ -162,7 +163,7 @@ export default function InlineMenu() {
 				)}
 			</InlinePopover>
 
-			{items.link && (
+			{linkItem && (
 				<InlinePopover
 					placement="bottom"
 					defaultOpen={false}
@@ -182,12 +183,12 @@ export default function InlineMenu() {
 						>
 							<input
 								placeholder="Paste the link..."
-								defaultValue={items.link.currentLink}
+								defaultValue={linkItem.currentLink}
 								className="flex h-9 rounded-md w-full bg-white dark:bg-gray-950 px-3 py-2 text-sm placeholder:text-gray-500 dark:placeholder:text-gray-500 transition border box-border border-gray-200 dark:border-gray-800 border-solid ring-0 ring-transparent focus-visible:ring-2 focus-visible:ring-gray-900 dark:focus-visible:ring-gray-300 focus-visible:ring-offset-0 outline-hidden focus-visible:outline-hidden file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:cursor-not-allowed disabled:opacity-50"
 							/>
 						</form>
 					)}
-					{items.link.isActive && (
+					{linkItem.isActive && (
 						<button
 							onClick={() => handleLinkUpdate()}
 							onMouseDown={(event) => event.preventDefault()}

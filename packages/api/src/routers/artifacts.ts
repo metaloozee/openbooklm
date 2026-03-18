@@ -48,6 +48,27 @@ async function assertArtifactBelongsToProject(
 	return currentArtifact;
 }
 
+async function assertArtifactExists(
+	ctx: Pick<Context, "db">,
+	input: { projectId: string; artifactId: string },
+) {
+	const currentArtifact = await ctx.db.query.artifact.findFirst({
+		where: and(eq(artifact.id, input.artifactId), eq(artifact.projectId, input.projectId)),
+		columns: {
+			id: true,
+		},
+	});
+
+	if (!currentArtifact) {
+		throw new TRPCError({
+			code: "NOT_FOUND",
+			message: "Artifact not found",
+		});
+	}
+
+	return currentArtifact;
+}
+
 export const artifactsRouter = router({
 	list: protectedProcedure.input(projectIdSchema).query(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
@@ -156,7 +177,7 @@ export const artifactsRouter = router({
 	}),
 	update: protectedProcedure.input(artifactUpdateSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
-		await assertArtifactBelongsToProject(ctx, input);
+		await assertArtifactExists(ctx, input);
 
 		const [updatedArtifact] = await ctx.db
 			.update(artifact)
@@ -172,14 +193,14 @@ export const artifactsRouter = router({
 				updatedAt: artifact.updatedAt,
 			});
 
-		await touchProject(ctx.db, input.projectId);
-
 		if (!updatedArtifact) {
 			throw new TRPCError({
 				code: "NOT_FOUND",
 				message: "Artifact not found",
 			});
 		}
+
+		await touchProject(ctx.db, input.projectId);
 
 		return {
 			id: updatedArtifact.id,
@@ -188,7 +209,7 @@ export const artifactsRouter = router({
 	}),
 	uploadImage: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
-		await assertArtifactBelongsToProject(ctx, input);
+		await assertArtifactExists(ctx, input);
 
 		throw new TRPCError({
 			code: "NOT_IMPLEMENTED",
@@ -197,7 +218,7 @@ export const artifactsRouter = router({
 	}),
 	delete: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
-		await assertArtifactBelongsToProject(ctx, input);
+		await assertArtifactExists(ctx, input);
 
 		await ctx.db.batch([
 			ctx.db.delete(artifactSource).where(eq(artifactSource.artifactId, input.artifactId)),
