@@ -102,6 +102,10 @@ export function ProjectWorkspaceTree({
 		if (pathname === base) return base;
 		const sub = pathname.slice(base.length);
 		if (sub.startsWith("/sources") || sub.startsWith("/files")) return `${base}/sources`;
+		const artifactMatch = pathname.match(
+			new RegExp(`^${base.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/artifacts/([^/]+)$`),
+		);
+		if (artifactMatch?.[1]) return `${base}/artifacts/${artifactMatch[1]}`;
 		if (sub.startsWith("/artifacts")) return `${base}/artifacts`;
 		return base;
 	}, [pathname, base]);

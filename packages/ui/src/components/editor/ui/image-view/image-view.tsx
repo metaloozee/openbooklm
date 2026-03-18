@@ -14,6 +14,7 @@ export default function ImageView(props: ReactNodeViewProps) {
 	const [progress, setProgress] = useState(0);
 
 	useEffect(() => {
+		setAspectRatio(undefined);
 		setError(undefined);
 		setProgress(0);
 
@@ -46,8 +47,15 @@ export default function ImageView(props: ReactNodeViewProps) {
 		if (ratio && Number.isFinite(ratio)) {
 			setAspectRatio(ratio);
 		}
-		if (naturalWidth && naturalHeight && (!attrs.width || !attrs.height)) {
-			props.setAttrs({ width: naturalWidth, height: naturalHeight });
+		const nextSize: Partial<Pick<ImageAttrs, "width" | "height">> = {};
+		if (!attrs.width && naturalWidth) {
+			nextSize.width = naturalWidth;
+		}
+		if (!attrs.height && naturalHeight) {
+			nextSize.height = naturalHeight;
+		}
+		if (Object.keys(nextSize).length > 0) {
+			props.setAttrs(nextSize);
 		}
 	};
 

@@ -32,7 +32,7 @@ import { AddSourceDialog } from "@/components/workspace/sources-manager";
 import { CreateArtifactDialog } from "@/components/workspace/artifacts-manager";
 import { ProjectWorkspaceTree } from "@/components/workspace/project-workspace-tree";
 import { trpc } from "@/utils/trpc";
-import { Empty, EmptyDescription } from "@openbooklm/ui/components/empty";
+import { Empty, EmptyContent, EmptyDescription } from "@openbooklm/ui/components/empty";
 
 const RESERVED_PROJECT_SEGMENTS = new Set(["new"]);
 

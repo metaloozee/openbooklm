@@ -23,6 +23,15 @@ function getContentPreview(content: string) {
 	return content.length > 180 ? `${content.slice(0, 177)}...` : content;
 }
 
+function touchProjectInBackground(ctx: Pick<Context, "db">, projectId: string) {
+	void touchProject(ctx.db, projectId).catch((error) => {
+		console.error("Failed to touch project after artifact mutation", {
+			projectId,
+			error,
+		});
+	});
+}
+
 async function assertArtifactBelongsToProject(
 	ctx: Pick<Context, "db">,
 	input: { projectId: string; artifactId: string },
@@ -171,7 +180,7 @@ export const artifactsRouter = router({
 				: []),
 		]);
 
-		await touchProject(ctx.db, input.projectId);
+		touchProjectInBackground(ctx, input.projectId);
 
 		return { id: artifactId };
 	}),
@@ -200,7 +209,7 @@ export const artifactsRouter = router({
 			});
 		}
 
-		await touchProject(ctx.db, input.projectId);
+		touchProjectInBackground(ctx, input.projectId);
 
 		return {
 			id: updatedArtifact.id,
@@ -225,7 +234,7 @@ export const artifactsRouter = router({
 			ctx.db.delete(artifact).where(eq(artifact.id, input.artifactId)),
 		]);
 
-		await touchProject(ctx.db, input.projectId);
+		touchProjectInBackground(ctx, input.projectId);
 
 		return { id: input.artifactId };
 	}),

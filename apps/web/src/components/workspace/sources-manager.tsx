@@ -131,10 +131,21 @@ export function AddSourceDialog({
 				return;
 			}
 
+			if (
+				isTextSourceType(value.type) &&
+				textInputMode !== "upload" &&
+				!value.content.trim()
+			) {
+				toast.error(
+					`Choose a ${getTypeLabel(value.type).toLowerCase()} file or paste content.`,
+				);
+				return;
+			}
+
 			await createSourceMutation.mutateAsync({
 				...value,
 				url: value.type === "url" ? value.url : "",
-				content: value.type === "url" || value.type === "pdf" ? "" : value.content,
+				content: value.type === "url" ? "" : value.content,
 			});
 		},
 	});
@@ -389,9 +400,10 @@ export function AddSourceDialog({
 							selector={(state) => ({
 								canSubmit: state.canSubmit,
 								isSubmitting: state.isSubmitting,
+								type: state.values.type,
 							})}
 						>
-							{({ canSubmit, isSubmitting }) => (
+							{({ canSubmit, isSubmitting, type }) => (
 								<>
 									<Button
 										type="button"
@@ -404,6 +416,7 @@ export function AddSourceDialog({
 										type="submit"
 										disabled={
 											!canSubmit ||
+											type === "pdf" ||
 											isSubmitting ||
 											createSourceMutation.isPending
 										}
