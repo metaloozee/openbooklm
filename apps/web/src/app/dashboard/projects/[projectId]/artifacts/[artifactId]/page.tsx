@@ -1,4 +1,4 @@
-import { ArtifactEditorView } from "@/components/workspace/artifact-editor-view";
+import { ArtifactDetailView } from "@/components/workspace/artifact-detail-view";
 
 export default async function ArtifactDetailPage({
 	params,
@@ -7,5 +7,5 @@ export default async function ArtifactDetailPage({
 }) {
 	const { projectId, artifactId } = await params;
 
-	return <ArtifactEditorView projectId={projectId} artifactId={artifactId} />;
+	return <ArtifactDetailView projectId={projectId} artifactId={artifactId} />;
 }

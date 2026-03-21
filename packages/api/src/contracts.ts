@@ -89,16 +89,6 @@ export const artifactActionSchema = projectIdSchema.extend({
 	artifactId: z.string().trim().min(1, "Artifact id is required"),
 });
 
-export const artifactUpdateSchema = artifactActionSchema.extend({
-	title: requiredText("Artifact title", 160).optional(),
-	content: z.string().trim().max(200000, "Artifact content is too long"),
-	contentJson: z
-		.string()
-		.trim()
-		.min(1, "Artifact document JSON is required")
-		.max(2_000_000, "Artifact document JSON is too large"),
-});
-
 export const userSettingsUpdateSchema = z.object({
 	name: requiredText("Display name", 120),
 	theme: z.enum(THEME_PREFERENCE_OPTIONS),

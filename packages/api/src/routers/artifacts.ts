@@ -3,12 +3,7 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 import type { Context } from "../context";
-import {
-	artifactActionSchema,
-	artifactCreateSchema,
-	artifactUpdateSchema,
-	projectIdSchema,
-} from "../contracts";
+import { artifactActionSchema, artifactCreateSchema, projectIdSchema } from "../contracts";
 import { protectedProcedure, router } from "../index";
 import { getProjectForUserOrThrow, touchProject } from "../project-access";
 
@@ -183,47 +178,6 @@ export const artifactsRouter = router({
 		touchProjectInBackground(ctx, input.projectId);
 
 		return { id: artifactId };
-	}),
-	update: protectedProcedure.input(artifactUpdateSchema).mutation(async ({ ctx, input }) => {
-		await getProjectForUserOrThrow(ctx, input.projectId);
-		await assertArtifactExists(ctx, input);
-
-		const [updatedArtifact] = await ctx.db
-			.update(artifact)
-			.set({
-				title: input.title,
-				content: input.content,
-				contentJson: input.contentJson,
-				updatedAt: new Date(),
-			})
-			.where(and(eq(artifact.id, input.artifactId), eq(artifact.projectId, input.projectId)))
-			.returning({
-				id: artifact.id,
-				updatedAt: artifact.updatedAt,
-			});
-
-		if (!updatedArtifact) {
-			throw new TRPCError({
-				code: "NOT_FOUND",
-				message: "Artifact not found",
-			});
-		}
-
-		touchProjectInBackground(ctx, input.projectId);
-
-		return {
-			id: updatedArtifact.id,
-			updatedAt: toIsoString(updatedArtifact.updatedAt),
-		};
-	}),
-	uploadImage: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
-		await getProjectForUserOrThrow(ctx, input.projectId);
-		await assertArtifactExists(ctx, input);
-
-		throw new TRPCError({
-			code: "NOT_IMPLEMENTED",
-			message: "Artifact image upload is not implemented yet.",
-		});
 	}),
 	delete: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
