@@ -1,9 +1,14 @@
-import { artifact, artifactSource, source } from "@openbooklm/db";
+import { artifact, artifactSource, source, type ArtifactContentJson } from "@openbooklm/db";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 import type { Context } from "../context";
-import { artifactActionSchema, artifactCreateSchema, projectIdSchema } from "../contracts";
+import {
+	artifactActionSchema,
+	artifactCreateSchema,
+	artifactUpdateContentSchema,
+	projectIdSchema,
+} from "../contracts";
 import { protectedProcedure, router } from "../index";
 import { getProjectForUserOrThrow, touchProject } from "../project-access";
 
@@ -13,6 +18,20 @@ function toIsoString(value: Date) {
 
 const ARTIFACT_CONTENT_PLACEHOLDER =
 	"Artifact generation pending. AI generation is not implemented yet.";
+const ARTIFACT_CONTENT_PLACEHOLDER_JSON: ArtifactContentJson = {
+	type: "doc",
+	content: [
+		{
+			type: "paragraph",
+			content: [
+				{
+					type: "text",
+					text: ARTIFACT_CONTENT_PLACEHOLDER,
+				},
+			],
+		},
+	],
+};
 
 function getContentPreview(content: string) {
 	return content.length > 180 ? `${content.slice(0, 177)}...` : content;
@@ -159,7 +178,7 @@ export const artifactsRouter = router({
 				type: input.type,
 				instructions: input.instructions?.trim() || null,
 				content: ARTIFACT_CONTENT_PLACEHOLDER,
-				contentJson: null,
+				contentJson: ARTIFACT_CONTENT_PLACEHOLDER_JSON,
 				createdAt: timestamp,
 				updatedAt: timestamp,
 			}),
@@ -179,6 +198,32 @@ export const artifactsRouter = router({
 
 		return { id: artifactId };
 	}),
+	updateContent: protectedProcedure
+		.input(artifactUpdateContentSchema)
+		.mutation(async ({ ctx, input }) => {
+			await getProjectForUserOrThrow(ctx, input.projectId);
+			await assertArtifactExists(ctx, input);
+
+			const updatedAt = new Date();
+
+			await ctx.db
+				.update(artifact)
+				.set({
+					content: input.contentText,
+					contentJson: input.contentJson,
+					updatedAt,
+				})
+				.where(
+					and(eq(artifact.id, input.artifactId), eq(artifact.projectId, input.projectId)),
+				);
+
+			touchProjectInBackground(ctx, input.projectId);
+
+			return {
+				id: input.artifactId,
+				updatedAt: toIsoString(updatedAt),
+			};
+		}),
 	delete: protectedProcedure.input(artifactActionSchema).mutation(async ({ ctx, input }) => {
 		await getProjectForUserOrThrow(ctx, input.projectId);
 		await assertArtifactExists(ctx, input);

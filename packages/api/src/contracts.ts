@@ -11,6 +11,7 @@ const requiredText = (label: string, max = 200) =>
 	z.string().trim().min(1, `${label} is required`).max(max, `${label} is too long`);
 
 const shortText = (max = 4000) => z.string().trim().max(max, `Must be ${max} characters or fewer`);
+const longText = (max = 200000) => z.string().max(max, `Must be ${max} characters or fewer`);
 const urlOrEmpty = (message: string) =>
 	z
 		.string()
@@ -87,6 +88,43 @@ export const artifactCreateSchema = projectIdSchema.extend({
 
 export const artifactActionSchema = projectIdSchema.extend({
 	artifactId: z.string().trim().min(1, "Artifact id is required"),
+});
+
+const tiptapMarkSchema = z
+	.object({
+		type: z.string().trim().min(1, "Mark type is required"),
+		attrs: z.record(z.string(), z.unknown()).optional(),
+	})
+	.passthrough();
+
+interface TiptapNode {
+	type: string;
+	attrs?: Record<string, unknown>;
+	content?: TiptapNode[];
+	marks?: Array<{
+		type: string;
+		attrs?: Record<string, unknown>;
+	}>;
+	text?: string;
+}
+
+const tiptapNodeSchema: z.ZodType<TiptapNode> = z
+	.object({
+		type: z.string().trim().min(1, "Node type is required"),
+		attrs: z.record(z.string(), z.unknown()).optional(),
+		content: z.array(z.lazy(() => tiptapNodeSchema)).optional(),
+		marks: z.array(tiptapMarkSchema).optional(),
+		text: z.string().optional(),
+	})
+	.passthrough();
+
+export const artifactContentJsonSchema = tiptapNodeSchema.extend({
+	type: z.literal("doc"),
+});
+
+export const artifactUpdateContentSchema = artifactActionSchema.extend({
+	contentText: longText(),
+	contentJson: artifactContentJsonSchema,
 });
 
 export const userSettingsUpdateSchema = z.object({

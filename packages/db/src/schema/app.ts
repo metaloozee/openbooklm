@@ -3,6 +3,7 @@ import {
 	boolean,
 	index,
 	integer,
+	jsonb,
 	pgEnum,
 	pgTable,
 	primaryKey,
@@ -34,6 +35,8 @@ export const artifactTypeEnum = pgEnum("artifact_type", [
 ]);
 export const themePreferenceEnum = pgEnum("theme_preference", ["system", "light", "dark"]);
 export const densityPreferenceEnum = pgEnum("density_preference", ["comfortable", "compact"]);
+
+export type ArtifactContentJson = Record<string, unknown>;
 
 export const project = pgTable(
 	"project",
@@ -116,7 +119,7 @@ export const artifact = pgTable(
 		type: artifactTypeEnum("type").notNull(),
 		instructions: text("instructions"),
 		content: text("content").notNull().default(""),
-		contentJson: text("content_json"),
+		contentJson: jsonb("content_json").$type<ArtifactContentJson | null>(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()
