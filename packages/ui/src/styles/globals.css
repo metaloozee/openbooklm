@@ -169,6 +169,14 @@
 		@apply my-3 pl-6;
 	}
 
+	.ProseMirror ul {
+		@apply list-outside list-disc;
+	}
+
+	.ProseMirror ol {
+		@apply list-outside list-decimal;
+	}
+
 	.ProseMirror li {
 		@apply my-1;
 	}
