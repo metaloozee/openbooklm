@@ -173,8 +173,15 @@ function normalizeLinkHref(value: string) {
 		return "";
 	}
 
-	if (/^[a-zA-Z][a-zA-Z\d+\-.]*:/.test(trimmedValue)) {
-		return trimmedValue;
+	const schemeMatch = trimmedValue.match(/^[a-zA-Z][a-zA-Z\d+\-.]*:/);
+	if (schemeMatch) {
+		const scheme = schemeMatch[0].toLowerCase().replace(/:$/, "");
+		const allowedSchemes = ["http", "https", "mailto", "tel"];
+		if (allowedSchemes.includes(scheme)) {
+			return trimmedValue;
+		}
+		// For disallowed schemes, return empty string to remove the link
+		return "";
 	}
 
 	return `https://${trimmedValue}`;
@@ -268,28 +275,28 @@ function ArtifactEditorToolbar({
 				<ToolbarButton
 					label="Paragraph"
 					icon={PilcrowIcon}
-					pressed={editorState.isParagraph}
+					pressed={editorState?.isParagraph ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().setParagraph().run()}
 				/>
 				<ToolbarButton
 					label="Heading 1"
 					icon={Heading1Icon}
-					pressed={editorState.isHeading1}
+					pressed={editorState?.isHeading1 ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
 				/>
 				<ToolbarButton
 					label="Heading 2"
 					icon={Heading2Icon}
-					pressed={editorState.isHeading2}
+					pressed={editorState?.isHeading2 ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
 				/>
 				<ToolbarButton
 					label="Heading 3"
 					icon={Heading3Icon}
-					pressed={editorState.isHeading3}
+					pressed={editorState?.isHeading3 ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleHeading({ level: 3 }).run()}
 				/>
@@ -297,28 +304,28 @@ function ArtifactEditorToolbar({
 				<ToolbarButton
 					label="Bold"
 					icon={BoldIcon}
-					pressed={editorState.isBold}
+					pressed={editorState?.isBold ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleBold().run()}
 				/>
 				<ToolbarButton
 					label="Italic"
 					icon={ItalicIcon}
-					pressed={editorState.isItalic}
+					pressed={editorState?.isItalic ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleItalic().run()}
 				/>
 				<ToolbarButton
 					label="Strike"
 					icon={StrikethroughIcon}
-					pressed={editorState.isStrike}
+					pressed={editorState?.isStrike ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleStrike().run()}
 				/>
 				<ToolbarButton
 					label="Link"
 					icon={LinkIcon}
-					pressed={editorState.isLink}
+					pressed={editorState?.isLink ?? false}
 					disabled={!editor}
 					onClick={onSetLink}
 				/>
@@ -326,35 +333,35 @@ function ArtifactEditorToolbar({
 				<ToolbarButton
 					label="Bullet list"
 					icon={ListIcon}
-					pressed={editorState.isBulletList}
+					pressed={editorState?.isBulletList ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleBulletList().run()}
 				/>
 				<ToolbarButton
 					label="Ordered list"
 					icon={ListOrderedIcon}
-					pressed={editorState.isOrderedList}
+					pressed={editorState?.isOrderedList ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleOrderedList().run()}
 				/>
 				<ToolbarButton
 					label="Blockquote"
 					icon={QuoteIcon}
-					pressed={editorState.isBlockquote}
+					pressed={editorState?.isBlockquote ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleBlockquote().run()}
 				/>
 				<ToolbarButton
 					label="Inline code"
 					icon={Code2Icon}
-					pressed={editorState.isCode}
+					pressed={editorState?.isCode ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleCode().run()}
 				/>
 				<ToolbarButton
 					label="Code block"
 					icon={SparklesIcon}
-					pressed={editorState.isCodeBlock}
+					pressed={editorState?.isCodeBlock ?? false}
 					disabled={!editor}
 					onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
 				/>
@@ -710,8 +717,17 @@ export function ArtifactDocumentEditor({
 	});
 
 	useEffect(() => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			if (latestPayloadRef.current.serializedJson !== lastPersistedSerializedRef.current) {
+				// Warn user about unsaved changes
+				event.preventDefault();
+				event.returnValue = "";
+			}
+		};
+
 		return () => {
 			mountedRef.current = false;
+			window.removeEventListener("beforeunload", handleBeforeUnload);
 
 			if (saveTimerRef.current) {
 				clearTimeout(saveTimerRef.current);

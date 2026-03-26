@@ -139,8 +139,8 @@
 		@apply min-h-[28rem];
 	}
 
-	.artifact-editor .ProseMirror:focus {
-		@apply outline-none;
+	.artifact-editor .ProseMirror:focus-visible {
+		@apply outline-none ring-2 ring-primary/50;
 	}
 
 	.artifact-editor .ProseMirror p.is-editor-empty:first-child::before {
