@@ -375,7 +375,7 @@ function ArtifactEditorToolbar({
 					<DropdownMenuTrigger asChild>
 						<Button
 							type="button"
-							variant={editorState.isTable ? "secondary" : "ghost"}
+							variant={(editorState?.isTable ?? false) ? "secondary" : "ghost"}
 							size="icon-sm"
 							aria-label="Table actions"
 							title="Table actions"
@@ -386,7 +386,7 @@ function ArtifactEditorToolbar({
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start" className="w-52">
 						<DropdownMenuItem
-							disabled={!editorState.canInsertTable}
+							disabled={!(editorState?.canInsertTable ?? false)}
 							onClick={() =>
 								editor
 									?.chain()
@@ -399,64 +399,64 @@ function ArtifactEditorToolbar({
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							disabled={!editorState.canAddColumnBefore}
+							disabled={!(editorState?.canAddColumnBefore ?? false)}
 							onClick={() => editor?.chain().focus().addColumnBefore().run()}
 						>
 							Add column before
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canAddColumnAfter}
+							disabled={!(editorState?.canAddColumnAfter ?? false)}
 							onClick={() => editor?.chain().focus().addColumnAfter().run()}
 						>
 							Add column after
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canDeleteColumn}
+							disabled={!(editorState?.canDeleteColumn ?? false)}
 							onClick={() => editor?.chain().focus().deleteColumn().run()}
 						>
 							Delete column
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							disabled={!editorState.canAddRowBefore}
+							disabled={!(editorState?.canAddRowBefore ?? false)}
 							onClick={() => editor?.chain().focus().addRowBefore().run()}
 						>
 							Add row before
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canAddRowAfter}
+							disabled={!(editorState?.canAddRowAfter ?? false)}
 							onClick={() => editor?.chain().focus().addRowAfter().run()}
 						>
 							Add row after
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canDeleteRow}
+							disabled={!(editorState?.canDeleteRow ?? false)}
 							onClick={() => editor?.chain().focus().deleteRow().run()}
 						>
 							Delete row
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							disabled={!editorState.canToggleHeaderRow}
+							disabled={!(editorState?.canToggleHeaderRow ?? false)}
 							onClick={() => editor?.chain().focus().toggleHeaderRow().run()}
 						>
 							Toggle header row
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canToggleHeaderColumn}
+							disabled={!(editorState?.canToggleHeaderColumn ?? false)}
 							onClick={() => editor?.chain().focus().toggleHeaderColumn().run()}
 						>
 							Toggle header column
 						</DropdownMenuItem>
 						<DropdownMenuItem
-							disabled={!editorState.canMergeOrSplit}
+							disabled={!(editorState?.canMergeOrSplit ?? false)}
 							onClick={() => editor?.chain().focus().mergeOrSplit().run()}
 						>
 							Merge or split cells
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem
-							disabled={!editorState.canDeleteTable}
+							disabled={!(editorState?.canDeleteTable ?? false)}
 							onClick={() => editor?.chain().focus().deleteTable().run()}
 						>
 							Delete table
@@ -467,13 +467,13 @@ function ArtifactEditorToolbar({
 				<ToolbarButton
 					label="Undo"
 					icon={Undo2Icon}
-					disabled={!editorState.canUndo}
+					disabled={!(editorState?.canUndo ?? false)}
 					onClick={() => editor?.chain().focus().undo().run()}
 				/>
 				<ToolbarButton
 					label="Redo"
 					icon={Redo2Icon}
-					disabled={!editorState.canRedo}
+					disabled={!(editorState?.canRedo ?? false)}
 					onClick={() => editor?.chain().focus().redo().run()}
 				/>
 			</div>

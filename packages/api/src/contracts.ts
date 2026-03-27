@@ -98,6 +98,7 @@ const tiptapMarkSchema = z
 	.passthrough();
 
 interface TiptapNode {
+	[key: string]: unknown;
 	type: string;
 	attrs?: Record<string, unknown>;
 	content?: TiptapNode[];
@@ -118,8 +119,14 @@ const tiptapNodeSchema: z.ZodType<TiptapNode> = z
 	})
 	.passthrough();
 
-export const artifactContentJsonSchema = tiptapNodeSchema.extend({
-	type: z.literal("doc"),
+export const artifactContentJsonSchema = tiptapNodeSchema.superRefine((value, ctx) => {
+	if (value.type !== "doc") {
+		ctx.addIssue({
+			code: z.ZodIssueCode.custom,
+			path: ["type"],
+			message: "Top-level Tiptap node must be of type 'doc'.",
+		});
+	}
 });
 
 export const artifactUpdateContentSchema = artifactActionSchema.extend({
