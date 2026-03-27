@@ -22,6 +22,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { PlusIcon, SparklesIcon, Trash2Icon } from "lucide-react";
 import Link from "next/link";
 import type { Route } from "next";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -51,6 +52,7 @@ export function CreateArtifactDialog({
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
+	const router = useRouter();
 	const sourcesQuery = useQuery(trpc.sources.list.queryOptions({ projectId }));
 	const invalidateProjectData = useArtifactInvalidation(projectId);
 	const sourceOptions = useMemo(
@@ -64,11 +66,12 @@ export function CreateArtifactDialog({
 
 	const createArtifactMutation = useMutation(
 		trpc.artifacts.create.mutationOptions({
-			onSuccess: async () => {
+			onSuccess: async (result) => {
 				await invalidateProjectData();
 				toast.success("Artifact created");
 				form.reset();
 				onOpenChange(false);
+				router.push(`/dashboard/projects/${projectId}/artifacts/${result.id}` as Route);
 			},
 			onError: (error) => {
 				toast.error(error.message);

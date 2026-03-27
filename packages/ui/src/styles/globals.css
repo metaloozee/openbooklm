@@ -135,6 +135,19 @@
 		@apply text-foreground;
 	}
 
+	.artifact-editor .ProseMirror {
+		@apply min-h-[28rem];
+	}
+
+	.artifact-editor .ProseMirror:focus-visible {
+		@apply outline-none ring-2 ring-primary/50;
+	}
+
+	.artifact-editor .ProseMirror p.is-editor-empty:first-child::before {
+		content: attr(data-placeholder);
+		@apply pointer-events-none float-left h-0 text-muted-foreground;
+	}
+
 	.ProseMirror h1 {
 		@apply mt-6 mb-3 text-3xl font-semibold tracking-tight;
 	}
@@ -154,6 +167,14 @@
 	.ProseMirror ul,
 	.ProseMirror ol {
 		@apply my-3 pl-6;
+	}
+
+	.ProseMirror ul {
+		@apply list-outside list-disc;
+	}
+
+	.ProseMirror ol {
+		@apply list-outside list-decimal;
 	}
 
 	.ProseMirror li {
@@ -183,6 +204,31 @@
 
 	.ProseMirror th {
 		@apply bg-muted font-medium;
+	}
+
+	.artifact-editor .ProseMirror a {
+		@apply text-primary underline underline-offset-4;
+	}
+
+	.artifact-editor .tableWrapper {
+		@apply my-4 overflow-x-auto;
+	}
+
+	.artifact-editor .selectedCell {
+		@apply relative;
+	}
+
+	.artifact-editor .selectedCell::after {
+		content: "";
+		@apply pointer-events-none absolute inset-0 bg-primary/10;
+	}
+
+	.artifact-editor .column-resize-handle {
+		@apply absolute top-0 right-[-2px] bottom-0 w-1 bg-primary/40;
+	}
+
+	.artifact-editor .ProseMirror.resize-cursor {
+		@apply cursor-col-resize;
 	}
 }
 
