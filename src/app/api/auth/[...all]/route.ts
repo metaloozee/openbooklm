@@ -5,7 +5,7 @@ import { toNextJsHandler } from "better-auth/next-js";
 import { getAuth } from "@/lib/auth/auth";
 
 const handler = async (request: Request) => {
-  const { env } = await getCloudflareContext();
+  const { env } = await getCloudflareContext({ async: true });
   const auth = getAuth(env);
   return auth.handler(request);
 };

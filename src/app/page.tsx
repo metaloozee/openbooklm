@@ -6,7 +6,7 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import { getAuth } from "@/lib/auth/auth";
 
 export default async function Home() {
-  const { env } = await getCloudflareContext();
+  const { env } = await getCloudflareContext({ async: true });
   const auth = getAuth(env);
 
   const session = await auth.api.getSession({

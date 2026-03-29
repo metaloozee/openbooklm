@@ -28,6 +28,7 @@
       "database_name": "document-rag-db",
       "database_id": "fafbf108-5e85-42cf-b9b0-a02ef90fe26c",
       "migrations_dir": "drizzle",
+      "remote": true,
     },
   ],
   //   "images": {
