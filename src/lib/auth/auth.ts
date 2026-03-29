@@ -3,6 +3,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { cache } from "react";
 
 import { getDb } from "@/lib/db";
+import { env } from "@/lib/env";
 
 export const getAuth = cache(() => {
   const db = getDb();
@@ -12,8 +13,8 @@ export const getAuth = cache(() => {
     }),
     socialProviders: {
       google: {
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
       },
     },
   });
