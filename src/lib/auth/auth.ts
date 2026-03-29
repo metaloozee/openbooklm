@@ -1,12 +1,17 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { cache } from "react";
 
-import { getDb } from "@/lib/db";
-import { env } from "@/lib/env";
+import { getDb } from "../db";
 
-export const getAuth = cache(() => {
-  const db = getDb();
+interface AuthEnv {
+  DB: D1Database;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
+}
+
+export const getAuth = (env: AuthEnv) => {
+  const db = getDb(env.DB);
+
   return betterAuth({
     database: drizzleAdapter(db, {
       provider: "sqlite",
@@ -18,4 +23,4 @@ export const getAuth = cache(() => {
       },
     },
   });
-});
+};

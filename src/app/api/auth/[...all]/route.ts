@@ -1,8 +1,13 @@
 // oxlint-disable require-await
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { toNextJsHandler } from "better-auth/next-js";
 
 import { getAuth } from "@/lib/auth/auth";
 
-export const { POST, GET } = toNextJsHandler({
-  handler: async (request) => getAuth().handler(request),
-});
+const handler = async (request: Request) => {
+  const { env } = await getCloudflareContext();
+  const auth = getAuth(env);
+  return auth.handler(request);
+};
+
+export const { GET, POST } = toNextJsHandler(handler);
