@@ -4,7 +4,11 @@
     "./node_modules/ultracite/config/oxlint/core/.oxlintrc.json",
     "./node_modules/ultracite/config/oxlint/next/.oxlintrc.json"
   ],
-  "ignorePatterns": ["cloudflare-env.d.ts", "drizzle"],
+  "ignorePatterns": [
+    "cloudflare-env.d.ts",
+    "drizzle",
+    "src/components/ui/**/*.tsx"
+  ],
   "rules": {
     "nextjs/no-img-element": "warn"
   }
