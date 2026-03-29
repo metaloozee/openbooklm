@@ -15,9 +15,11 @@
       "binding": "WORKER_SELF_REFERENCE",
       "service": "document-rag",
     },
+  ],
+  "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "service": "document-rag",
+      "bucket_name": "document-rag-next-inc-cache",
     },
   ],
   //   "images": {
