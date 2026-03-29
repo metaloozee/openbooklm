@@ -1,19 +1,22 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { cache } from "react";
 
-import { db } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
-const { env } = getCloudflareContext();
-
-export const auth = betterAuth({
-  database: drizzleAdapter(db, {
-    provider: "sqlite",
-  }),
-  socialProviders: {
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
+export const getAuth = cache(() => {
+  const { env } = getCloudflareContext();
+  const db = getDb();
+  return betterAuth({
+    database: drizzleAdapter(db, {
+      provider: "sqlite",
+    }),
+    socialProviders: {
+      google: {
+        clientId: env.GOOGLE_CLIENT_ID,
+        clientSecret: env.GOOGLE_CLIENT_SECRET,
+      },
     },
-  },
+  });
 });
