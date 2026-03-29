@@ -2,6 +2,7 @@
 
 # opennextjs - cloudflare
 .open-next
+.wrangler
 
 # dependencies
 /node_modules
