@@ -8,9 +8,6 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
-  "vars": {
-    "NEXT_PUBLIC_BETTER_AUTH_URL": "https://document-rag-cf.metaloozee.workers.dev",
-  },
   "observability": {
     "logs": {
       "enabled": true,

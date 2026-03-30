@@ -5,7 +5,9 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
   },
-  experimental__runtimeEnv: process.env,
+  experimental__runtimeEnv: {
+    NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  },
   server: {
     BETTER_AUTH_SECRET: z.string().min(1),
     CLOUDFLARE_ACCOUNT_ID: z.string().min(1),
@@ -14,4 +16,5 @@ export const env = createEnv({
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
   },
+  skipValidation: !!process.env.CI || process.env.NODE_ENV === "production",
 });
