@@ -90,7 +90,23 @@ Validated in `src/lib/env.ts`:
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_D1_TOKEN`
 - `CLOUDFLARE_DATABASE_ID`
-- `NEXTJS_ENV` (`development` | `production`)
+
+### Local development
+
+Use a gitignored `.env` (see `.gitignore`). You need at least:
+
+- `NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000`
+- `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `GOOGLE_CLIENT_ID` (and secrets below)
+
+These are **not** committed in `wrangler.jsonc` so each developer or environment can use their own values.
+
+### Cloudflare Workers / OpenNext deploy
+
+`NEXT_PUBLIC_*` values are embedded when the app is **built** (`opennextjs-cloudflare build`). Keep the production URL in `wrangler.jsonc` → `vars` → `NEXT_PUBLIC_BETTER_AUTH_URL` so OpenNext merges it during the build, and mirror it as a plain variable on the Worker for runtime. **Or** set `NEXT_PUBLIC_BETTER_AUTH_URL` in the shell/CI when you run the build.
+
+**Worker dashboard (plain “Variables”, not in git):** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `GOOGLE_CLIENT_ID` — required at runtime; each collaborator or deployment can use their own.
+
+**Worker secrets:** `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `CLOUDFLARE_D1_TOKEN` (dashboard or `wrangler secret put`), never in `wrangler.jsonc`.
 
 ## Database (Drizzle + D1)
 
