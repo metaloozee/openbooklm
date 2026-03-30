@@ -1,14 +1,11 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { headers } from "next/headers";
 
 import { LoginScreen } from "@/components/auth/login-screen";
 import { SignOutButton } from "@/components/auth/sign-out-button";
-import { getAuth } from "@/lib/auth/auth";
+import { initAuth } from "@/lib/auth";
 
 export default async function Home() {
-  const { env } = await getCloudflareContext({ async: true });
-  const auth = getAuth(env);
-
+  const auth = await initAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });

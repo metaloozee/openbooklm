@@ -1,13 +1,13 @@
-// oxlint-disable require-await
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { toNextJsHandler } from "better-auth/next-js";
+import { initAuth } from "@/lib/auth";
 
-import { getAuth } from "@/lib/auth/auth";
+export const POST = async (req: Request) => {
+  const auth = await initAuth();
 
-const handler = async (request: Request) => {
-  const { env } = await getCloudflareContext({ async: true });
-  const auth = getAuth(env);
-  return auth.handler(request);
+  return auth.handler(req);
 };
 
-export const { GET, POST } = toNextJsHandler(handler);
+export const GET = async (req: Request) => {
+  const auth = await initAuth();
+
+  return auth.handler(req);
+};
