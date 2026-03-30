@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth/auth-client";
 
 export const GoogleSignInButton = () => {
@@ -25,11 +26,10 @@ export const GoogleSignInButton = () => {
       aria-busy={pending}
       disabled={pending}
       onClick={handleClick}
-      size="lg"
       type="button"
-      variant="outline"
+      className="cursor-pointer"
     >
-      Continue with Google
+      {pending ? <Spinner /> : "Continue with Google"}
     </Button>
   );
 };

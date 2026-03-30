@@ -1,36 +1,153 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Document RAG
 
-## Getting Started
+Document RAG is a Next.js + Cloudflare application for Retrieval Augmented Generation workflows.
 
-First, run the development server:
+The product goal is an end-to-end experience where a user can:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Sign in.
+2. Upload documents.
+3. Ask questions about those documents.
+4. Receive grounded responses from an LLM based on retrieved context.
+
+## Current Repository State
+
+The repository is currently in the platform and authentication foundation phase.
+
+Implemented:
+
+- App Router project with TypeScript, Tailwind CSS v4, and shadcn/ui.
+- Authentication with Better Auth + Google OAuth.
+- Session-backed protected pages (page-level guards).
+- Cloudflare D1 (SQLite) configured as the app database.
+- Drizzle ORM configured for schema and migrations.
+- OpenNext Cloudflare setup for Workers-compatible builds and deployment.
+- React Query provider and toaster wiring for client-side app state and UX.
+
+Planned (not yet implemented in this repository):
+
+- Document upload and storage pipeline.
+- Chunking and embedding generation pipeline.
+- Vector index and retrieval flow.
+- Prompt orchestration for grounded Q&A.
+- Chat/conversation UI for document question answering.
+
+## Route Structure
+
+This project uses App Router route groups to separate concerns while keeping clean URLs.
+
+```text
+src/app
+  /(auth)
+    /login/page.tsx          -> /login
+  /(app)
+    /page.tsx                -> /
+  /api/auth/[...all]/route.ts
+  /layout.tsx
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Auth behavior:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `/login` checks session; authenticated users are redirected to `/`.
+- `/` is protected at the page level; unauthenticated users are redirected to `/login`.
+- No layout-level auth guard is used.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Tech Stack
 
-## Learn More
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- shadcn/ui
+- Better Auth
+- Drizzle ORM
+- Cloudflare D1 (SQLite)
+- OpenNext for Cloudflare Workers
+- Ultracite (oxlint + oxfmt) for linting/formatting
 
-To learn more about Next.js, take a look at the following resources:
+## Local Development
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Install dependencies:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm install
+```
 
-## Deploy on Vercel
+Run the app:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+App URL: `http://localhost:3000`
+
+## Environment Variables
+
+Validated in `src/lib/env.ts`:
+
+- `NEXT_PUBLIC_BETTER_AUTH_URL`
+- `BETTER_AUTH_SECRET`
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `CLOUDFLARE_D1_TOKEN`
+- `CLOUDFLARE_DATABASE_ID`
+- `NEXTJS_ENV` (`development` | `production`)
+
+## Database (Drizzle + D1)
+
+Generate migrations:
+
+```bash
+pnpm db:generate
+```
+
+Apply migrations:
+
+```bash
+pnpm db:migrate
+```
+
+Push schema directly:
+
+```bash
+pnpm db:push
+```
+
+Open Drizzle Studio:
+
+```bash
+pnpm db:studio
+```
+
+## Cloudflare Build and Deploy
+
+Build for Cloudflare/OpenNext:
+
+```bash
+pnpm cf:build
+```
+
+Preview worker output:
+
+```bash
+pnpm preview
+```
+
+Deploy:
+
+```bash
+pnpm deploy
+```
+
+## Quality Commands
+
+Check code quality:
+
+```bash
+pnpm check
+```
+
+Auto-fix formatting/lint issues:
+
+```bash
+pnpm fix
+```

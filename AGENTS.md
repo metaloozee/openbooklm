@@ -20,6 +20,14 @@ Oxlint + Oxfmt (the underlying engine) provides robust linting and formatting. M
 
 ---
 
+## App design (typography)
+
+- **Typeface**: **Syne** (Google Fonts) only — loaded in `src/app/layout.tsx` as `--font-syne`. Used for body (`font-sans`), headings (`font-heading`), and `font-mono` (same family; no separate mono font).
+- **Headings**: `h1`–`h6` use `font-heading` in `src/app/globals.css` (`@layer base`); stacks match `font-sans`.
+- **Surfaces**: Prefer shadcn semantic tokens (`background`, `foreground`, `primary`, `muted-foreground`, `border`) over ad-hoc colors.
+
+---
+
 ## Core Principles
 
 Write code that is **accessible, performant, type-safe, and maintainable**. Focus on clarity and explicit intent over brevity.

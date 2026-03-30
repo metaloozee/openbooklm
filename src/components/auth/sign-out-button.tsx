@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { authClient } from "@/lib/auth/auth-client";
 
 export const SignOutButton = () => {
@@ -26,9 +27,10 @@ export const SignOutButton = () => {
       disabled={pending}
       onClick={handleClick}
       type="button"
-      variant="outline"
+      variant="destructive"
+      className="cursor-pointer"
     >
-      Sign out
+      {pending ? <Spinner /> : "Sign out"}
     </Button>
   );
 };
