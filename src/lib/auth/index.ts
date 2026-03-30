@@ -5,9 +5,10 @@ import { cache } from "react";
 import { getDbAsync } from "@/lib/db";
 import { env } from "@/lib/env";
 
-export const authBuilder = cache(async () => {
+const buildAuth = cache(async () => {
   const dbInstance = await getDbAsync();
   return betterAuth({
+    baseURL: env.NEXT_PUBLIC_BETTER_AUTH_URL,
     database: drizzleAdapter(dbInstance, {
       provider: "sqlite",
     }),
@@ -20,25 +21,17 @@ export const authBuilder = cache(async () => {
   });
 });
 
-let authInstance: Awaited<ReturnType<typeof authBuilder>> | null = null;
+export const initAuth = buildAuth;
 
-export const initAuth = cache(async () => {
-  if (!authInstance) {
-    authInstance = await authBuilder();
-  }
-
-  return authInstance;
-});
-
-export const auth = betterAuth({
-  // oxlint-disable-next-line typescript/no-explicit-any
-  database: drizzleAdapter(process.env.DB as any, {
-    provider: "sqlite",
-  }),
-  socialProviders: {
-    google: {
-      clientId: env.GOOGLE_CLIENT_ID,
-      clientSecret: env.GOOGLE_CLIENT_SECRET,
-    },
-  },
-});
+// Uncomment the code below to perform migrations through better-auth
+// export const auth = betterAuth({
+//   database: drizzleAdapter(process.env.DB as unknown as D1Database, {
+//     provider: "sqlite",
+//   }),
+//   socialProviders: {
+//     google: {
+//       clientId: env.GOOGLE_CLIENT_ID,
+//       clientSecret: env.GOOGLE_CLIENT_SECRET,
+//     },
+//   },
+// });
