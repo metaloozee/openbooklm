@@ -11,6 +11,19 @@
   "vars": {
     "NEXT_PUBLIC_BETTER_AUTH_URL": "https://document-rag-cf.metaloozee.workers.dev/",
   },
+  "secrets": {
+    "required": [
+      "BETTER_AUTH_SECRET",
+      "GOOGLE_CLIENT_SECRET",
+      "CLOUDFLARE_D1_TOKEN",
+    ],
+  },
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+    },
+  },
   "services": [
     {
       // Self-reference service binding, the service name must match the worker name
