@@ -597,6 +597,7 @@ function SidebarMenuSkeleton({
 
   return (
     <div
+      suppressHydrationWarning
       data-slot="sidebar-menu-skeleton"
       data-sidebar="menu-skeleton"
       className={cn("flex h-8 items-center gap-2 rounded-none px-2", className)}
