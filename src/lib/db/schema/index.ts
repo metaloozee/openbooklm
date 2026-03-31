@@ -3,4 +3,6 @@
 // oxlint-disable unicorn/require-module-specifiers
 
 export * from "./auth";
+export * from "./project";
+export * from "./relations";
 export {};
