@@ -16,7 +16,7 @@ export default async function HomePage() {
   const displayName = session.user.name?.trim() || session.user.email;
 
   return (
-    <div className="flex flex-1 flex-col gap-4 p-6">
+    <div className="flex flex-1 flex-col w-full gap-4 p-6">
       <div className="gap-2 flex-1">
         <h1 className="font-heading text-2xl font-medium">Welcome back, </h1>
         <p className="text-muted-foreground text-md">{displayName}</p>

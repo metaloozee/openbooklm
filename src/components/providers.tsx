@@ -1,22 +1,21 @@
 "use client";
 
-import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import React from "react";
 
 import { Toaster } from "@/components/ui/sonner";
-import { queryClient } from "@/lib/utils";
+import { TRPCReactProvider } from "@/lib/trpc/client";
 
 import { TooltipProvider } from "./ui/tooltip";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <QueryClientProvider client={queryClient}>
+    <TRPCReactProvider>
       <TooltipProvider>
         {children}
         <Toaster />
       </TooltipProvider>
       <ReactQueryDevtools />
-    </QueryClientProvider>
+    </TRPCReactProvider>
   );
 }

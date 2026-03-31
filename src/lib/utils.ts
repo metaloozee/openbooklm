@@ -1,20 +1,23 @@
-import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { clsx } from "clsx";
 import type { ClassValue } from "clsx";
-import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
+
+import { env } from "./env";
 
 export const cn = (...inputs: ClassValue[]) => twMerge(clsx(inputs));
 
-export const queryClient = new QueryClient({
-  queryCache: new QueryCache({
-    onError: (error, query) => {
-      toast.error(error.message, {
-        action: {
-          label: "retry",
-          onClick: query.invalidate,
-        },
-      });
-    },
-  }),
-});
+export const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    return "";
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  if (env.NEXT_PUBLIC_BETTER_AUTH_URL) {
+    return env.NEXT_PUBLIC_BETTER_AUTH_URL;
+  }
+
+  return "http://localhost:3000";
+};
