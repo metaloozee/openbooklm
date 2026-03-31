@@ -7,12 +7,16 @@ import React from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { queryClient } from "@/lib/utils";
 
+import { TooltipProvider } from "./ui/tooltip";
+
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      {children}
+      <TooltipProvider>
+        {children}
+        <Toaster />
+      </TooltipProvider>
       <ReactQueryDevtools />
-      <Toaster />
     </QueryClientProvider>
   );
 }
