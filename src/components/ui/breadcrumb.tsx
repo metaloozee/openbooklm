@@ -60,7 +60,6 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       data-slot="breadcrumb-page"
-      role="link"
       aria-disabled="true"
       aria-current="page"
       className={cn("font-normal text-foreground", className)}
@@ -88,6 +87,7 @@ function BreadcrumbSeparator({
 }
 
 function BreadcrumbEllipsis({
+  children,
   className,
   ...props
 }: React.ComponentProps<"span">) {
@@ -102,7 +102,7 @@ function BreadcrumbEllipsis({
       )}
       {...props}
     >
-      <MoreHorizontalIcon />
+      {children ?? <MoreHorizontalIcon />}
       <span className="sr-only">More</span>
     </span>
   );

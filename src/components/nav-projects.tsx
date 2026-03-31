@@ -6,6 +6,7 @@ import {
   ArrowRightIcon,
   Trash2Icon,
 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import {
   DropdownMenu,
@@ -30,7 +31,7 @@ export const NavProjects = ({
   projects: {
     name: string;
     url: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
   }[];
 }) => {
   const { isMobile } = useSidebar();
@@ -40,7 +41,7 @@ export const NavProjects = ({
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
       <SidebarMenu>
         {projects.map((item) => (
-          <SidebarMenuItem key={item.name}>
+          <SidebarMenuItem key={item.url}>
             <SidebarMenuButton asChild>
               <a href={item.url}>
                 {item.icon}
@@ -62,16 +63,16 @@ export const NavProjects = ({
                 side={isMobile ? "bottom" : "right"}
                 align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem>
+                <DropdownMenuItem disabled>
                   <FolderIcon className="text-muted-foreground" />
                   <span>View Project</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem disabled>
                   <ArrowRightIcon className="text-muted-foreground" />
                   <span>Share Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem disabled>
                   <Trash2Icon className="text-muted-foreground" />
                   <span>Delete Project</span>
                 </DropdownMenuItem>

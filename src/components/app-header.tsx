@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import * as React from "react";
+import { Fragment } from "react";
 
 import {
   Breadcrumb,
@@ -48,7 +48,7 @@ export const AppHeader = () => {
             const label = humanizeSegment(decodeURIComponent(segment));
 
             return (
-              <React.Fragment key={href}>
+              <Fragment key={href}>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
                   {isLast ? (
@@ -59,7 +59,7 @@ export const AppHeader = () => {
                     </BreadcrumbLink>
                   )}
                 </BreadcrumbItem>
-              </React.Fragment>
+              </Fragment>
             );
           })}
         </BreadcrumbList>

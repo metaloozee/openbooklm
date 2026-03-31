@@ -6,7 +6,7 @@ import {
   FilesIcon,
   MessageSquareIcon,
 } from "lucide-react";
-import * as React from "react";
+import type { ComponentProps } from "react";
 
 import { SidebarUserMenu } from "@/components/sidebar-user-menu";
 import {
@@ -49,9 +49,7 @@ const sections = [
   },
 ];
 
-export const AppSidebar = ({
-  ...props
-}: React.ComponentProps<typeof Sidebar>) => (
+export const AppSidebar = ({ ...props }: ComponentProps<typeof Sidebar>) => (
   <Sidebar collapsible="icon" {...props}>
     <SidebarHeader>
       <SidebarMenu>

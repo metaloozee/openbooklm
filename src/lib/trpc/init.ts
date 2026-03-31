@@ -15,7 +15,10 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   if (session && session.user) {
     return {
       db,
-      session: { ...session, user: session.user },
+      session: {
+        ...session,
+        user: session.user,
+      },
     };
   }
 
@@ -25,19 +28,15 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
+export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+
 const t = initTRPC
   .context<Awaited<ReturnType<typeof createTRPCContext>>>()
   .create({
     transformer: superjson,
   });
 
-export const createTRPCRouter = t.router;
-// oxlint-disable-next-line prefer-destructuring
-export const createCallerFactory = t.createCallerFactory;
-
-export const publicProcedure = t.procedure;
-export const protectedProcedure = t.procedure.use(function isAuthed(opts) {
-  const { ctx, next } = opts;
+const isAuthed = t.middleware(({ ctx, next }) => {
   if (!ctx.session) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -46,9 +45,13 @@ export const protectedProcedure = t.procedure.use(function isAuthed(opts) {
   }
 
   return next({
-    ctx: {
-      ...ctx,
-      session: { ...ctx.session, user: ctx.session.user },
-    },
+    ctx,
   });
 });
+
+export const createTRPCRouter = t.router;
+// oxlint-disable-next-line prefer-destructuring
+export const createCallerFactory = t.createCallerFactory;
+
+export const publicProcedure = t.procedure;
+export const protectedProcedure = t.procedure.use(isAuthed);
