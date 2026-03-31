@@ -1,92 +1,106 @@
 "use client";
 
-import {
-  MoreHorizontalIcon,
-  FolderIcon,
-  ArrowRightIcon,
-  Trash2Icon,
-} from "lucide-react";
-import type { ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { FolderIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@/components/ui/empty";
 import {
+  SidebarGroupContent,
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
+import { useTRPC } from "@/lib/trpc/client";
 
-export const NavProjects = ({
-  projects,
-}: {
-  projects: {
-    name: string;
-    url: string;
-    icon: ReactNode;
-  }[];
-}) => {
-  const { isMobile } = useSidebar();
+export const NavProjects = () => {
+  const trpc = useTRPC();
+  const pathname = usePathname();
+
+  const projectsQueryOptions = useMemo(
+    () =>
+      trpc.project.listProjects.queryOptions({
+        includeArchived: false,
+      }),
+    [trpc]
+  );
+
+  const projectsQuery = useQuery(projectsQueryOptions);
 
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+    <SidebarGroup>
       <SidebarGroupLabel>Projects</SidebarGroupLabel>
-      <SidebarMenu>
-        {projects.map((item) => (
-          <SidebarMenuItem key={item.url}>
-            <SidebarMenuButton asChild>
-              <a href={item.url}>
-                {item.icon}
-                <span>{item.name}</span>
-              </a>
-            </SidebarMenuButton>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction
-                  showOnHover
-                  className="aria-expanded:bg-muted"
-                >
-                  <MoreHorizontalIcon />
-                  <span className="sr-only">More</span>
-                </SidebarMenuAction>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
-                align={isMobile ? "end" : "start"}
-              >
-                <DropdownMenuItem disabled>
-                  <FolderIcon className="text-muted-foreground" />
-                  <span>View Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <ArrowRightIcon className="text-muted-foreground" />
-                  <span>Share Project</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
-                  <Trash2Icon className="text-muted-foreground" />
-                  <span>Delete Project</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon className="text-sidebar-foreground/70" />
-            <span>More</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      </SidebarMenu>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {projectsQuery.isPending ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton disabled tooltip="Loading projects">
+                <FolderIcon aria-hidden="true" />
+                <span>Loading…</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : null}
+
+          {projectsQuery.isError ? (
+            <SidebarMenuItem>
+              <SidebarMenuButton disabled tooltip="Unable to load projects">
+                <FolderIcon aria-hidden="true" />
+                <span>Unable to load</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ) : null}
+
+          {!projectsQuery.isPending &&
+          !projectsQuery.isError &&
+          (projectsQuery.data?.length ?? 0) === 0 ? (
+            <SidebarMenuItem>
+              <Empty className="min-h-0 items-start justify-start gap-1 border border-dashed border-sidebar-border px-2 py-2 text-left">
+                <EmptyHeader className="max-w-none items-start gap-1 text-left">
+                  <EmptyTitle className="text-xs font-medium">
+                    No Projects Yet
+                  </EmptyTitle>
+                  <EmptyDescription className="text-xs leading-relaxed">
+                    Create one from the home page.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            </SidebarMenuItem>
+          ) : null}
+
+          {!projectsQuery.isPending &&
+          !projectsQuery.isError &&
+          (projectsQuery.data?.length ?? 0) > 0
+            ? projectsQuery.data.map((item) => {
+                const href = `/projects/${item.slug}`;
+                const isActive = pathname === href;
+
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.name}
+                    >
+                      <Link href={href}>
+                        <FolderIcon aria-hidden="true" />
+                        <span>{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })
+            : null}
+        </SidebarMenu>
+      </SidebarGroupContent>
     </SidebarGroup>
   );
 };
