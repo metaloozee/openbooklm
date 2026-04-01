@@ -1,11 +1,18 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDownIcon } from "lucide-react";
+import {
+  ChevronDownIcon,
+  Settings2Icon,
+  SlidersHorizontalIcon,
+  UploadIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Fragment, useMemo } from "react";
+import { Fragment, useMemo, useState } from "react";
 
+import { ProjectSettingsDialog } from "@/components/projects/project-settings-dialog";
+import { ProjectUploadDocumentsDialog } from "@/components/projects/project-upload-documents-dialog";
 import {
   Breadcrumb,
   BreadcrumbEllipsis,
@@ -15,6 +22,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTRPC } from "@/lib/trpc/client";
 
-const APP_NAME = "Document RAG";
+const APP_NAME = "Home";
 
 const humanizeSegment = (segment: string): string =>
   segment
@@ -36,6 +44,8 @@ const humanizeSegment = (segment: string): string =>
 export const AppHeader = () => {
   const trpc = useTRPC();
   const pathname = usePathname();
+  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isSettingsDialogOpen, setIsSettingsDialogOpen] = useState(false);
   const segments = pathname.split("/").filter(Boolean);
   const isProjectDetailRoute =
     segments[0] === "projects" && Boolean(segments[1]);
@@ -58,6 +68,26 @@ export const AppHeader = () => {
     retry: false,
   });
 
+  const mobileLabel = (() => {
+    if (segments.length === 0) {
+      return APP_NAME;
+    }
+
+    if (isProjectDetailRoute) {
+      return (
+        projectQuery.data?.name ?? humanizeSegment(projectSlug ?? "project")
+      );
+    }
+
+    const lastSegment = decodeURIComponent(segments.at(-1) ?? "");
+
+    if (segments[0] === "projects" && segments.length === 1) {
+      return "Projects";
+    }
+
+    return humanizeSegment(lastSegment);
+  })();
+
   const projectListQueryOptions = useMemo(
     () => trpc.project.listProjects.queryOptions({ includeArchived: false }),
     [trpc]
@@ -73,11 +103,14 @@ export const AppHeader = () => {
     projectListQuery.data?.filter((item) => item.slug !== projectSlug) ?? [];
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-4 border-b px-4">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-3 sm:gap-4 sm:px-4">
       <SidebarTrigger />
-      <Separator className="size-4 my-auto" orientation="vertical" />
-      <Breadcrumb>
-        <BreadcrumbList>
+      <Separator
+        className="my-auto hidden size-4 sm:block"
+        orientation="vertical"
+      />
+      <Breadcrumb className="min-w-0 flex-1">
+        <BreadcrumbList className="hidden sm:flex">
           <BreadcrumbItem>
             {segments.length === 0 ? (
               <BreadcrumbPage>{APP_NAME}</BreadcrumbPage>
@@ -166,7 +199,66 @@ export const AppHeader = () => {
             })
           )}
         </BreadcrumbList>
+
+        <BreadcrumbList className="sm:hidden">
+          <BreadcrumbItem className="min-w-0">
+            <BreadcrumbPage className="truncate">{mobileLabel}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
       </Breadcrumb>
+
+      {isProjectDetailRoute && projectSlug ? (
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="sm:hidden"
+                aria-label="Open project actions"
+              >
+                <SlidersHorizontalIcon aria-hidden="true" />
+                Manage
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44 sm:hidden">
+              <DropdownMenuItem
+                disabled={projectQuery.isPending}
+                onSelect={() => {
+                  setIsUploadDialogOpen(true);
+                }}
+              >
+                <UploadIcon aria-hidden="true" />
+                Upload Documents
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                disabled={projectQuery.isPending || projectQuery.isError}
+                onSelect={() => {
+                  setIsSettingsDialogOpen(true);
+                }}
+              >
+                <Settings2Icon aria-hidden="true" />
+                Project Settings
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <ProjectUploadDocumentsDialog
+            disabled={projectQuery.isPending}
+            open={isUploadDialogOpen}
+            onOpenChange={setIsUploadDialogOpen}
+            triggerClassName="hidden sm:inline-flex"
+          />
+          <ProjectSettingsDialog
+            project={projectQuery.data}
+            projectSlug={projectSlug}
+            disabled={projectQuery.isPending || projectQuery.isError}
+            open={isSettingsDialogOpen}
+            onOpenChange={setIsSettingsDialogOpen}
+            triggerClassName="hidden sm:inline-flex"
+          />
+        </div>
+      ) : null}
     </header>
   );
 };
