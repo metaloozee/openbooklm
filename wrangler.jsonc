@@ -27,6 +27,11 @@
       "binding": "NEXT_INC_CACHE_R2_BUCKET",
       "bucket_name": "document-rag-next-inc-cache",
     },
+    {
+      "binding": "DOCUMENTS_BUCKET",
+      "bucket_name": "document-rag-documents",
+      "remote": true,
+    },
   ],
   "d1_databases": [
     {

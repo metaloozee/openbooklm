@@ -4,5 +4,6 @@
 
 export * from "./auth";
 export * from "./project";
+export * from "./project-document";
 export * from "./relations";
 export {};

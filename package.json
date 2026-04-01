@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
     "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
@@ -60,6 +61,6 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "ultracite": "7.4.0",
-    "wrangler": "^4.78.0"
+    "wrangler": "^4.79.0"
   }
 }

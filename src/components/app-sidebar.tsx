@@ -9,6 +9,7 @@ import {
 import { usePathname } from "next/navigation";
 import type { ComponentProps } from "react";
 
+import { NavProjectDocuments } from "@/components/nav-project-documents";
 import { NavProjects } from "@/components/nav-projects";
 import { SidebarUserMenu } from "@/components/sidebar-user-menu";
 import {
@@ -38,12 +39,6 @@ import {
 
 const sections = [
   {
-    emptyDescription: "Upload documents to see them here.",
-    emptyTitle: "No Documents Uploaded",
-    icon: FilesIcon,
-    title: "Documents",
-  },
-  {
     emptyDescription: "Start a chat to see it here.",
     emptyTitle: "No Chats Yet",
     icon: MessageSquareIcon,
@@ -51,9 +46,45 @@ const sections = [
   },
 ];
 
-const SidebarCollections = () => (
+const SidebarCollections = ({ projectSlug }: { projectSlug?: string }) => (
   <SidebarGroup>
     <SidebarMenu>
+      <Collapsible asChild className="group/collapsible" defaultOpen>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip="Documents">
+              <FilesIcon aria-hidden="true" />
+              <span>Documents</span>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+              />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            {projectSlug ? (
+              <NavProjectDocuments projectSlug={projectSlug} />
+            ) : (
+              <SidebarMenuSub>
+                <SidebarMenuSubItem>
+                  <Empty className="min-h-0 items-start justify-start gap-1 px-2 py-2 text-left">
+                    <EmptyHeader className="max-w-none items-start gap-1 text-left">
+                      <EmptyTitle className="text-xs font-medium">
+                        No Documents Uploaded
+                      </EmptyTitle>
+                      <EmptyDescription className="text-xs leading-relaxed">
+                        Upload documents to see them here.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                </SidebarMenuSubItem>
+              </SidebarMenuSub>
+            )}
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+
       {sections.map((section) => {
         const Icon = section.icon;
 
@@ -106,11 +137,25 @@ const SidebarHomeContent = () => (
   </>
 );
 
-const SidebarProjectContent = () => <SidebarCollections />;
+const SidebarProjectContent = ({ projectSlug }: { projectSlug: string }) => (
+  <SidebarCollections projectSlug={projectSlug} />
+);
 
 export const AppSidebar = ({ ...props }: ComponentProps<typeof Sidebar>) => {
   const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
   const isHomeRoute = pathname === "/";
+  const projectSlug =
+    segments[0] === "projects" && segments[1]
+      ? decodeURIComponent(segments[1])
+      : null;
+  let sidebarContent = <SidebarCollections />;
+
+  if (isHomeRoute) {
+    sidebarContent = <SidebarHomeContent />;
+  } else if (projectSlug) {
+    sidebarContent = <SidebarProjectContent projectSlug={projectSlug} />;
+  }
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -129,9 +174,7 @@ export const AppSidebar = ({ ...props }: ComponentProps<typeof Sidebar>) => {
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent>
-        {isHomeRoute ? <SidebarHomeContent /> : <SidebarProjectContent />}
-      </SidebarContent>
+      <SidebarContent>{sidebarContent}</SidebarContent>
 
       <SidebarFooter>
         <SidebarUserMenu />

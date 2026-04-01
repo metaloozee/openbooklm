@@ -13,7 +13,6 @@ export const GoogleSignInButton = () => {
     setPending(true);
     try {
       await authClient.signIn.social({
-        callbackURL: "/",
         provider: "google",
       });
     } finally {

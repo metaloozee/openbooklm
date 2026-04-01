@@ -2,7 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { project } from "@/lib/db/schema";
+import { project, projectDocument } from "@/lib/db/schema";
+import { getDocumentsBucket } from "@/lib/r2";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -14,6 +15,7 @@ const projectSlugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
 const projectNameSchema = z.string().trim().min(1).max(120);
+const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 
 const projectDescriptionSchema = z.string().trim().max(5000);
 
@@ -101,6 +103,57 @@ export const projectRouter = createTRPCRouter({
       }
     }),
 
+  deleteProjectDocument: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [deletedDocument] = await ctx.db
+        .delete(projectDocument)
+        .where(
+          and(
+            eq(projectDocument.id, input.id),
+            eq(projectDocument.ownerUserId, ctx.session.user.id)
+          )
+        )
+        .returning({
+          contentType: projectDocument.contentType,
+          createdAt: projectDocument.createdAt,
+          id: projectDocument.id,
+          objectKey: projectDocument.objectKey,
+          originalFilename: projectDocument.originalFilename,
+          ownerUserId: projectDocument.ownerUserId,
+          projectId: projectDocument.projectId,
+          sizeBytes: projectDocument.sizeBytes,
+        });
+
+      if (!deletedDocument) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      const bucket = await getDocumentsBucket();
+      try {
+        await bucket.delete(deletedDocument.objectKey);
+      } catch {
+        await ctx.db.insert(projectDocument).values(deletedDocument);
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Unable to delete document storage.",
+        });
+      }
+
+      return {
+        id: deletedDocument.id,
+        objectKey: deletedDocument.objectKey,
+      };
+    }),
+
   getProjectById: protectedProcedure
     .input(
       z.object({
@@ -157,6 +210,33 @@ export const projectRouter = createTRPCRouter({
 
       return foundProject;
     }),
+
+  listProjectDocuments: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().min(1),
+      })
+    )
+    .query(({ ctx, input }) =>
+      ctx.db
+        .select({
+          contentType: projectDocument.contentType,
+          createdAt: projectDocument.createdAt,
+          id: projectDocument.id,
+          objectKey: projectDocument.objectKey,
+          originalFilename: projectDocument.originalFilename,
+          projectId: projectDocument.projectId,
+          sizeBytes: projectDocument.sizeBytes,
+        })
+        .from(projectDocument)
+        .where(
+          and(
+            eq(projectDocument.ownerUserId, ctx.session.user.id),
+            eq(projectDocument.projectId, input.projectId)
+          )
+        )
+        .orderBy(desc(projectDocument.createdAt))
+    ),
 
   listProjects: protectedProcedure
     .input(
@@ -257,5 +337,39 @@ export const projectRouter = createTRPCRouter({
 
         throw error;
       }
+    }),
+
+  updateProjectDocument: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        originalFilename: projectDocumentNameSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [updatedDocument] = await ctx.db
+        .update(projectDocument)
+        .set({
+          originalFilename: input.originalFilename,
+        })
+        .where(
+          and(
+            eq(projectDocument.id, input.id),
+            eq(projectDocument.ownerUserId, ctx.session.user.id)
+          )
+        )
+        .returning({
+          id: projectDocument.id,
+          originalFilename: projectDocument.originalFilename,
+        });
+
+      if (!updatedDocument) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      return updatedDocument;
     }),
 });

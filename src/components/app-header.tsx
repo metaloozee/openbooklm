@@ -244,7 +244,8 @@ export const AppHeader = () => {
           </DropdownMenu>
 
           <ProjectUploadDocumentsDialog
-            disabled={projectQuery.isPending}
+            projectId={projectQuery.data?.id}
+            disabled={projectQuery.isPending || projectQuery.isError}
             open={isUploadDialogOpen}
             onOpenChange={setIsUploadDialogOpen}
             triggerClassName="hidden sm:inline-flex"

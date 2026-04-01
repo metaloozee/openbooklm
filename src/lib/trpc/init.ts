@@ -1,16 +1,12 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
-import { initAuth } from "../auth";
+import { getAuthSession } from "../auth";
 import { getDbAsync } from "../db";
 
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const auth = await initAuth();
   const db = await getDbAsync();
-
-  const session = await auth.api.getSession({
-    headers: opts.headers,
-  });
+  const session = await getAuthSession(opts.headers);
 
   if (session && session.user) {
     return {

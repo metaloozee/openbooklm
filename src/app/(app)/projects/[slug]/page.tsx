@@ -19,7 +19,6 @@ export default async function ProjectPage({
   }
 
   const { slug } = await params;
-
   try {
     await caller.project.getProjectBySlug({ slug });
   } catch {

@@ -23,6 +23,24 @@ const buildAuth = cache(async () => {
 
 export const initAuth = buildAuth;
 
+export const getAuthSession = async (headers: Headers) => {
+  const auth = await initAuth();
+
+  return auth.api.getSession({ headers });
+};
+
+export const requireAuthSession = async (
+  headers: Headers
+): Promise<NonNullable<Awaited<ReturnType<typeof getAuthSession>>>> => {
+  const session = await getAuthSession(headers);
+
+  if (!session) {
+    throw new Error("UNAUTHORIZED");
+  }
+
+  return session;
+};
+
 // Uncomment the code below to perform migrations through better-auth
 // export const auth = betterAuth({
 //   database: drizzleAdapter(process.env.DB as unknown as D1Database, {
