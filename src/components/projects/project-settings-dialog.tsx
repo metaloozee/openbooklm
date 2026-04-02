@@ -2,6 +2,7 @@
 
 import { useForm } from "@tanstack/react-form";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -64,6 +65,7 @@ export const ProjectSettingsDialog = ({
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) => {
+  const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -107,6 +109,7 @@ export const ProjectSettingsDialog = ({
             queryKey: projectListQueryOptions.queryKey,
           }),
         ]);
+        router.refresh();
         toast.success("Project settings updated");
       },
     })

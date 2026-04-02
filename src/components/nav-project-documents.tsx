@@ -284,7 +284,7 @@ export const NavProjectDocuments = ({
                   </div>
                 ) : (
                   <SidebarMenuSubButton asChild className="min-w-0 flex-1">
-                    <Button variant={"ghost"} asChild>
+                    <Button className="justify-start" variant={"ghost"} asChild>
                       <Link
                         href={buildDocumentHref(document.objectKey)}
                         target="_blank"
