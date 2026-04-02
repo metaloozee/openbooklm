@@ -223,8 +223,12 @@ export const AppHeader = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44 sm:hidden">
               <DropdownMenuItem
-                disabled={projectQuery.isPending}
+                disabled={projectQuery.isPending || projectQuery.isError}
                 onSelect={() => {
+                  if (projectQuery.isPending || projectQuery.isError) {
+                    return;
+                  }
+
                   setIsUploadDialogOpen(true);
                 }}
               >

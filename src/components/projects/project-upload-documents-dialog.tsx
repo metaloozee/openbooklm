@@ -339,6 +339,7 @@ export const ProjectUploadDocumentsDialog = ({
                         onChange={(event) => {
                           const selected = [...(event.target.files ?? [])];
                           field.handleChange(selected);
+                          event.currentTarget.value = "";
                         }}
                       />
                       <label

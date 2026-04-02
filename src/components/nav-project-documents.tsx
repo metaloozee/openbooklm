@@ -15,6 +15,16 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Empty,
   EmptyDescription,
   EmptyHeader,
@@ -133,6 +143,10 @@ export const NavProjectDocuments = ({
       })),
     enabled: Boolean(projectDocumentsQueryOptions),
   });
+  const [deleteCandidate, setDeleteCandidate] = useState<{
+    id: string;
+    originalFilename: string;
+  } | null>(null);
 
   const deleteDocumentMutation = useMutation(
     trpc.project.deleteProjectDocument.mutationOptions({
@@ -146,6 +160,7 @@ export const NavProjectDocuments = ({
           });
         }
 
+        setDeleteCandidate(null);
         toast.success("Document deleted");
       },
     })
@@ -173,7 +188,10 @@ export const NavProjectDocuments = ({
     })
   );
 
-  if (projectQuery.isPending || documentsQuery.isPending) {
+  if (
+    projectQuery.isPending ||
+    (projectDocumentsQueryOptions && documentsQuery.isPending)
+  ) {
     return (
       <SidebarMenu>
         <SidebarMenuSubItem>
@@ -219,131 +237,184 @@ export const NavProjectDocuments = ({
   }
 
   return (
-    <SidebarMenuSub>
-      {documentsQuery.data?.map((document) => {
-        const { Icon } = getDocumentTypePresentation(
-          document.originalFilename,
-          document.contentType
-        );
-        const isRenaming = renamingDocumentId === document.id;
+    <>
+      <SidebarMenuSub>
+        {documentsQuery.data?.map((document) => {
+          const { Icon } = getDocumentTypePresentation(
+            document.originalFilename,
+            document.contentType
+          );
+          const isRenaming = renamingDocumentId === document.id;
 
-        return (
-          <SidebarMenuSubItem key={document.id}>
-            <div className="group flex items-center gap-1">
-              {isRenaming ? (
-                <div className="flex min-w-0 flex-1 items-center gap-1">
-                  <div className="flex size-7 shrink-0 items-center justify-center">
-                    <Icon aria-hidden="true" className="size-4" />
+          return (
+            <SidebarMenuSubItem key={document.id}>
+              <div className="group flex items-center gap-1">
+                {isRenaming ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1">
+                    <div className="flex size-7 shrink-0 items-center justify-center">
+                      <Icon aria-hidden="true" className="size-4" />
+                    </div>
+                    <Input
+                      value={renameValue}
+                      maxLength={255}
+                      className="h-7 bg-background px-2 text-xs"
+                      aria-label={`Rename ${document.originalFilename}`}
+                      onChange={(event) => {
+                        setRenameValue(event.target.value);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Escape") {
+                          setRenamingDocumentId(null);
+                          setRenameValue("");
+                        }
+
+                        if (
+                          event.key === "Enter" &&
+                          renameValue.trim().length > 0 &&
+                          !renameDocumentMutation.isPending
+                        ) {
+                          event.preventDefault();
+                          void renameDocumentMutation.mutateAsync({
+                            id: document.id,
+                            originalFilename: renameValue.trim(),
+                          });
+                        }
+                      }}
+                    />
                   </div>
-                  <Input
-                    value={renameValue}
-                    maxLength={255}
-                    className="h-7 bg-background px-2 text-xs"
-                    aria-label={`Rename ${document.originalFilename}`}
-                    onChange={(event) => {
-                      setRenameValue(event.target.value);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Escape") {
-                        setRenamingDocumentId(null);
-                        setRenameValue("");
-                      }
+                ) : (
+                  <SidebarMenuSubButton asChild className="min-w-0 flex-1">
+                    <Button variant={"ghost"} asChild>
+                      <Link
+                        href={buildDocumentHref(document.objectKey)}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        <Icon aria-hidden="true" />
+                        <span>{document.originalFilename}</span>
+                      </Link>
+                    </Button>
+                  </SidebarMenuSubButton>
+                )}
 
-                      if (
-                        event.key === "Enter" &&
-                        renameValue.trim().length > 0 &&
-                        !renameDocumentMutation.isPending
-                      ) {
-                        event.preventDefault();
+                {isRenaming ? (
+                  <>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon-xs"}
+                      aria-label={`Save ${document.originalFilename}`}
+                      disabled={
+                        renameDocumentMutation.isPending ||
+                        renameValue.trim().length === 0
+                      }
+                      onClick={() => {
                         void renameDocumentMutation.mutateAsync({
                           id: document.id,
                           originalFilename: renameValue.trim(),
                         });
-                      }
-                    }}
-                  />
-                </div>
-              ) : (
-                <SidebarMenuSubButton asChild className="min-w-0 flex-1">
-                  <Button variant={"ghost"} asChild>
-                    <Link
-                      href={buildDocumentHref(document.objectKey)}
-                      target="_blank"
-                      rel="noopener"
+                      }}
                     >
-                      <Icon aria-hidden="true" />
-                      <span>{document.originalFilename}</span>
-                    </Link>
-                  </Button>
-                </SidebarMenuSubButton>
-              )}
+                      <CheckIcon aria-hidden="true" className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon-xs"}
+                      aria-label={`Cancel renaming ${document.originalFilename}`}
+                      onClick={() => {
+                        setRenamingDocumentId(null);
+                        setRenameValue("");
+                      }}
+                    >
+                      <XIcon aria-hidden="true" className="size-3.5" />
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon-xs"}
+                      className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                      aria-label={`Rename ${document.originalFilename}`}
+                      onClick={() => {
+                        setRenamingDocumentId(document.id);
+                        setRenameValue(document.originalFilename);
+                      }}
+                    >
+                      <PencilIcon aria-hidden="true" className="size-3.5" />
+                    </Button>
 
-              {isRenaming ? (
-                <>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon-xs"}
-                    aria-label={`Save ${document.originalFilename}`}
-                    disabled={
-                      renameDocumentMutation.isPending ||
-                      renameValue.trim().length === 0
-                    }
-                    onClick={() => {
-                      void renameDocumentMutation.mutateAsync({
-                        id: document.id,
-                        originalFilename: renameValue.trim(),
-                      });
-                    }}
-                  >
-                    <CheckIcon aria-hidden="true" className="size-3.5" />
-                  </Button>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon-xs"}
-                    aria-label={`Cancel renaming ${document.originalFilename}`}
-                    onClick={() => {
-                      setRenamingDocumentId(null);
-                      setRenameValue("");
-                    }}
-                  >
-                    <XIcon aria-hidden="true" className="size-3.5" />
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant={"ghost"}
-                    size={"icon-xs"}
-                    className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
-                    aria-label={`Rename ${document.originalFilename}`}
-                    onClick={() => {
-                      setRenamingDocumentId(document.id);
-                      setRenameValue(document.originalFilename);
-                    }}
-                  >
-                    <PencilIcon aria-hidden="true" className="size-3.5" />
-                  </Button>
+                    <Button
+                      variant={"ghost"}
+                      size={"icon-xs"}
+                      className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+                      aria-label={`Delete ${document.originalFilename}`}
+                      disabled={deleteDocumentMutation.isPending}
+                      onClick={(event) => {
+                        if (event.shiftKey) {
+                          void deleteDocumentMutation.mutateAsync({
+                            id: document.id,
+                          });
 
-                  <Button
-                    variant={"ghost"}
-                    size={"icon-xs"}
-                    className="opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
-                    aria-label={`Delete ${document.originalFilename}`}
-                    disabled={deleteDocumentMutation.isPending}
-                    onClick={() => {
-                      void deleteDocumentMutation.mutateAsync({
-                        id: document.id,
-                      });
-                    }}
-                  >
-                    <Trash2Icon aria-hidden="true" className="size-3.5" />
-                  </Button>
-                </>
-              )}
-            </div>
-          </SidebarMenuSubItem>
-        );
-      })}
-    </SidebarMenuSub>
+                          return;
+                        }
+
+                        setDeleteCandidate({
+                          id: document.id,
+                          originalFilename: document.originalFilename,
+                        });
+                      }}
+                    >
+                      <Trash2Icon aria-hidden="true" className="size-3.5" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            </SidebarMenuSubItem>
+          );
+        })}
+      </SidebarMenuSub>
+
+      <AlertDialog
+        open={deleteCandidate !== null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setDeleteCandidate(null);
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete document?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteCandidate
+                ? `This will permanently delete ${deleteCandidate.originalFilename}.`
+                : "This will permanently delete this document."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteDocumentMutation.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={deleteDocumentMutation.isPending || !deleteCandidate}
+              onClick={() => {
+                const documentId = deleteCandidate?.id;
+
+                if (!documentId) {
+                  return;
+                }
+
+                void deleteDocumentMutation.mutateAsync({
+                  id: documentId,
+                });
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
