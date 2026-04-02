@@ -57,6 +57,8 @@ export const POST = async (request: Request): Promise<Response> => {
     );
   }
 
+  let uploadSucceeded = false;
+
   try {
     await bucket.put(key, file, {
       customMetadata: {
@@ -67,6 +69,7 @@ export const POST = async (request: Request): Promise<Response> => {
         contentType,
       },
     });
+    uploadSucceeded = true;
 
     const [createdDocument] = await db
       .insert(projectDocument)
@@ -86,8 +89,19 @@ export const POST = async (request: Request): Promise<Response> => {
       });
 
     return Response.json(createdDocument, { status: 201 });
-  } catch {
-    await bucket.delete(key);
+  } catch (error) {
+    if (uploadSucceeded) {
+      try {
+        await bucket.delete(key);
+      } catch (cleanupError) {
+        console.error("Failed to clean up uploaded document after error.", {
+          cleanupError,
+          key,
+          originalError: error,
+        });
+      }
+    }
+
     return Response.json(
       { error: "Unable to upload document." },
       { status: 500 }

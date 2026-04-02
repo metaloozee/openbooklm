@@ -48,7 +48,10 @@ const getDocumentExtension = (
 
   const extension = filename.slice(lastDotIndex + 1).toLowerCase();
 
-  if (extension in documentUploadPolicies) {
+  if (
+    // oxlint-disable-next-line prefer-object-has-own -- explicit own-property guard requested for untrusted extension input
+    Object.prototype.hasOwnProperty.call(documentUploadPolicies, extension)
+  ) {
     return extension as DocumentUploadExtension;
   }
 

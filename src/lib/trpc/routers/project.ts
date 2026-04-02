@@ -136,8 +136,8 @@ export const projectRouter = createTRPCRouter({
         });
       }
 
-      const bucket = await getDocumentsBucket();
       try {
+        const bucket = await getDocumentsBucket();
         await bucket.delete(deletedDocument.objectKey);
       } catch {
         await ctx.db.insert(projectDocument).values(deletedDocument);
