@@ -1,5 +1,3 @@
-// oxlint-disable typescript/no-non-null-assertion
-
 import { defineConfig } from "drizzle-kit";
 
 import { env } from "@/lib/env";

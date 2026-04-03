@@ -2,8 +2,9 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { project, projectDocument } from "@/lib/db/schema";
+import { documentChunk, project, projectDocument } from "@/lib/db/schema";
 import { getDocumentsBucket } from "@/lib/r2";
+import { getDocumentsVectorIndex } from "@/lib/vectorize";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -18,6 +19,25 @@ const projectNameSchema = z.string().trim().min(1).max(120);
 const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 
 const projectDescriptionSchema = z.string().trim().max(5000);
+
+const projectDocumentListSelection = {
+  chunkCount: projectDocument.chunkCount,
+  contentType: projectDocument.contentType,
+  createdAt: projectDocument.createdAt,
+  id: projectDocument.id,
+  ingestionVersion: projectDocument.ingestionVersion,
+  lastIngestionAttemptAt: projectDocument.lastIngestionAttemptAt,
+  objectKey: projectDocument.objectKey,
+  originalFilename: projectDocument.originalFilename,
+  processedAt: projectDocument.processedAt,
+  processingError: projectDocument.processingError,
+  processingStartedAt: projectDocument.processingStartedAt,
+  processingStatus: projectDocument.processingStatus,
+  projectId: projectDocument.projectId,
+  sizeBytes: projectDocument.sizeBytes,
+  sourceTextObjectKey: projectDocument.sourceTextObjectKey,
+  vectorCount: projectDocument.vectorCount,
+};
 
 const isUniqueProjectSlugError = (error: unknown): boolean => {
   if (!(error instanceof Error)) {
@@ -110,48 +130,78 @@ export const projectRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const [deletedDocument] = await ctx.db
-        .delete(projectDocument)
+      const ownerUserId = ctx.session.user.id;
+
+      const [documentRecord] = await ctx.db
+        .select(projectDocumentListSelection)
+        .from(projectDocument)
         .where(
           and(
             eq(projectDocument.id, input.id),
-            eq(projectDocument.ownerUserId, ctx.session.user.id)
+            eq(projectDocument.ownerUserId, ownerUserId)
           )
         )
-        .returning({
-          contentType: projectDocument.contentType,
-          createdAt: projectDocument.createdAt,
-          id: projectDocument.id,
-          objectKey: projectDocument.objectKey,
-          originalFilename: projectDocument.originalFilename,
-          ownerUserId: projectDocument.ownerUserId,
-          projectId: projectDocument.projectId,
-          sizeBytes: projectDocument.sizeBytes,
-        });
+        .limit(1);
 
-      if (!deletedDocument) {
+      if (!documentRecord) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Document not found",
         });
       }
 
+      const chunkRows = await ctx.db
+        .select({
+          vectorId: documentChunk.vectorId,
+        })
+        .from(documentChunk)
+        .where(eq(documentChunk.documentId, documentRecord.id));
+
+      const vectorIds = chunkRows.map((chunk) => chunk.vectorId);
+
+      if (vectorIds.length > 0) {
+        try {
+          const vectorIndex = await getDocumentsVectorIndex();
+          await vectorIndex.deleteByIds(vectorIds);
+        } catch {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Unable to delete document vectors. Please try again.",
+          });
+        }
+      }
+
       try {
         const bucket = await getDocumentsBucket();
-        await bucket.delete(deletedDocument.objectKey);
+        await bucket.delete(documentRecord.objectKey);
       } catch {
-        await ctx.db.insert(projectDocument).values(deletedDocument);
-
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Unable to delete document storage.",
         });
       }
 
-      return {
-        id: deletedDocument.id,
-        objectKey: deletedDocument.objectKey,
-      };
+      const [deletedDocument] = await ctx.db
+        .delete(projectDocument)
+        .where(
+          and(
+            eq(projectDocument.id, input.id),
+            eq(projectDocument.ownerUserId, ownerUserId)
+          )
+        )
+        .returning({
+          id: projectDocument.id,
+          objectKey: projectDocument.objectKey,
+        });
+
+      if (!deletedDocument) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Unable to delete document record.",
+        });
+      }
+
+      return deletedDocument;
     }),
 
   getProjectById: protectedProcedure
@@ -219,15 +269,7 @@ export const projectRouter = createTRPCRouter({
     )
     .query(({ ctx, input }) =>
       ctx.db
-        .select({
-          contentType: projectDocument.contentType,
-          createdAt: projectDocument.createdAt,
-          id: projectDocument.id,
-          objectKey: projectDocument.objectKey,
-          originalFilename: projectDocument.originalFilename,
-          projectId: projectDocument.projectId,
-          sizeBytes: projectDocument.sizeBytes,
-        })
+        .select(projectDocumentListSelection)
         .from(projectDocument)
         .where(
           and(

@@ -12,10 +12,6 @@ const dangerousContentTypes = new Set([
 ]);
 
 const documentUploadPolicies = {
-  doc: {
-    canonicalContentType: "application/msword",
-    previewable: false,
-  },
   docx: {
     canonicalContentType:
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

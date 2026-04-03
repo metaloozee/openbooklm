@@ -1,39 +1,24 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
-  "name": "document-rag-cf",
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "document-rag-workflows-cf",
+  "main": "src/index.ts",
   "compatibility_date": "2026-04-03",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS",
-  },
   "observability": {
     "logs": {
       "enabled": true,
       "invocation_logs": true,
     },
   },
-  "services": [
-    {
-      "binding": "WORKER_SELF_REFERENCE",
-      "service": "document-rag-cf",
-    },
-  ],
   "workflows": [
     {
       "binding": "DOCUMENT_INGESTION_WORKFLOW",
       "name": "document-rag-document-ingestion-workflow",
       "class_name": "DocumentIngestionWorkflow",
-      "script_name": "document-rag-workflows-cf",
       "remote": true,
     },
   ],
   "r2_buckets": [
-    {
-      "binding": "NEXT_INC_CACHE_R2_BUCKET",
-      "bucket_name": "document-rag-next-inc-cache",
-    },
     {
       "binding": "DOCUMENTS_BUCKET",
       "bucket_name": "document-rag-documents",
@@ -45,7 +30,7 @@
       "binding": "DB",
       "database_name": "document-rag-db",
       "database_id": "fafbf108-5e85-42cf-b9b0-a02ef90fe26c",
-      "migrations_dir": "drizzle",
+      "migrations_dir": "../../drizzle",
       "remote": true,
     },
   ],

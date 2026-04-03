@@ -2,11 +2,11 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { cache } from "react";
 
-import { getDbAsync } from "@/lib/db";
+import { getAuthDbAsync } from "@/lib/db";
 import { env } from "@/lib/env";
 
 const buildAuth = cache(async () => {
-  const dbInstance = await getDbAsync();
+  const dbInstance = await getAuthDbAsync();
   return betterAuth({
     baseURL: env.NEXT_PUBLIC_BETTER_AUTH_URL,
     database: drizzleAdapter(dbInstance, {

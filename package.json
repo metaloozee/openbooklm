@@ -6,10 +6,15 @@
     "dev": "next dev",
     "build": "next build",
     "cf:build": "opennextjs-cloudflare build",
+    "cf:build:workflows": "cd workers/workflows && wrangler build --config wrangler.jsonc",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
+    "cf:deploy:workflows": "cd workers/workflows && wrangler deploy --config wrangler.jsonc",
+    "cf:dev:workflows": "cd workers/workflows && wrangler dev --config wrangler.jsonc",
     "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
     "cf:typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "cf:typegen:workflows": "cd workers/workflows && wrangler types --config wrangler.jsonc --env-interface WorkflowWorkerCloudflareEnv cloudflare-env.d.ts",
+    "cf:typegen:all": "pnpm cf:typegen && pnpm cf:typegen:workflows",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
@@ -20,6 +25,7 @@
     "prepare": "lefthook install"
   },
   "dependencies": {
+    "@mistralai/mistralai": "^2.1.2",
     "@opennextjs/cloudflare": "^1.18.0",
     "@t3-oss/env-nextjs": "^0.13.11",
     "@tanstack/react-form": "^1.28.6",
@@ -56,11 +62,11 @@
     "babel-plugin-react-compiler": "1.0.0",
     "drizzle-kit": "^0.31.10",
     "lefthook": "^2.1.4",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0",
+    "oxfmt": "^0.43.0",
+    "oxlint": "^1.58.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "ultracite": "7.4.0",
+    "ultracite": "7.4.3",
     "wrangler": "^4.79.0"
   }
 }

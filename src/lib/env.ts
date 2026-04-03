@@ -6,6 +6,7 @@ export const env = createEnv({
     NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
   },
   experimental__runtimeEnv: {
+    // ...process.env,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   },
   server: {

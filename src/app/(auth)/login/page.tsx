@@ -2,13 +2,10 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { LoginScreen } from "@/components/auth/login-screen";
-import { initAuth } from "@/lib/auth";
+import { getAuthSession } from "@/lib/auth";
 
 export default async function LoginPage() {
-  const auth = await initAuth();
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getAuthSession(await headers());
 
   if (session) {
     redirect("/");

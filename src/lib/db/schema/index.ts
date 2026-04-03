@@ -3,6 +3,7 @@
 // oxlint-disable unicorn/require-module-specifiers
 
 export * from "./auth";
+export * from "./document-chunk";
 export * from "./project";
 export * from "./project-document";
 export * from "./relations";

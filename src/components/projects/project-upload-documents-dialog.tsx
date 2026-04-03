@@ -31,10 +31,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { mergeProjectDocumentList } from "@/lib/project-document";
+import type { ProjectDocumentListItem } from "@/lib/project-document";
 import { useTRPC } from "@/lib/trpc/client";
 
-const ACCEPTED_FILE_TYPES = [".pdf", ".txt", ".md", ".doc", ".docx"].join(",");
-const ACCEPTED_FILE_TYPE_LABELS = ["PDF", "TXT", "MD", "DOC", "DOCX"];
+const ACCEPTED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx"].join(",");
+const ACCEPTED_FILE_TYPE_LABELS = ["PDF", "TXT", "MD", "DOCX"];
 
 const getFieldError = (errors: unknown[]): string | null => {
   for (const error of errors) {
@@ -98,12 +100,11 @@ const getDocumentVisual = (
 
   if (
     normalizedFilename.endsWith(".txt") ||
-    normalizedFilename.endsWith(".doc") ||
     normalizedFilename.endsWith(".docx")
   ) {
     return {
       Icon: FileTextIcon,
-      label: normalizedFilename.endsWith(".txt") ? "TXT" : "DOC",
+      label: normalizedFilename.endsWith(".txt") ? "TXT" : "DOCX",
     };
   }
 
@@ -118,19 +119,47 @@ interface UploadFailure {
   file: File;
 }
 
+interface UploadedDocumentPayload extends Omit<
+  ProjectDocumentListItem,
+  "createdAt" | "lastIngestionAttemptAt" | "processedAt" | "processingStartedAt"
+> {
+  createdAt: string;
+  lastIngestionAttemptAt: string | null;
+  processedAt: string | null;
+  processingStartedAt: string | null;
+}
+
 interface UploadDocumentsResult {
   failed: UploadFailure[];
   uploadedCount: number;
+  uploadedDocuments: ProjectDocumentListItem[];
 }
+
+const toProjectDocumentListItem = (
+  payload: UploadedDocumentPayload
+): ProjectDocumentListItem => ({
+  ...payload,
+  createdAt: new Date(payload.createdAt),
+  lastIngestionAttemptAt: payload.lastIngestionAttemptAt
+    ? new Date(payload.lastIngestionAttemptAt)
+    : null,
+  processedAt: payload.processedAt ? new Date(payload.processedAt) : null,
+  processingStartedAt: payload.processingStartedAt
+    ? new Date(payload.processingStartedAt)
+    : null,
+});
 
 const uploadDocuments = async ({
   files,
+  onUploadedDocument,
   projectId,
 }: {
   files: File[];
+  onUploadedDocument?: (document: ProjectDocumentListItem) => void;
   projectId: string;
 }): Promise<UploadDocumentsResult> => {
   const failed: UploadFailure[] = [];
+  const uploadedDocuments: ProjectDocumentListItem[] = [];
   let uploadedCount = 0;
 
   for (const file of files) {
@@ -156,7 +185,11 @@ const uploadDocuments = async ({
         continue;
       }
 
+      const payload = (await response.json()) as UploadedDocumentPayload;
+      const uploadedDocument = toProjectDocumentListItem(payload);
+      uploadedDocuments.push(uploadedDocument);
       uploadedCount += 1;
+      onUploadedDocument?.(uploadedDocument);
     } catch {
       failed.push({
         error: `Upload failed for ${file.name}`,
@@ -168,6 +201,7 @@ const uploadDocuments = async ({
   return {
     failed,
     uploadedCount,
+    uploadedDocuments,
   };
 };
 
@@ -196,6 +230,19 @@ export const ProjectUploadDocumentsDialog = ({
         : null,
     [projectId, trpc]
   );
+
+  const pushUploadedDocument = (document: ProjectDocumentListItem) => {
+    if (!projectDocumentsQueryOptions) {
+      return;
+    }
+
+    queryClient.setQueryData<ProjectDocumentListItem[]>(
+      projectDocumentsQueryOptions.queryKey,
+      (currentDocuments) =>
+        mergeProjectDocumentList(currentDocuments, [document])
+    );
+  };
+
   const uploadDocumentsMutation = useMutation({
     mutationFn: uploadDocuments,
     onError: (error) => {
@@ -208,16 +255,22 @@ export const ProjectUploadDocumentsDialog = ({
         });
       }
 
-      if (result.failed.length === 0) {
+      const processingDocumentsCount = result.uploadedDocuments.filter(
+        (document) => document.processingStatus !== "failed"
+      ).length;
+      const failedToStartCount =
+        result.uploadedDocuments.length - processingDocumentsCount;
+
+      if (result.failed.length === 0 && failedToStartCount === 0) {
         toast.success("Documents uploaded", {
-          description: `${result.uploadedCount} document(s) uploaded to this project.`,
+          description: `${processingDocumentsCount} document(s) uploaded and background processing started.`,
         });
         return;
       }
 
       if (result.uploadedCount > 0) {
-        toast.message("Some documents uploaded", {
-          description: `${result.uploadedCount} uploaded, ${result.failed.length} failed.`,
+        toast.message("Uploads finished", {
+          description: `${processingDocumentsCount} processing, ${failedToStartCount} failed to start background work, ${result.failed.length} upload failed.`,
         });
         return;
       }
@@ -252,6 +305,7 @@ export const ProjectUploadDocumentsDialog = ({
 
       const result = await uploadDocumentsMutation.mutateAsync({
         files: value.files,
+        onUploadedDocument: pushUploadedDocument,
         projectId,
       });
 
@@ -420,37 +474,37 @@ export const ProjectUploadDocumentsDialog = ({
                         </span>
                       ) : null}
                     </div>
-                    {selectedFiles.length > 0 ? (
-                      <ul className="space-y-2">
-                        {selectedFiles.map((file: File, index: number) => {
+
+                    {selectedFiles.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Choose files above to preview what will be added to the
+                        library.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {selectedFiles.map((file, index) => {
                           const { Icon, label } = getDocumentVisual(file.name);
 
                           return (
-                            <li
-                              key={`${file.name}-${file.size}`}
-                              className="flex items-center justify-between gap-3 border border-border bg-muted/15 px-2.5 py-2"
+                            <div
+                              key={`${file.name}-${file.size}-${index}`}
+                              className="flex items-start justify-between gap-3 border border-border bg-muted/10 px-3 py-3"
                             >
-                              <div className="flex min-w-0 items-center gap-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center border border-border bg-background">
-                                  <Icon
-                                    aria-hidden="true"
-                                    className="size-4 text-foreground"
-                                  />
+                              <div className="flex min-w-0 items-start gap-3">
+                                <div className="flex size-9 shrink-0 items-center justify-center border border-border bg-background">
+                                  <Icon aria-hidden="true" className="size-4" />
                                 </div>
-                                <div className="min-w-0">
-                                  <p className="truncate text-xs font-medium text-foreground">
+                                <div className="min-w-0 space-y-1">
+                                  <p className="truncate text-sm font-medium text-foreground">
                                     {file.name}
                                   </p>
-                                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                                    <span className="tracking-[0.14em] uppercase">
-                                      {label}
-                                    </span>
-                                    <span>•</span>
+                                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                     <span>{formatBytes(file.size)}</span>
+                                    <span aria-hidden="true">•</span>
+                                    <span>{label}</span>
                                   </div>
                                 </div>
                               </div>
-
                               <Button
                                 type="button"
                                 variant="ghost"
@@ -460,53 +514,42 @@ export const ProjectUploadDocumentsDialog = ({
                                   form.setFieldValue(
                                     "files",
                                     selectedFiles.filter(
-                                      (_, selectedIndex) =>
-                                        selectedIndex !== index
+                                      (_, fileIndex) => fileIndex !== index
                                     )
                                   );
                                 }}
                               >
-                                <XIcon aria-hidden="true" />
+                                <XIcon
+                                  aria-hidden="true"
+                                  className="size-3.5"
+                                />
                               </Button>
-                            </li>
+                            </div>
                           );
                         })}
-                      </ul>
-                    ) : null}
-                    {selectedFiles.length > 0 ? (
-                      <p className="text-[11px] text-muted-foreground">
-                        You can remove individual files before adding them to
-                        the library.
-                      </p>
-                    ) : null}
+                      </div>
+                    )}
                   </div>
                 );
               }}
             </form.Subscribe>
           </FieldGroup>
 
-          <DialogFooter className="pt-1" showCloseButton>
-            <form.Subscribe
-              selector={(state) => ({
-                canSubmit: state.canSubmit,
-                isSubmitting: state.isSubmitting,
-              })}
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={uploadDocumentsMutation.isPending}
+              onClick={() => {
+                setOpen(false);
+              }}
             >
-              {(state) => (
-                <Button
-                  type="submit"
-                  disabled={
-                    !state.canSubmit ||
-                    state.isSubmitting ||
-                    uploadDocumentsMutation.isPending
-                  }
-                >
-                  {state.isSubmitting || uploadDocumentsMutation.isPending
-                    ? "Uploading..."
-                    : "Add to Library"}
-                </Button>
-              )}
-            </form.Subscribe>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={uploadDocumentsMutation.isPending}>
+              <UploadIcon aria-hidden="true" />
+              Upload Documents
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
