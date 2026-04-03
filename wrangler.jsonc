@@ -20,15 +20,6 @@
       "service": "document-rag-cf",
     },
   ],
-  "workflows": [
-    {
-      "binding": "DOCUMENT_INGESTION_WORKFLOW",
-      "name": "document-rag-document-ingestion-workflow",
-      "class_name": "DocumentIngestionWorkflow",
-      "script_name": "document-rag-workflows-cf",
-      "remote": true,
-    },
-  ],
   "r2_buckets": [
     {
       "binding": "NEXT_INC_CACHE_R2_BUCKET",

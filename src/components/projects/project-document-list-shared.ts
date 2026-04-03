@@ -1,5 +1,18 @@
-import { isDocumentProcessingActive } from "./ingestion";
-import type { DocumentProcessingStatus } from "./ingestion";
+const ACTIVE_PROCESSING_STATUSES = new Set([
+  "queued",
+  "parsing",
+  "chunking",
+  "embedding",
+]);
+
+export type ProjectDocumentProcessingStatus =
+  | "queued"
+  | "parsing"
+  | "chunking"
+  | "embedding"
+  | "ready"
+  | "failed";
+
 export const documentListPollIntervalMs = 2000;
 
 export interface ProjectDocumentListItem {
@@ -14,7 +27,7 @@ export interface ProjectDocumentListItem {
   processedAt: Date | null;
   processingError: string | null;
   processingStartedAt: Date | null;
-  processingStatus: DocumentProcessingStatus;
+  processingStatus: ProjectDocumentProcessingStatus;
   projectId: string;
   sizeBytes: number;
   sourceTextObjectKey: string | null;
@@ -23,7 +36,10 @@ export interface ProjectDocumentListItem {
 
 export const isActiveDocumentProcessingStatus = (
   status: string | null | undefined
-): boolean => isDocumentProcessingActive(status);
+): boolean =>
+  status !== undefined &&
+  status !== null &&
+  ACTIVE_PROCESSING_STATUSES.has(status);
 
 export const mergeProjectDocumentList = (
   currentDocuments: ProjectDocumentListItem[] | undefined,

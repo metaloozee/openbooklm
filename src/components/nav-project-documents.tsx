@@ -15,6 +15,11 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
+  documentListPollIntervalMs,
+  isActiveDocumentProcessingStatus,
+} from "@/components/projects/project-document-list-shared";
+import type { ProjectDocumentListItem } from "@/components/projects/project-document-list-shared";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -40,11 +45,6 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  documentListPollIntervalMs,
-  isActiveDocumentProcessingStatus,
-} from "@/lib/project-document";
-import type { ProjectDocumentListItem } from "@/lib/project-document";
 import { useTRPC } from "@/lib/trpc/client";
 
 const buildDocumentHref = (

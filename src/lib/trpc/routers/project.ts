@@ -2,6 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { projectDocumentListSelection } from "@/lib/db/project-document-selection";
 import { documentChunk, project, projectDocument } from "@/lib/db/schema";
 import { getDocumentsBucket } from "@/lib/r2";
 import { getDocumentsVectorIndex } from "@/lib/vectorize";
@@ -19,25 +20,6 @@ const projectNameSchema = z.string().trim().min(1).max(120);
 const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 
 const projectDescriptionSchema = z.string().trim().max(5000);
-
-const projectDocumentListSelection = {
-  chunkCount: projectDocument.chunkCount,
-  contentType: projectDocument.contentType,
-  createdAt: projectDocument.createdAt,
-  id: projectDocument.id,
-  ingestionVersion: projectDocument.ingestionVersion,
-  lastIngestionAttemptAt: projectDocument.lastIngestionAttemptAt,
-  objectKey: projectDocument.objectKey,
-  originalFilename: projectDocument.originalFilename,
-  processedAt: projectDocument.processedAt,
-  processingError: projectDocument.processingError,
-  processingStartedAt: projectDocument.processingStartedAt,
-  processingStatus: projectDocument.processingStatus,
-  projectId: projectDocument.projectId,
-  sizeBytes: projectDocument.sizeBytes,
-  sourceTextObjectKey: projectDocument.sourceTextObjectKey,
-  vectorCount: projectDocument.vectorCount,
-};
 
 const isUniqueProjectSlugError = (error: unknown): boolean => {
   if (!(error instanceof Error)) {

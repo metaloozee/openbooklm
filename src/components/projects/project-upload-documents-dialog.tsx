@@ -13,6 +13,8 @@ import {
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { mergeProjectDocumentList } from "@/components/projects/project-document-list-shared";
+import type { ProjectDocumentListItem } from "@/components/projects/project-document-list-shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,8 +33,6 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { mergeProjectDocumentList } from "@/lib/project-document";
-import type { ProjectDocumentListItem } from "@/lib/project-document";
 import { useTRPC } from "@/lib/trpc/client";
 
 const ACCEPTED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx"].join(",");
