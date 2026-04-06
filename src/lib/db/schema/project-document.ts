@@ -1,37 +1,35 @@
-import { sql } from "drizzle-orm";
 import {
   index,
   integer,
-  sqliteTable,
+  pgTable,
   text,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { project } from "./project";
 
-export const projectDocument = sqliteTable(
+export const projectDocument = pgTable(
   "project_document",
   {
     chunkCount: integer("chunk_count").default(0).notNull(),
     contentType: text("content_type"),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     id: text("id").primaryKey(),
     ingestionVersion: integer("ingestion_version").default(1).notNull(),
-    lastIngestionAttemptAt: integer("last_ingestion_attempt_at", {
-      mode: "timestamp_ms",
+    lastIngestionAttemptAt: timestamp("last_ingestion_attempt_at", {
+      mode: "date",
     }),
     objectKey: text("object_key").notNull(),
     originalFilename: text("original_filename").notNull(),
     ownerUserId: text("owner_user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    processedAt: integer("processed_at", { mode: "timestamp_ms" }),
+    processedAt: timestamp("processed_at", { mode: "date" }),
     processingError: text("processing_error"),
-    processingStartedAt: integer("processing_started_at", {
-      mode: "timestamp_ms",
+    processingStartedAt: timestamp("processing_started_at", {
+      mode: "date",
     }),
     processingStatus: text("processing_status").default("ready").notNull(),
     projectId: text("project_id")

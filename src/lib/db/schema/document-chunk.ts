@@ -1,28 +1,28 @@
-import { sql } from "drizzle-orm";
 import {
   index,
   integer,
-  sqliteTable,
+  pgTable,
   text,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+  vector,
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 import { project } from "./project";
 import { projectDocument } from "./project-document";
 
-export const documentChunk = sqliteTable(
+export const documentChunk = pgTable(
   "document_chunk",
   {
     charEnd: integer("char_end"),
     charStart: integer("char_start"),
     chunkIndex: integer("chunk_index").notNull(),
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     documentId: text("document_id")
       .notNull()
       .references(() => projectDocument.id, { onDelete: "cascade" }),
+    embedding: vector("embedding", { dimensions: 1536 }),
     id: text("id").primaryKey(),
     ownerUserId: text("owner_user_id")
       .notNull()

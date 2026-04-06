@@ -2,10 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { projectDocumentListSelection } from "@/lib/db/project-document-selection";
-import { documentChunk, project, projectDocument } from "@/lib/db/schema";
-import { getDocumentsBucket } from "@/lib/r2";
-import { getDocumentsVectorIndex } from "@/lib/vectorize";
+import { project, projectDocument } from "@/lib/db/schema";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -22,13 +19,25 @@ const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 const projectDescriptionSchema = z.string().trim().max(5000);
 
 const isUniqueProjectSlugError = (error: unknown): boolean => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "23505"
+  ) {
+    return true;
+  }
+
   if (!(error instanceof Error)) {
     return false;
   }
 
+  const { message } = error;
+
   return (
-    error.message.includes("UNIQUE constraint failed") ||
-    error.message.includes("project_owner_slug_unique")
+    message.includes("UNIQUE constraint failed") ||
+    message.includes("duplicate key value violates unique constraint") ||
+    message.includes("project_owner_slug_unique")
   );
 };
 
@@ -104,7 +113,6 @@ export const projectRouter = createTRPCRouter({
         throw error;
       }
     }),
-
   deleteProjectDocument: protectedProcedure
     .input(
       z.object({
@@ -114,55 +122,6 @@ export const projectRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const ownerUserId = ctx.session.user.id;
 
-      const [documentRecord] = await ctx.db
-        .select(projectDocumentListSelection)
-        .from(projectDocument)
-        .where(
-          and(
-            eq(projectDocument.id, input.id),
-            eq(projectDocument.ownerUserId, ownerUserId)
-          )
-        )
-        .limit(1);
-
-      if (!documentRecord) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Document not found",
-        });
-      }
-
-      const chunkRows = await ctx.db
-        .select({
-          vectorId: documentChunk.vectorId,
-        })
-        .from(documentChunk)
-        .where(eq(documentChunk.documentId, documentRecord.id));
-
-      const vectorIds = chunkRows.map((chunk) => chunk.vectorId);
-
-      if (vectorIds.length > 0) {
-        try {
-          const vectorIndex = await getDocumentsVectorIndex();
-          await vectorIndex.deleteByIds(vectorIds);
-        } catch {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Unable to delete document vectors. Please try again.",
-          });
-        }
-      }
-
-      try {
-        const bucket = await getDocumentsBucket();
-        await bucket.delete(documentRecord.objectKey);
-      } catch {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Unable to delete document storage.",
-        });
-      }
-
       const [deletedDocument] = await ctx.db
         .delete(projectDocument)
         .where(
@@ -171,15 +130,12 @@ export const projectRouter = createTRPCRouter({
             eq(projectDocument.ownerUserId, ownerUserId)
           )
         )
-        .returning({
-          id: projectDocument.id,
-          objectKey: projectDocument.objectKey,
-        });
+        .returning({ id: projectDocument.id });
 
       if (!deletedDocument) {
         throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Unable to delete document record.",
+          code: "NOT_FOUND",
+          message: "Document not found",
         });
       }
 
@@ -212,7 +168,6 @@ export const projectRouter = createTRPCRouter({
 
       return foundProject;
     }),
-
   getProjectBySlug: protectedProcedure
     .input(
       z.object({
@@ -249,18 +204,41 @@ export const projectRouter = createTRPCRouter({
         projectId: z.string().min(1),
       })
     )
-    .query(({ ctx, input }) =>
-      ctx.db
-        .select(projectDocumentListSelection)
-        .from(projectDocument)
-        .where(
+    .query(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+
+      const rows = await ctx.db
+        .select({ document: projectDocument })
+        .from(project)
+        .leftJoin(
+          projectDocument,
           and(
-            eq(projectDocument.ownerUserId, ctx.session.user.id),
-            eq(projectDocument.projectId, input.projectId)
+            eq(projectDocument.projectId, project.id),
+            eq(projectDocument.ownerUserId, ownerUserId)
           )
         )
-        .orderBy(desc(projectDocument.createdAt))
-    ),
+        .where(
+          and(
+            eq(project.id, input.projectId),
+            eq(project.ownerUserId, ownerUserId)
+          )
+        )
+        .orderBy(desc(projectDocument.createdAt));
+
+      if (rows.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      return rows
+        .map((row) => row.document)
+        .filter(
+          (doc): doc is typeof projectDocument.$inferSelect =>
+            doc !== null && doc.id !== null
+        );
+    }),
 
   listProjects: protectedProcedure
     .input(
@@ -273,23 +251,16 @@ export const projectRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       const ownerUserId = ctx.session.user.id;
 
-      if (input?.includeArchived) {
-        return ctx.db
-          .select()
-          .from(project)
-          .where(eq(project.ownerUserId, ownerUserId))
-          .orderBy(desc(project.updatedAt));
+      const conditions = [eq(project.ownerUserId, ownerUserId)];
+
+      if (!input?.includeArchived) {
+        conditions.push(eq(project.isArchived, false));
       }
 
       return ctx.db
         .select()
         .from(project)
-        .where(
-          and(
-            eq(project.ownerUserId, ownerUserId),
-            eq(project.isArchived, false)
-          )
-        )
+        .where(and(...conditions))
         .orderBy(desc(project.updatedAt));
     }),
 

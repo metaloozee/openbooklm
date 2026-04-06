@@ -7,7 +7,7 @@ import type { ReactNode } from "react";
 import { AppHeader } from "@/components/app-header";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { getAuthSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { caller } from "@/lib/trpc/server";
 
 export const ProjectWorkspaceShell = async ({
@@ -17,9 +17,9 @@ export const ProjectWorkspaceShell = async ({
   children: ReactNode;
   slug: string;
 }) => {
-  const session = await getAuthSession(await headers());
+  const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session) {
+  if (!session?.user) {
     redirect("/login");
   }
 

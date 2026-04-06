@@ -1,10 +1,9 @@
-import { getAuthSession } from "@/lib/auth";
-import { uploadProjectDocumentForOwner } from "@/lib/server/documents/upload-project-document";
+import { auth } from "@/lib/auth";
 
 export const maxDuration = 60;
 
 export const POST = async (request: Request): Promise<Response> => {
-  const session = await getAuthSession(request.headers);
+  const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session) {
     return Response.json({ error: "Unauthorized." }, { status: 401 });
@@ -22,15 +21,10 @@ export const POST = async (request: Request): Promise<Response> => {
     return Response.json({ error: "Missing project id." }, { status: 400 });
   }
 
-  const result = await uploadProjectDocumentForOwner({
-    file,
-    ownerUserId: session.user.id,
-    projectId,
-  });
+  // const result ;
+  // if (!result.ok) {
+  //   return Response.json({ error: result.error }, { status: result.status });
+  // }
 
-  if (!result.ok) {
-    return Response.json({ error: result.error }, { status: result.status });
-  }
-
-  return Response.json(result.document, { status: 201 });
+  return Response.json({ message: "TODO" }, { status: 201 });
 };

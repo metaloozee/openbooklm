@@ -4,6 +4,7 @@
 
 export * from "./auth";
 export * from "./document-chunk";
+export * from "./document-embedding";
 export * from "./project";
 export * from "./project-document";
 export * from "./relations";

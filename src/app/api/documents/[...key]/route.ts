@@ -1,13 +1,8 @@
 import { and, eq } from "drizzle-orm";
 
-import { getAuthSession } from "@/lib/auth";
-import { getDbAsync } from "@/lib/db";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import { projectDocument } from "@/lib/db/schema";
-import {
-  canRenderDocumentInline,
-  getDocumentsBucket,
-  getSafeDocumentResponseContentType,
-} from "@/lib/r2";
 
 interface DocumentRouteContext {
   params: Promise<{
@@ -19,9 +14,7 @@ export const GET = async (
   request: Request,
   { params }: DocumentRouteContext
 ): Promise<Response> => {
-  const session = await getAuthSession(request.headers);
-  const requestUrl = new URL(request.url);
-  const shouldDownload = requestUrl.searchParams.get("download") === "1";
+  const session = await auth.api.getSession({ headers: request.headers });
 
   if (!session) {
     return new Response("Unauthorized.", { status: 401 });
@@ -34,7 +27,6 @@ export const GET = async (
     return new Response("Missing object key.", { status: 400 });
   }
 
-  const db = await getDbAsync();
   const [documentRecord] = await db
     .select({
       contentType: projectDocument.contentType,
@@ -54,41 +46,16 @@ export const GET = async (
     return new Response("Object not found.", { status: 404 });
   }
 
-  const bucket = await getDocumentsBucket();
-  const object = await bucket.get(documentRecord.objectKey);
-
-  if (!object) {
-    return new Response("Object not found.", { status: 404 });
-  }
-
   const headers = new Headers();
-  const { httpMetadata, size } = object;
-  const safeContentType = getSafeDocumentResponseContentType(
-    documentRecord.contentType
+
+  headers.set(
+    "content-type",
+    documentRecord.contentType ?? "application/octet-stream"
   );
-  const shouldRenderInline =
-    !shouldDownload && canRenderDocumentInline(documentRecord.contentType);
-
-  if (httpMetadata?.cacheControl) {
-    headers.set("cache-control", httpMetadata.cacheControl);
-  }
-
-  if (httpMetadata?.contentEncoding) {
-    headers.set("content-encoding", httpMetadata.contentEncoding);
-  }
-
-  if (httpMetadata?.contentLanguage) {
-    headers.set("content-language", httpMetadata.contentLanguage);
-  }
-
-  headers.set("content-type", safeContentType);
-  headers.set("content-length", size.toString());
   headers.set(
     "content-disposition",
-    `${shouldRenderInline ? "inline" : "attachment"}; filename*=UTF-8''${encodeURIComponent(documentRecord.originalFilename)}`
+    `attachment; filename*=UTF-8''${encodeURIComponent(documentRecord.originalFilename)}`
   );
-  headers.set("etag", object.httpEtag);
-  headers.set("x-content-type-options", "nosniff");
 
-  return new Response(object.body, { headers });
+  return new Response(null, { headers });
 };

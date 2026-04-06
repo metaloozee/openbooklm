@@ -1,8 +1,8 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
-import { getAuthSession } from "../auth";
-import { getDbAsync } from "../db";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 
 export interface Context {
   headers: Headers;
@@ -17,8 +17,7 @@ const t = initTRPC.context<Context>().create({
 });
 
 const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
-  const db = await getDbAsync();
-  const session = await getAuthSession(ctx.headers);
+  const session = await auth.api.getSession({ headers: ctx.headers });
 
   if (!session?.user) {
     throw new TRPCError({

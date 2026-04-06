@@ -3,19 +3,23 @@ import * as z from "zod";
 
 export const env = createEnv({
   client: {
-    NEXT_PUBLIC_BETTER_AUTH_URL: z.string().url(),
+    NEXT_PUBLIC_BETTER_AUTH_URL: z.preprocess(
+      (str) => process.env.VERCEL_URL ?? str,
+      process.env.VERCEL_URL ? z.string().min(1) : z.string().url()
+    ),
   },
   experimental__runtimeEnv: {
-    // ...process.env,
+    ...process.env,
     NEXT_PUBLIC_BETTER_AUTH_URL: process.env.NEXT_PUBLIC_BETTER_AUTH_URL,
   },
   server: {
     BETTER_AUTH_SECRET: z.string().min(1),
-    CLOUDFLARE_ACCOUNT_ID: z.string().min(1),
-    CLOUDFLARE_D1_TOKEN: z.string().min(1).startsWith("cfut_"),
-    CLOUDFLARE_DATABASE_ID: z.string().min(1),
+    BLOB_READ_WRITE_TOKEN: z.string().min(1),
+    DATABASE_URL: z.string().url(),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+    NODE_ENV: z
+      .enum(["development", "production", "preview"])
+      .default("development"),
   },
-  skipValidation: !!process.env.CI || process.env.NODE_ENV === "production",
 });

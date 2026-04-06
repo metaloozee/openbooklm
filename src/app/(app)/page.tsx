@@ -4,12 +4,12 @@ import { redirect } from "next/navigation";
 
 import { ProjectGridSection } from "@/components/projects/project-grid-section";
 import { UserAvatarMenu } from "@/components/user-avatar-menu";
-import { getAuthSession } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export default async function HomePage() {
-  const session = await getAuthSession(await headers());
+  const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!session) {
+  if (!session?.user) {
     redirect("/login");
   }
 
