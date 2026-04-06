@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useTRPC } from "@/lib/trpc/client";
 
 const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -55,6 +56,7 @@ export const NewProjectDialog = ({
 }) => {
   const trpc = useTRPC();
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const createProjectMutation = useMutation(
     trpc.project.createProject.mutationOptions({
@@ -120,9 +122,9 @@ export const NewProjectDialog = ({
       }}
     >
       <DialogTrigger asChild>
-        <Button>
+        <Button size={isMobile ? "icon" : "default"}>
           <PlusIcon aria-hidden="true" />
-          New Project
+          {!isMobile && "New Project"}
         </Button>
       </DialogTrigger>
       <DialogContent
