@@ -1,43 +1,25 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
-import { initAuth } from "../auth";
-import { getDbAsync } from "../db";
+import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const auth = await initAuth();
-  const db = await getDbAsync();
+export interface Context {
+  headers: Headers;
+}
 
-  const session = await auth.api.getSession({
-    headers: opts.headers,
-  });
+export const createTRPCContext = (opts: { headers: Headers }): Context => ({
+  headers: opts.headers,
+});
 
-  if (session && session.user) {
-    return {
-      db,
-      session: {
-        ...session,
-        user: session.user,
-      },
-    };
-  }
+const t = initTRPC.context<Context>().create({
+  transformer: superjson,
+});
 
-  return {
-    db,
-    session: null,
-  };
-};
+const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
+  const session = await auth.api.getSession({ headers: ctx.headers });
 
-export type Context = Awaited<ReturnType<typeof createTRPCContext>>;
-
-const t = initTRPC
-  .context<Awaited<ReturnType<typeof createTRPCContext>>>()
-  .create({
-    transformer: superjson,
-  });
-
-const isAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.session) {
+  if (!session?.user) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
       message: "You must be logged in to access this resource",
@@ -45,7 +27,14 @@ const isAuthed = t.middleware(({ ctx, next }) => {
   }
 
   return next({
-    ctx,
+    ctx: {
+      ...ctx,
+      db,
+      session: {
+        ...session,
+        user: session.user,
+      },
+    },
   });
 });
 
@@ -54,4 +43,4 @@ export const createTRPCRouter = t.router;
 export const createCallerFactory = t.createCallerFactory;
 
 export const publicProcedure = t.procedure;
-export const protectedProcedure = t.procedure.use(isAuthed);
+export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);

@@ -7,7 +7,8 @@
   "ignorePatterns": [
     "cloudflare-env.d.ts",
     "drizzle",
-    "src/components/ui/**/*.tsx"
+    "src/components/ui/**/*.tsx",
+    "dist/**"
   ],
   "rules": {
     "nextjs/no-img-element": "warn"

@@ -1,17 +1,8 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { drizzle } from "drizzle-orm/d1";
-import { cache } from "react";
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
 
-import * as schema from "./schema";
+import * as schema from "@/lib/db/schema";
+import { env } from "@/lib/env";
 
-// Use in request-time dynamic handlers when Cloudflare context is available synchronously.
-export const getDb = cache(() => {
-  const { env } = getCloudflareContext();
-  return drizzle(env.DB, { schema });
-});
-
-// Use in shared/async code paths (for example auth initialization) for broader runtime safety.
-export const getDbAsync = cache(async () => {
-  const { env } = await getCloudflareContext({ async: true });
-  return drizzle(env.DB, { schema });
-});
+const sql = neon(env.DATABASE_URL);
+export const db = drizzle({ client: sql, schema });

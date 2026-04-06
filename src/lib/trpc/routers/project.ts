@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { project } from "@/lib/db/schema";
+import { project, projectDocument } from "@/lib/db/schema";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -14,17 +14,30 @@ const projectSlugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
 const projectNameSchema = z.string().trim().min(1).max(120);
+const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 
 const projectDescriptionSchema = z.string().trim().max(5000);
 
 const isUniqueProjectSlugError = (error: unknown): boolean => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: string }).code === "23505"
+  ) {
+    return true;
+  }
+
   if (!(error instanceof Error)) {
     return false;
   }
 
+  const { message } = error;
+
   return (
-    error.message.includes("UNIQUE constraint failed") ||
-    error.message.includes("project_owner_slug_unique")
+    message.includes("UNIQUE constraint failed") ||
+    message.includes("duplicate key value violates unique constraint") ||
+    message.includes("project_owner_slug_unique")
   );
 };
 
@@ -100,6 +113,34 @@ export const projectRouter = createTRPCRouter({
         throw error;
       }
     }),
+  deleteProjectDocument: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+
+      const [deletedDocument] = await ctx.db
+        .delete(projectDocument)
+        .where(
+          and(
+            eq(projectDocument.id, input.id),
+            eq(projectDocument.ownerUserId, ownerUserId)
+          )
+        )
+        .returning({ id: projectDocument.id });
+
+      if (!deletedDocument) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      return deletedDocument;
+    }),
 
   getProjectById: protectedProcedure
     .input(
@@ -127,7 +168,6 @@ export const projectRouter = createTRPCRouter({
 
       return foundProject;
     }),
-
   getProjectBySlug: protectedProcedure
     .input(
       z.object({
@@ -158,6 +198,48 @@ export const projectRouter = createTRPCRouter({
       return foundProject;
     }),
 
+  listProjectDocuments: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+
+      const rows = await ctx.db
+        .select({ document: projectDocument })
+        .from(project)
+        .leftJoin(
+          projectDocument,
+          and(
+            eq(projectDocument.projectId, project.id),
+            eq(projectDocument.ownerUserId, ownerUserId)
+          )
+        )
+        .where(
+          and(
+            eq(project.id, input.projectId),
+            eq(project.ownerUserId, ownerUserId)
+          )
+        )
+        .orderBy(desc(projectDocument.createdAt));
+
+      if (rows.length === 0) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      return rows
+        .map((row) => row.document)
+        .filter(
+          (doc): doc is typeof projectDocument.$inferSelect =>
+            doc !== null && doc.id !== null
+        );
+    }),
+
   listProjects: protectedProcedure
     .input(
       z
@@ -169,23 +251,16 @@ export const projectRouter = createTRPCRouter({
     .query(({ ctx, input }) => {
       const ownerUserId = ctx.session.user.id;
 
-      if (input?.includeArchived) {
-        return ctx.db
-          .select()
-          .from(project)
-          .where(eq(project.ownerUserId, ownerUserId))
-          .orderBy(desc(project.updatedAt));
+      const conditions = [eq(project.ownerUserId, ownerUserId)];
+
+      if (!input?.includeArchived) {
+        conditions.push(eq(project.isArchived, false));
       }
 
       return ctx.db
         .select()
         .from(project)
-        .where(
-          and(
-            eq(project.ownerUserId, ownerUserId),
-            eq(project.isArchived, false)
-          )
-        )
+        .where(and(...conditions))
         .orderBy(desc(project.updatedAt));
     }),
 
@@ -257,5 +332,39 @@ export const projectRouter = createTRPCRouter({
 
         throw error;
       }
+    }),
+
+  updateProjectDocument: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().min(1),
+        originalFilename: projectDocumentNameSchema,
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const [updatedDocument] = await ctx.db
+        .update(projectDocument)
+        .set({
+          originalFilename: input.originalFilename,
+        })
+        .where(
+          and(
+            eq(projectDocument.id, input.id),
+            eq(projectDocument.ownerUserId, ctx.session.user.id)
+          )
+        )
+        .returning({
+          id: projectDocument.id,
+          originalFilename: projectDocument.originalFilename,
+        });
+
+      if (!updatedDocument) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      return updatedDocument;
     }),
 });

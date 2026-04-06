@@ -1,19 +1,12 @@
 {
   "version": "7",
-  "dialect": "sqlite",
+  "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "6",
-      "when": 1774786610346,
-      "tag": "0000_amazing_colonel_america",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1774974721160,
-      "tag": "0001_groovy_reaper",
+      "version": "7",
+      "when": 1775464834395,
+      "tag": "0000_sloppy_klaw",
       "breakpoints": true
     }
   ]

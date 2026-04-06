@@ -1,32 +1,28 @@
-import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
-  integer,
-  sqliteTable,
+  pgTable,
   text,
+  timestamp,
   uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+} from "drizzle-orm/pg-core";
 
 import { user } from "./auth";
 
-export const project = sqliteTable(
+export const project = pgTable(
   "project",
   {
-    createdAt: integer("created_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
     description: text("description"),
     id: text("id").primaryKey(),
-    isArchived: integer("is_archived", { mode: "boolean" })
-      .default(false)
-      .notNull(),
+    isArchived: boolean("is_archived").default(false).notNull(),
     name: text("name").notNull(),
     ownerUserId: text("owner_user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     slug: text("slug").notNull(),
-    updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
+    updatedAt: timestamp("updated_at", { mode: "date" })
+      .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },

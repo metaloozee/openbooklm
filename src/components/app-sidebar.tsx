@@ -1,15 +1,10 @@
 "use client";
 
-import {
-  BookOpenIcon,
-  ChevronRightIcon,
-  FilesIcon,
-  MessageSquareIcon,
-} from "lucide-react";
-import { usePathname } from "next/navigation";
+import { ChevronRightIcon, FilesIcon, MessageSquareIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 
-import { NavProjects } from "@/components/nav-projects";
+import { NavProjectDocuments } from "@/components/nav-project-documents";
+import { ProjectSwitcher } from "@/components/project-switcher";
 import { SidebarUserMenu } from "@/components/sidebar-user-menu";
 import {
   Collapsible,
@@ -38,22 +33,35 @@ import {
 
 const sections = [
   {
-    emptyDescription: "Upload documents to see them here.",
-    emptyTitle: "No Documents Uploaded",
-    icon: FilesIcon,
-    title: "Documents",
-  },
-  {
     emptyDescription: "Start a chat to see it here.",
     emptyTitle: "No Chats Yet",
     icon: MessageSquareIcon,
     title: "Chats",
   },
-];
+] as const;
 
-const SidebarCollections = () => (
+const SidebarCollections = ({ projectSlug }: { projectSlug: string }) => (
   <SidebarGroup>
     <SidebarMenu>
+      <Collapsible asChild className="group/collapsible" defaultOpen>
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip="Documents">
+              <FilesIcon aria-hidden="true" />
+              <span>Documents</span>
+              <ChevronRightIcon
+                aria-hidden="true"
+                className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+              />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+
+          <CollapsibleContent>
+            <NavProjectDocuments projectSlug={projectSlug} />
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+
       {sections.map((section) => {
         const Icon = section.icon;
 
@@ -99,45 +107,28 @@ const SidebarCollections = () => (
   </SidebarGroup>
 );
 
-const SidebarHomeContent = () => (
-  <>
-    <SidebarCollections />
-    <NavProjects />
-  </>
+export const AppSidebar = ({
+  project,
+  ...props
+}: ComponentProps<typeof Sidebar> & {
+  project: {
+    name: string;
+    slug: string;
+  };
+}) => (
+  <Sidebar collapsible="icon" {...props}>
+    <SidebarHeader>
+      <ProjectSwitcher currentProject={project} />
+    </SidebarHeader>
+
+    <SidebarContent>
+      <SidebarCollections projectSlug={project.slug} />
+    </SidebarContent>
+
+    <SidebarFooter>
+      <SidebarUserMenu />
+    </SidebarFooter>
+
+    <SidebarRail />
+  </Sidebar>
 );
-
-const SidebarProjectContent = () => <SidebarCollections />;
-
-export const AppSidebar = ({ ...props }: ComponentProps<typeof Sidebar>) => {
-  const pathname = usePathname();
-  const isHomeRoute = pathname === "/";
-
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <div className="flex h-12 w-full items-center gap-2 overflow-hidden p-2 text-left text-xs group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-2">
-              <div className="flex aspect-square size-8 items-center justify-center bg-sidebar-primary text-sidebar-primary-foreground">
-                <BookOpenIcon aria-hidden="true" className="size-4" />
-              </div>
-              <div className="grid min-w-0 flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
-                <span className="truncate font-medium">OpenBookLM</span>
-              </div>
-            </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarHeader>
-
-      <SidebarContent>
-        {isHomeRoute ? <SidebarHomeContent /> : <SidebarProjectContent />}
-      </SidebarContent>
-
-      <SidebarFooter>
-        <SidebarUserMenu />
-      </SidebarFooter>
-
-      <SidebarRail />
-    </Sidebar>
-  );
-};

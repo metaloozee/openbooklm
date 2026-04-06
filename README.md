@@ -1,6 +1,6 @@
 # Document RAG
 
-Document RAG is a Next.js + Cloudflare application for Retrieval Augmented Generation workflows.
+Document RAG is a Next.js application on Vercel for Retrieval Augmented Generation workflows, backed by PostgreSQL with pgvector and Vercel Blob.
 
 The product goal is an end-to-end experience where a user can:
 
@@ -18,18 +18,19 @@ Implemented:
 - App Router project with TypeScript, Tailwind CSS v4, and shadcn/ui.
 - Authentication with Better Auth + Google OAuth.
 - Session-backed protected pages (page-level guards).
-- Cloudflare D1 (SQLite) configured as the app database.
 - Drizzle ORM configured for schema and migrations.
-- OpenNext Cloudflare setup for Workers-compatible builds and deployment.
+- PostgreSQL configured as the app database.
+- pgvector-backed vector columns in the schema for embedding storage.
+- Vercel Blob integration for document object storage.
 - React Query provider and toaster wiring for client-side app state and UX.
 
 Planned (not yet implemented in this repository):
 
-- Document upload and storage pipeline.
-- Chunking and embedding generation pipeline.
-- Vector index and retrieval flow.
-- Prompt orchestration for grounded Q&A.
-- Chat/conversation UI for document question answering.
+- Document upload and storage pipeline hardening.
+- Chunking and embedding generation pipeline improvements.
+- Retrieval flow tuning.
+- Prompt orchestration for grounded Q and A.
+- Chat and conversation UX improvements for document question answering.
 
 ## Route Structure
 
@@ -47,8 +48,8 @@ src/app
 
 Auth behavior:
 
-- `/login` checks session; authenticated users are redirected to `/`.
-- `/` is protected at the page level; unauthenticated users are redirected to `/login`.
+- `/login` checks session, authenticated users are redirected to `/`.
+- `/` is protected at the page level, unauthenticated users are redirected to `/login`.
 - No layout-level auth guard is used.
 
 ## Tech Stack
@@ -59,9 +60,9 @@ Auth behavior:
 - shadcn/ui
 - Better Auth
 - Drizzle ORM
-- Cloudflare D1 (SQLite)
-- OpenNext for Cloudflare Workers
-- Ultracite (oxlint + oxfmt) for linting/formatting
+- PostgreSQL + pgvector
+- Vercel Blob
+- Ultracite (oxlint + oxfmt) for linting and formatting
 
 ## Local Development
 
@@ -85,30 +86,31 @@ Validated in `src/lib/env.ts`:
 
 - `NEXT_PUBLIC_BETTER_AUTH_URL`
 - `BETTER_AUTH_SECRET`
+- `DATABASE_URL`
+- `BLOB_READ_WRITE_TOKEN`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
-- `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_D1_TOKEN`
-- `CLOUDFLARE_DATABASE_ID`
 
 ### Local development
 
 Use a gitignored `.env` (see `.gitignore`). You need at least:
 
 - `NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000`
-- `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `GOOGLE_CLIENT_ID` (and secrets below)
+- `BETTER_AUTH_SECRET=<strong-random-secret>`
+- `DATABASE_URL=postgres://...`
+- `BLOB_READ_WRITE_TOKEN=vercel_blob_rw_...`
+- `GOOGLE_CLIENT_ID=...`
+- `GOOGLE_CLIENT_SECRET=...`
 
-These are **not** committed in `wrangler.jsonc` so each developer or environment can use their own values.
+Keep secrets in local environment files for development, and in deployment environment settings for preview and production.
 
-### Cloudflare Workers / OpenNext deploy
+### Deployment environment setup
 
-`NEXT_PUBLIC_*` values are embedded when the app is **built** (`opennextjs-cloudflare build`). Keep the production URL in `wrangler.jsonc` → `vars` → `NEXT_PUBLIC_BETTER_AUTH_URL` so OpenNext merges it during the build, and mirror it as a plain variable on the Worker for runtime. **Or** set `NEXT_PUBLIC_BETTER_AUTH_URL` in the shell/CI when you run the build.
+Set the same variable names in your Vercel project environment settings so build and runtime both receive the expected values.
 
-**Worker dashboard (plain “Variables”, not in git):** `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID`, `GOOGLE_CLIENT_ID` — required at runtime; each collaborator or deployment can use their own.
+`NEXT_PUBLIC_BETTER_AUTH_URL` should match the deployed app URL in each environment.
 
-**Worker secrets:** `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `CLOUDFLARE_D1_TOKEN` (dashboard or `wrangler secret put`), never in `wrangler.jsonc`.
-
-## Database (Drizzle + D1)
+## Database (Drizzle + PostgreSQL)
 
 Generate migrations:
 
@@ -134,24 +136,18 @@ Open Drizzle Studio:
 pnpm db:studio
 ```
 
-## Cloudflare Build and Deploy
+## Build and Run
 
-Build for Cloudflare/OpenNext:
+Build the app:
 
 ```bash
-pnpm cf:build
+pnpm build
 ```
 
-Preview worker output:
+Run the production server locally:
 
 ```bash
-pnpm preview
-```
-
-Deploy:
-
-```bash
-pnpm deploy
+pnpm start
 ```
 
 ## Quality Commands
@@ -162,8 +158,38 @@ Check code quality:
 pnpm check
 ```
 
-Auto-fix formatting/lint issues:
+Auto-fix formatting and lint issues:
 
 ```bash
 pnpm fix
 ```
+
+## Migration Guardrail: Cloudflare Residue Audit
+
+Use this audit during migration to track and enforce removal of Cloudflare-specific residue.
+
+Current script behavior (`scripts/audit-cloudflare-residue.mjs`):
+
+- Scans tracked non-Markdown files.
+- Excludes `.agents/`, `.claude/`, `.sisyphus/`, and `node_modules/`.
+- Excludes `.gitignore`, `pnpm-lock.yaml`, and `skills-lock.json`.
+
+Report mode (always exits 0, prints any markers it finds):
+
+```bash
+pnpm audit:cloudflare-residue
+```
+
+Strict mode (exits non-zero while any marker still exists):
+
+```bash
+pnpm audit:cloudflare-residue:strict
+```
+
+Markers audited:
+
+- `@opennextjs/cloudflare`
+- `getCloudflareContext`
+- `CLOUDFLARE_`
+- `wrangler`
+- `CloudflareEnv`
