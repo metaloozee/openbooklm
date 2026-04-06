@@ -4,8 +4,10 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
+import { getBaseUrl } from "../utils";
+
 export const auth = betterAuth({
-  baseURL: env.NEXT_PUBLIC_BETTER_AUTH_URL,
+  baseURL: getBaseUrl(),
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
