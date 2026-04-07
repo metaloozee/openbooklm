@@ -6,7 +6,7 @@ import type {
   PutBlobResult,
 } from "@vercel/blob";
 
-const PRIMARY_BLOB_ACCESS_MODE: BlobAccessType = "private";
+const PRIMARY_BLOB_ACCESS_MODE: BlobAccessType = "public";
 
 export const putDocumentBlob = (
   pathname: string,

@@ -9,7 +9,9 @@
 ## What Was Changed
 
 ### 1. Driver Fix: `src/lib/db/index.ts`
+
 **Before:**
+
 ```typescript
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
@@ -17,6 +19,7 @@ import { drizzle } from "drizzle-orm/neon-http";
 ```
 
 **After:**
+
 ```typescript
 import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
@@ -32,6 +35,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 **Function:** `persistDocumentEmbeddings()` (lines 257–397)
 
 #### Before (Unsafe):
+
 ```
 1. Write blob to Vercel (can fail, no rollback)
    ↓
@@ -45,11 +49,13 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 ```
 
 **Failure scenario:** If step 3 fails:
+
 - ❌ Blob already written (orphaned)
 - ❌ Database partially updated (inconsistent state)
 - ❌ Document stuck in "parsing" status
 
 #### After (Safe with Pattern A):
+
 ```
 1. Write blob to Vercel Blob (outside transaction)
    ↓
@@ -62,6 +68,7 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 ```
 
 **Failure scenario:** If step 3 fails:
+
 - ✅ Blob already written (safe, idempotent)
 - ✅ Database rolls back entirely (consistent state)
 - ✅ Operation can retry safely—blob won't be re-written
@@ -71,17 +78,20 @@ import { drizzle } from "drizzle-orm/neon-serverless";
 ## Safety Guarantees (Now Implemented)
 
 ### Blob Safety
+
 - Blob write is **idempotent** (can retry without duplication)
 - Blob write happens **first** (before DB changes)
 - If blob fails → entire operation fails before DB touch
 
 ### Database Safety
+
 - All DB operations wrapped in **atomic transaction**
 - Either **ALL changes succeed** or **ALL roll back**
 - No partial state possible
 - Document status never misleads application state
 
 ### Atomicity
+
 - Database transaction ensures chunks + embeddings + status update together
 - No window where document is "ready" without embeddings
 - No window where embeddings exist without chunks
@@ -106,7 +116,7 @@ JSDoc comment at function definition explains the entire flow and guarantees.
 
 ✅ **Type checking:** Passed (`pnpm check`)  
 ✅ **Formatting:** Compliant with Ultracite standards (`pnpm fix`)  
-✅ **Syntax:** Verified (no TS errors)  
+✅ **Syntax:** Verified (no TS errors)
 
 ---
 
@@ -126,7 +136,9 @@ Before merging, test these scenarios:
 ## Next Steps (Optional)
 
 ### 1. Orphaned Blob Cleanup Job (Not Implemented Yet)
+
 While rare, if the database completely fails after blob write, you could have orphaned blobs. Optional: Create a cleanup job that:
+
 - Lists all blobs in `/documents/*/` prefix
 - Checks if corresponding DB records exist
 - Deletes blobs older than 24 hours with no DB reference
@@ -134,7 +146,9 @@ While rare, if the database completely fails after blob write, you could have or
 See `/home/ayan/document-rag/docs/DRIZZLE_NEON_BLOB_GUIDANCE.md` Section B for Pattern B cleanup strategies.
 
 ### 2. Retry Logic (Not Implemented Yet)
+
 Consider adding exponential backoff retry for transient DB errors:
+
 ```typescript
 export const persistDocumentEmbeddingsWithRetry = async (...) => {
   let lastError;
@@ -155,9 +169,9 @@ export const persistDocumentEmbeddingsWithRetry = async (...) => {
 
 ## Files Modified
 
-| File | Change | Lines |
-|------|--------|-------|
-| `src/lib/db/index.ts` | Driver switch from HTTP to WebSocket | 8 |
+| File                             | Change                                                  | Lines                                                    |
+| -------------------------------- | ------------------------------------------------------- | -------------------------------------------------------- |
+| `src/lib/db/index.ts`            | Driver switch from HTTP to WebSocket                    | 8                                                        |
 | `src/lib/documents/ingestion.ts` | Refactored `persistDocumentEmbeddings()` with Pattern A | 397 (entire function rewritten with transaction wrapper) |
 
 ---
@@ -175,6 +189,7 @@ export const persistDocumentEmbeddingsWithRetry = async (...) => {
 ## Questions?
 
 Refer to the documentation files for deeper context:
+
 - **For implementation details:** `/docs/QUICK_REFERENCE.md`
 - **For decision logic:** `/docs/DRIZZLE_NEON_BLOB_GUIDANCE.md` Section C (Decision Matrix)
 - **For constraints:** `/docs/DRIZZLE_NEON_BLOB_GUIDANCE.md` Section D (Gotchas)

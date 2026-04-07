@@ -67,7 +67,7 @@ const isSupportedDocumentContentType = ({
   extension: string;
 }): boolean => {
   if (!contentType) {
-    return true;
+    return false;
   }
 
   const normalizedContentType =

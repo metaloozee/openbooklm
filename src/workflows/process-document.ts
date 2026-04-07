@@ -158,21 +158,9 @@ const loadDocumentContent = async ({
       return await response.text();
     }
 
-    const upload = await mistralClient.files.upload({
-      file: {
-        content: await response.blob(),
-        fileName: originalFilename,
-      },
-      purpose: "ocr",
-    });
-
-    const signedUrl = await mistralClient.files.getSignedUrl({
-      fileId: upload.id,
-    });
-
     const result = await mistralClient.ocr.process({
       document: {
-        documentUrl: signedUrl.url,
+        documentUrl: blobResponse.blob.url,
         type: "document_url",
       },
       includeImageBase64: false,

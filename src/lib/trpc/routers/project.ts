@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { del } from "@vercel/blob";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
@@ -133,12 +134,24 @@ export const projectRouter = createTRPCRouter({
             eq(projectDocument.ownerUserId, ownerUserId)
           )
         )
-        .returning({ id: projectDocument.id });
+        .returning({
+          id: projectDocument.id,
+          objectKey: projectDocument.objectKey,
+        });
 
       if (!deletedDocument) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Document not found",
+        });
+      }
+
+      try {
+        await del(deletedDocument.objectKey);
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to clean up blob",
         });
       }
 
