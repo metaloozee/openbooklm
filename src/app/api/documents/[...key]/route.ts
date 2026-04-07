@@ -5,6 +5,36 @@ import { db } from "@/lib/db";
 import { projectDocument } from "@/lib/db/schema";
 import { getDocumentBlob } from "@/lib/documents/blob-storage";
 
+const PDF_CONTENT_TYPE = "application/pdf";
+const MARKDOWN_CONTENT_TYPES = new Set(["text/markdown", "text/x-markdown"]);
+const MARKDOWN_FILE_EXTENSION = ".md";
+const PDF_FILE_EXTENSION = ".pdf";
+
+const isInlineDisplayDocument = ({
+  contentType,
+  filename,
+}: {
+  contentType: string | null;
+  filename: string;
+}): boolean => {
+  const normalizedContentType = contentType?.trim().toLowerCase() ?? "";
+  const normalizedFilename = filename.trim().toLowerCase();
+
+  if (normalizedContentType === PDF_CONTENT_TYPE) {
+    return true;
+  }
+
+  if (MARKDOWN_CONTENT_TYPES.has(normalizedContentType)) {
+    return true;
+  }
+
+  if (normalizedFilename.endsWith(PDF_FILE_EXTENSION)) {
+    return true;
+  }
+
+  return normalizedFilename.endsWith(MARKDOWN_FILE_EXTENSION);
+};
+
 interface DocumentRouteContext {
   params: Promise<{
     key?: string[];
@@ -59,9 +89,17 @@ export const GET = async (
     "content-type",
     documentRecord.contentType ?? "application/octet-stream"
   );
+
+  const dispositionType = isInlineDisplayDocument({
+    contentType: documentRecord.contentType,
+    filename: documentRecord.originalFilename,
+  })
+    ? "inline"
+    : "attachment";
+
   headers.set(
     "content-disposition",
-    `attachment; filename*=UTF-8''${encodeURIComponent(documentRecord.originalFilename)}`
+    `${dispositionType}; filename*=UTF-8''${encodeURIComponent(documentRecord.originalFilename)}`
   );
 
   return new Response(blob.stream, { headers });
