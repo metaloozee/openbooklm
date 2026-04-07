@@ -31,16 +31,18 @@ export const generateChunks = ({
   wordsPerChunk = 250,
 }: {
   input: string;
-  wordsPerChunk: number;
+  wordsPerChunk?: number;
 }): string[] => {
   if (!input || typeof input !== "string") {
     return [];
   }
 
-  const words = input.trim().split(REGEX_SPLIT_WORDS);
-  if (words.length === 0) {
+  const trimmed = input.trim();
+  if (trimmed === "") {
     return [];
   }
+
+  const words = trimmed.split(REGEX_SPLIT_WORDS);
 
   const chunks: string[] = [];
   let currentChunk: string[] = [];

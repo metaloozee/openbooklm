@@ -19,8 +19,6 @@ import { env } from "@/lib/env";
 import { normalizeText, generateChunks } from "@/lib/utils";
 
 const EMBEDDING_BATCH_SIZE = 32;
-const DEFAULT_BINARY_CONTENT_TYPE = "application/octet-stream";
-
 const toErrorMessage = (error: unknown): string => {
   if (error instanceof MistralError) {
     return `Mistral API error occurred: Status ${error.statusCode} Content-Type "${error.headers.get("content-type") ?? "unknown"}". Body: ${error.body}`;
@@ -160,14 +158,21 @@ const loadDocumentContent = async ({
       return await response.text();
     }
 
-    const binaryContent = Buffer.from(await response.arrayBuffer());
-    const effectiveContentType = contentType ?? DEFAULT_BINARY_CONTENT_TYPE;
-    const base64Payload = binaryContent.toString("base64");
-    const dataUrl = `data:${effectiveContentType};base64,${base64Payload}`;
+    const upload = await mistralClient.files.upload({
+      file: {
+        content: await response.blob(),
+        fileName: originalFilename,
+      },
+      purpose: "ocr",
+    });
+
+    const signedUrl = await mistralClient.files.getSignedUrl({
+      fileId: upload.id,
+    });
 
     const result = await mistralClient.ocr.process({
       document: {
-        documentUrl: dataUrl,
+        documentUrl: signedUrl.url,
         type: "document_url",
       },
       includeImageBase64: false,
@@ -224,10 +229,7 @@ const createDocumentEmbeddings = async ({
     }
   }
 
-  return embeddingsResult.map(({ embedding, content }) => ({
-    content,
-    embedding,
-  }));
+  return embeddingsResult;
 };
 
 const persistDocumentEmbeddingsStep = async ({
@@ -289,12 +291,13 @@ export const processDocumentWorkflow = async (input: {
       ownerUserId: record.ownerUserId,
     });
 
+    const embeddings = await createDocumentEmbeddings({ text: normalized });
+
     await markDocumentAsEmbeddingStep({
       documentId: record.id,
       ownerUserId: record.ownerUserId,
     });
 
-    const embeddings = await createDocumentEmbeddings({ text: normalized });
     await persistDocumentEmbeddingsStep({
       document: record,
       normalizedText: normalized,

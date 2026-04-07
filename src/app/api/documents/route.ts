@@ -13,6 +13,8 @@ import {
 import { processDocumentWorkflow } from "@/workflows/process-document";
 
 export const maxDuration = 60;
+const DOCUMENT_UPLOAD_FAILURE_MESSAGE = "Failed to upload the document.";
+const WORKFLOW_START_FAILURE_MESSAGE = "Failed to start background processing.";
 
 export const POST = async (request: Request): Promise<Response> => {
   const session = await auth.api.getSession({ headers: request.headers });
@@ -68,12 +70,16 @@ export const POST = async (request: Request): Promise<Response> => {
       contentType: file.type || undefined,
     });
   } catch (error) {
+    console.error("Document upload blob write failed", {
+      documentId,
+      error,
+      ownerUserId,
+      projectId: normalizedProjectId,
+    });
+
     return Response.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to upload the document to storage.",
+        error: DOCUMENT_UPLOAD_FAILURE_MESSAGE,
       },
       { status: 500 }
     );
@@ -112,12 +118,16 @@ export const POST = async (request: Request): Promise<Response> => {
       },
     ]);
   } catch (error) {
+    console.error("Document processing workflow start failed", {
+      documentId,
+      error,
+      ownerUserId,
+      projectId: normalizedProjectId,
+    });
+
     createdDocument = await markDocumentAsFailed({
       documentId,
-      errorMessage:
-        error instanceof Error && error.message.length > 0
-          ? error.message
-          : "Failed to start background processing.",
+      errorMessage: WORKFLOW_START_FAILURE_MESSAGE,
       ownerUserId,
     });
   }

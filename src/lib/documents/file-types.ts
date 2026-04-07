@@ -19,6 +19,10 @@ export const SUPPORTED_DOCUMENT_FILE_EXTENSIONS = [
   ".docx",
 ] as const;
 
+const SUPPORTED_DOCUMENT_FILE_EXTENSION_SET = new Set<string>(
+  SUPPORTED_DOCUMENT_FILE_EXTENSIONS
+);
+
 export const SUPPORTED_DOCUMENT_FILE_TYPE_LABELS = [
   "PDF",
   "TXT",
@@ -66,7 +70,8 @@ const isSupportedDocumentContentType = ({
     return true;
   }
 
-  const normalizedContentType = contentType.trim().toLowerCase();
+  const normalizedContentType =
+    contentType.split(";", 1)[0]?.trim().toLowerCase() ?? "";
 
   switch (extension) {
     case ".pdf": {
@@ -98,12 +103,7 @@ export const validateDocumentUpload = ({
 }): string | null => {
   const extension = getFilenameExtension(filename);
 
-  if (
-    !extension ||
-    !SUPPORTED_DOCUMENT_FILE_EXTENSIONS.includes(
-      extension as (typeof SUPPORTED_DOCUMENT_FILE_EXTENSIONS)[number]
-    )
-  ) {
+  if (!extension || !SUPPORTED_DOCUMENT_FILE_EXTENSION_SET.has(extension)) {
     return "Unsupported file type. Upload a PDF, TXT, MD, or DOCX file.";
   }
 

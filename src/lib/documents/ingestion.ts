@@ -1,4 +1,5 @@
 import "server-only";
+import { del } from "@vercel/blob";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
@@ -104,6 +105,32 @@ export const buildSourceTextObjectKey = ({
     sanitizeStorageSegment(documentId),
     "source.txt",
   ].join("/");
+
+const buildSourceTextStagingObjectKey = ({
+  documentId,
+  ownerUserId,
+  projectId,
+}: {
+  documentId: string;
+  ownerUserId: string;
+  projectId: string;
+}) =>
+  [
+    "documents",
+    sanitizeStorageSegment(ownerUserId),
+    sanitizeStorageSegment(projectId),
+    sanitizeStorageSegment(documentId),
+    `source.staging-${crypto.randomUUID()}.txt`,
+  ].join("/");
+
+const tryDeleteBlob = async (objectKey: string): Promise<string | null> => {
+  try {
+    await del(objectKey);
+    return null;
+  } catch (error) {
+    return getPersistenceErrorMessage(error);
+  }
+};
 
 export const getOwnedProject = async ({
   ownerUserId,
@@ -254,30 +281,6 @@ export const markDocumentAsFailed = ({
     },
   });
 
-/**
- * Pattern A: DB Transaction with Blob Reference Atomicity
- *
- * Persists document embeddings using a database transaction that ensures
- * all database operations succeed together, or all roll back together.
- * The blob is written FIRST (outside transaction), making it safe to retry
- * on DB failure—the blob already exists and won't be re-written.
- *
- * Flow:
- * 1. Write source text blob to Vercel Blob (idempotent, can retry)
- * 2. Start DB transaction
- * 3. Delete old chunks for this document
- * 4. Insert new chunks
- * 5. Insert embeddings
- * 6. Update document status to "ready"
- * 7. Transaction commits (or all rolls back on error)
- *
- * Safety guarantees:
- * - If DB transaction fails, blob already exists—no orphaned incomplete state
- * - If blob fails, entire operation fails before DB touch—no partial state
- * - Database maintains consistency: either ALL changes succeed or NONE
- *
- * @throws Error if blob write or any DB operation fails
- */
 export const persistDocumentEmbeddings = async ({
   document,
   normalizedText,
@@ -297,32 +300,34 @@ export const persistDocumentEmbeddings = async ({
     projectId: document.projectId,
   });
 
-  // STEP 1: Write blob FIRST (outside transaction)
-  // This is safe because blob writes are idempotent and we can retry.
-  // If this fails, no DB changes happen yet.
+  const sourceTextStagingObjectKey = buildSourceTextStagingObjectKey({
+    documentId: document.id,
+    ownerUserId: document.ownerUserId,
+    projectId: document.projectId,
+  });
+
+  let hasStagingBlob = false;
+  let hasFinalBlob = false;
+
   try {
-    await putDocumentBlob(sourceTextObjectKey, normalizedText, {
+    await putDocumentBlob(sourceTextStagingObjectKey, normalizedText, {
       allowOverwrite: true,
       contentType: OCR_TEXT_CONTENT_TYPE,
     });
+    hasStagingBlob = true;
   } catch (error) {
     throw new Error(
-      `Failed to store source text blob at "${sourceTextObjectKey}": ${getPersistenceErrorMessage(error)}`,
+      `Failed to store source text staging blob at "${sourceTextStagingObjectKey}": ${getPersistenceErrorMessage(error)}`,
       { cause: error }
     );
   }
 
-  // STEP 2: Wrap all DB operations in a transaction
-  // If any step fails, all changes roll back and we maintain consistency.
   try {
     const updatedDocument = await db.transaction(async (tx) => {
-      // STEP 2a: Delete old chunks and embeddings
-      // (embeddings cascade delete via foreign key if configured)
       await tx
         .delete(documentChunk)
         .where(eq(documentChunk.documentId, document.id));
 
-      // STEP 2b: Insert new chunks with generated IDs
       const chunkRows = persistedChunks.map((chunk, chunkIndex) => {
         const vectorId = crypto.randomUUID();
 
@@ -347,7 +352,6 @@ export const persistDocumentEmbeddings = async ({
           vectorId: documentChunk.vectorId,
         });
 
-      // STEP 2c: Insert embeddings (vectors) for each chunk
       const embeddingRows = insertedChunks.map((chunk, chunkIndex) => ({
         chunkId: chunk.id,
         documentId: document.id,
@@ -358,10 +362,48 @@ export const persistDocumentEmbeddings = async ({
         vectorId: chunk.vectorId,
       }));
 
-      await tx.insert(documentEmbedding).values(embeddingRows);
+      try {
+        await tx.insert(documentEmbedding).values(embeddingRows);
+      } catch (embeddingError) {
+        const stagingCleanupError = hasStagingBlob
+          ? await tryDeleteBlob(sourceTextStagingObjectKey)
+          : null;
 
-      // STEP 2d: Update document status to "ready"
-      // This is the final step—only runs if all inserts succeeded
+        if (!stagingCleanupError) {
+          hasStagingBlob = false;
+        }
+
+        if (stagingCleanupError) {
+          throw new Error(
+            `Failed to insert embeddings and to delete staging blob "${sourceTextStagingObjectKey}": ${stagingCleanupError}`,
+            { cause: embeddingError }
+          );
+        }
+
+        throw embeddingError;
+      }
+
+      await putDocumentBlob(sourceTextObjectKey, normalizedText, {
+        allowOverwrite: true,
+        contentType: OCR_TEXT_CONTENT_TYPE,
+      });
+
+      hasFinalBlob = true;
+
+      const stagingCleanupError = hasStagingBlob
+        ? await tryDeleteBlob(sourceTextStagingObjectKey)
+        : null;
+
+      if (!stagingCleanupError) {
+        hasStagingBlob = false;
+      }
+
+      if (stagingCleanupError) {
+        throw new Error(
+          `Stored final source text blob but failed to delete staging blob "${sourceTextStagingObjectKey}": ${stagingCleanupError}`
+        );
+      }
+
       const [updated] = await tx
         .update(projectDocument)
         .set({
@@ -389,8 +431,35 @@ export const persistDocumentEmbeddings = async ({
 
     return updatedDocument;
   } catch (error) {
+    const cleanupErrors: string[] = [];
+
+    if (hasStagingBlob) {
+      const stagingCleanupError = await tryDeleteBlob(
+        sourceTextStagingObjectKey
+      );
+      if (stagingCleanupError) {
+        cleanupErrors.push(
+          `staging blob cleanup failed for "${sourceTextStagingObjectKey}": ${stagingCleanupError}`
+        );
+      }
+    }
+
+    if (hasFinalBlob) {
+      const finalCleanupError = await tryDeleteBlob(sourceTextObjectKey);
+      if (finalCleanupError) {
+        cleanupErrors.push(
+          `final blob cleanup failed for "${sourceTextObjectKey}": ${finalCleanupError}`
+        );
+      }
+    }
+
+    const cleanupSuffix =
+      cleanupErrors.length > 0
+        ? ` Cleanup errors: ${cleanupErrors.join("; ")}`
+        : "";
+
     throw new Error(
-      `Failed to write document chunks/embeddings for document "${document.id}": ${getPersistenceErrorMessage(error)}`,
+      `Failed to write document chunks/embeddings for document "${document.id}": ${getPersistenceErrorMessage(error)}${cleanupSuffix}`,
       { cause: error }
     );
   }
