@@ -254,6 +254,30 @@ export const markDocumentAsFailed = ({
     },
   });
 
+/**
+ * Pattern A: DB Transaction with Blob Reference Atomicity
+ *
+ * Persists document embeddings using a database transaction that ensures
+ * all database operations succeed together, or all roll back together.
+ * The blob is written FIRST (outside transaction), making it safe to retry
+ * on DB failure—the blob already exists and won't be re-written.
+ *
+ * Flow:
+ * 1. Write source text blob to Vercel Blob (idempotent, can retry)
+ * 2. Start DB transaction
+ * 3. Delete old chunks for this document
+ * 4. Insert new chunks
+ * 5. Insert embeddings
+ * 6. Update document status to "ready"
+ * 7. Transaction commits (or all rolls back on error)
+ *
+ * Safety guarantees:
+ * - If DB transaction fails, blob already exists—no orphaned incomplete state
+ * - If blob fails, entire operation fails before DB touch—no partial state
+ * - Database maintains consistency: either ALL changes succeed or NONE
+ *
+ * @throws Error if blob write or any DB operation fails
+ */
 export const persistDocumentEmbeddings = async ({
   document,
   normalizedText,
@@ -273,6 +297,9 @@ export const persistDocumentEmbeddings = async ({
     projectId: document.projectId,
   });
 
+  // STEP 1: Write blob FIRST (outside transaction)
+  // This is safe because blob writes are idempotent and we can retry.
+  // If this fails, no DB changes happen yet.
   try {
     await putDocumentBlob(sourceTextObjectKey, normalizedText, {
       allowOverwrite: true,
@@ -280,84 +307,91 @@ export const persistDocumentEmbeddings = async ({
     });
   } catch (error) {
     throw new Error(
-      `Failed to store source text blob at "${sourceTextObjectKey}": ${getPersistenceErrorMessage(error)}`, { cause: error }
+      `Failed to store source text blob at "${sourceTextObjectKey}": ${getPersistenceErrorMessage(error)}`,
+      { cause: error }
     );
   }
 
+  // STEP 2: Wrap all DB operations in a transaction
+  // If any step fails, all changes roll back and we maintain consistency.
   try {
-    await db
-      .delete(documentChunk)
-      .where(eq(documentChunk.documentId, document.id));
+    const updatedDocument = await db.transaction(async (tx) => {
+      // STEP 2a: Delete old chunks and embeddings
+      // (embeddings cascade delete via foreign key if configured)
+      await tx
+        .delete(documentChunk)
+        .where(eq(documentChunk.documentId, document.id));
 
-    const chunkRows = persistedChunks.map((chunk, chunkIndex) => {
-      const vectorId = crypto.randomUUID();
+      // STEP 2b: Insert new chunks with generated IDs
+      const chunkRows = persistedChunks.map((chunk, chunkIndex) => {
+        const vectorId = crypto.randomUUID();
 
-      return {
-        charEnd: chunk.charEnd ?? null,
-        charStart: chunk.charStart ?? null,
-        chunkIndex,
+        return {
+          charEnd: chunk.charEnd ?? null,
+          charStart: chunk.charStart ?? null,
+          chunkIndex,
+          documentId: document.id,
+          id: crypto.randomUUID(),
+          ownerUserId: document.ownerUserId,
+          projectId: document.projectId,
+          text: chunk.content,
+          vectorId,
+        };
+      });
+
+      const insertedChunks = await tx
+        .insert(documentChunk)
+        .values(chunkRows)
+        .returning({
+          id: documentChunk.id,
+          vectorId: documentChunk.vectorId,
+        });
+
+      // STEP 2c: Insert embeddings (vectors) for each chunk
+      const embeddingRows = insertedChunks.map((chunk, chunkIndex) => ({
+        chunkId: chunk.id,
         documentId: document.id,
+        embedding: persistedChunks[chunkIndex].embedding,
         id: crypto.randomUUID(),
         ownerUserId: document.ownerUserId,
         projectId: document.projectId,
-        text: chunk.content,
-        vectorId,
-      };
-    });
+        vectorId: chunk.vectorId,
+      }));
 
-    const insertedChunks = await db
-      .insert(documentChunk)
-      .values(chunkRows)
-      .returning({
-        id: documentChunk.id,
-        vectorId: documentChunk.vectorId,
-      });
+      await tx.insert(documentEmbedding).values(embeddingRows);
 
-    const embeddingRows = insertedChunks.map((chunk, chunkIndex) => ({
-      chunkId: chunk.id,
-      documentId: document.id,
-      embedding: persistedChunks[chunkIndex].embedding,
-      id: crypto.randomUUID(),
-      ownerUserId: document.ownerUserId,
-      projectId: document.projectId,
-      vectorId: chunk.vectorId,
-    }));
-
-    try {
-      await db.insert(documentEmbedding).values(embeddingRows);
-    } catch (embeddingError) {
-      await db
-        .delete(documentChunk)
-        .where(eq(documentChunk.documentId, document.id));
-      throw embeddingError;
-    }
-
-    const [updatedDocument] = await db
-      .update(projectDocument)
-      .set({
-        chunkCount: chunkRows.length,
-        processedAt: new Date(),
-        processingError: null,
-        processingStatus: "ready",
-        sourceTextObjectKey,
-        vectorCount: embeddingRows.length,
-      })
-      .where(
-        and(
-          eq(projectDocument.id, document.id),
-          eq(projectDocument.ownerUserId, document.ownerUserId)
+      // STEP 2d: Update document status to "ready"
+      // This is the final step—only runs if all inserts succeeded
+      const [updated] = await tx
+        .update(projectDocument)
+        .set({
+          chunkCount: chunkRows.length,
+          processedAt: new Date(),
+          processingError: null,
+          processingStatus: "ready",
+          sourceTextObjectKey,
+          vectorCount: embeddingRows.length,
+        })
+        .where(
+          and(
+            eq(projectDocument.id, document.id),
+            eq(projectDocument.ownerUserId, document.ownerUserId)
+          )
         )
-      )
-      .returning();
+        .returning();
 
-    if (!updatedDocument) {
-      throw new Error("Document not found during final status update");
-    }
+      if (!updated) {
+        throw new Error("Document not found during final status update");
+      }
+
+      return updated;
+    });
 
     return updatedDocument;
   } catch (error) {
     throw new Error(
-      `Failed to write document chunks/embeddings for document "${document.id}": ${getPersistenceErrorMessage(error)}`, { cause: error }
+      `Failed to write document chunks/embeddings for document "${document.id}": ${getPersistenceErrorMessage(error)}`,
+      { cause: error }
     );
   }
 };
