@@ -14,7 +14,7 @@ export const documentEmbedding = pgTable(
     documentId: text("document_id")
       .notNull()
       .references(() => projectDocument.id, { onDelete: "cascade" }),
-    embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+    embedding: vector("embedding", { dimensions: 1024 }).notNull(),
     id: text("id").primaryKey(),
     ownerUserId: text("owner_user_id")
       .notNull()
@@ -31,5 +31,11 @@ export const documentEmbedding = pgTable(
       table.projectId,
       table.documentId
     ),
+    index("document_embedding_similarity_idx")
+      .using("hnsw", table.embedding.op("vector_cosine_ops"))
+      .with({
+        ef_construction: 64,
+        m: 16,
+      }),
   ]
 );

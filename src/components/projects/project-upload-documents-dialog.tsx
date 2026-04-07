@@ -6,7 +6,6 @@ import {
   FileCode2Icon,
   FileIcon,
   FileTextIcon,
-  FilesIcon,
   UploadIcon,
   XIcon,
 } from "lucide-react";
@@ -33,10 +32,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  SUPPORTED_DOCUMENT_FILE_TYPE_LABELS,
+  SUPPORTED_DOCUMENT_FILE_TYPES_ATTRIBUTE,
+} from "@/lib/documents/file-types";
 import { useTRPC } from "@/lib/trpc/client";
-
-const ACCEPTED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx"].join(",");
-const ACCEPTED_FILE_TYPE_LABELS = ["PDF", "TXT", "MD", "DOCX"];
 
 const getFieldError = (errors: unknown[]): string | null => {
   for (const error of errors) {
@@ -321,6 +321,8 @@ export const ProjectUploadDocumentsDialog = ({
     },
   });
 
+  const acceptedFileTypesText = SUPPORTED_DOCUMENT_FILE_TYPE_LABELS.join(", ");
+
   return (
     <Dialog
       open={open}
@@ -341,18 +343,18 @@ export const ProjectUploadDocumentsDialog = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-xl"
+        className="sm:max-w-md"
         showCloseButton={!uploadDocumentsMutation.isPending}
       >
         <DialogHeader>
           <DialogTitle>Upload Documents</DialogTitle>
           <DialogDescription>
-            Add source files to the project library.
+            Add source files to your project library.
           </DialogDescription>
         </DialogHeader>
 
         <form
-          className="space-y-4"
+          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -375,7 +377,7 @@ export const ProjectUploadDocumentsDialog = ({
                 const fileCount = field.state.value.length;
                 const summaryText =
                   fileCount === 0
-                    ? "Choose one or more files to build the project library."
+                    ? "No files selected"
                     : `${fileCount} selected • ${formatBytes(totalFileSize(field.state.value))}`;
 
                 return (
@@ -387,7 +389,7 @@ export const ProjectUploadDocumentsDialog = ({
                         name={field.name}
                         type="file"
                         multiple
-                        accept={ACCEPTED_FILE_TYPES}
+                        accept={SUPPORTED_DOCUMENT_FILE_TYPES_ATTRIBUTE}
                         className="sr-only"
                         onBlur={field.handleBlur}
                         onChange={(event) => {
@@ -396,53 +398,37 @@ export const ProjectUploadDocumentsDialog = ({
                           event.currentTarget.value = "";
                         }}
                       />
-                      <label
-                        htmlFor={field.name}
-                        className="group flex cursor-pointer flex-col gap-4 border border-dashed border-border bg-background px-4 py-4 transition-colors hover:bg-muted/20"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                              <div className="flex size-9 items-center justify-center border border-border bg-muted/20">
-                                <FilesIcon
-                                  aria-hidden="true"
-                                  className="size-4 text-foreground"
-                                />
-                              </div>
-                              <div>
-                                <p className="text-sm font-medium text-foreground">
-                                  Curate your project library
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                  PDFs, notes, markdown, and Word documents.
-                                </p>
-                              </div>
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {summaryText}
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-2 border border-border bg-muted/20 px-3 py-2 text-xs font-medium text-foreground">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">
+                            {summaryText}
+                          </p>
+                          <label
+                            htmlFor={field.name}
+                            className="inline-flex h-7 cursor-pointer items-center justify-center gap-1 rounded-none border border-border bg-background px-2.5 text-xs font-medium whitespace-nowrap hover:bg-muted focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                const targetInput = event.currentTarget.control;
+                                if (targetInput instanceof HTMLInputElement) {
+                                  targetInput.click();
+                                }
+                              }
+                            }}
+                          >
                             <UploadIcon
                               aria-hidden="true"
                               className="size-3.5"
                             />
-                            Choose files
-                          </div>
+                            Choose Files
+                          </label>
                         </div>
-
-                        <div className="flex flex-wrap gap-2">
-                          {ACCEPTED_FILE_TYPE_LABELS.map((fileTypeLabel) => (
-                            <span
-                              key={fileTypeLabel}
-                              className="inline-flex h-5 items-center border border-border bg-muted/20 px-2 text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase"
-                            >
-                              {fileTypeLabel}
-                            </span>
-                          ))}
-                        </div>
-                      </label>
+                        <p className="text-xs text-muted-foreground">
+                          Supported: {acceptedFileTypesText}
+                        </p>
+                      </div>
                       <FieldError>{error}</FieldError>
                     </FieldContent>
                   </Field>
@@ -458,41 +444,31 @@ export const ProjectUploadDocumentsDialog = ({
                     : `${selectedFiles.length} file(s), ${formatBytes(totalFileSize(selectedFiles))} total`;
 
                 return (
-                  <div className="space-y-3 border border-border bg-background p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-xs font-medium tracking-wide text-foreground uppercase">
-                          Selection
-                        </p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {fileSummaryText}
-                        </p>
-                      </div>
-                      {selectedFiles.length > 0 ? (
-                        <span className="inline-flex h-5 items-center border border-border bg-muted/20 px-2 text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase">
-                          Ready
-                        </span>
-                      ) : null}
-                    </div>
+                  <div className="space-y-2">
+                    <p className="text-xs text-muted-foreground">
+                      {fileSummaryText}
+                    </p>
 
                     {selectedFiles.length === 0 ? (
                       <p className="text-xs text-muted-foreground">
-                        Choose files above to preview what will be added to the
-                        library.
+                        Choose files to preview what will be uploaded.
                       </p>
                     ) : (
-                      <div className="space-y-2">
+                      <ul className="divide-y divide-border">
                         {selectedFiles.map((file, index) => {
                           const { Icon, label } = getDocumentVisual(file.name);
 
                           return (
-                            <div
+                            <li
                               key={`${file.name}-${file.size}-${index}`}
-                              className="flex items-start justify-between gap-3 border border-border bg-muted/10 px-3 py-3"
+                              className="flex items-start justify-between gap-2 py-2"
                             >
-                              <div className="flex min-w-0 items-start gap-3">
-                                <div className="flex size-9 shrink-0 items-center justify-center border border-border bg-background">
-                                  <Icon aria-hidden="true" className="size-4" />
+                              <div className="flex min-w-0 items-start gap-2">
+                                <div className="flex size-7 shrink-0 items-center justify-center">
+                                  <Icon
+                                    aria-hidden="true"
+                                    className="size-3.5 text-muted-foreground"
+                                  />
                                 </div>
                                 <div className="min-w-0 space-y-1">
                                   <p className="truncate text-sm font-medium text-foreground">
@@ -524,10 +500,10 @@ export const ProjectUploadDocumentsDialog = ({
                                   className="size-3.5"
                                 />
                               </Button>
-                            </div>
+                            </li>
                           );
                         })}
-                      </div>
+                      </ul>
                     )}
                   </div>
                 );
@@ -535,22 +511,20 @@ export const ProjectUploadDocumentsDialog = ({
             </form.Subscribe>
           </FieldGroup>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={uploadDocumentsMutation.isPending}
-              onClick={() => {
-                setOpen(false);
-              }}
-            >
-              Cancel
-            </Button>
+          <DialogFooter className="pt-1">
             <Button type="submit" disabled={uploadDocumentsMutation.isPending}>
               <UploadIcon aria-hidden="true" />
-              Upload Documents
+              {uploadDocumentsMutation.isPending
+                ? "Uploading…"
+                : "Upload Documents"}
             </Button>
           </DialogFooter>
+
+          <p aria-live="polite" className="sr-only">
+            {uploadDocumentsMutation.isPending
+              ? "Uploading documents…"
+              : "Ready to upload documents."}
+          </p>
         </form>
       </DialogContent>
     </Dialog>

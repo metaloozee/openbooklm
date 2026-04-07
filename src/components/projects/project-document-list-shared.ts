@@ -1,17 +1,5 @@
-const ACTIVE_PROCESSING_STATUSES = new Set([
-  "queued",
-  "parsing",
-  "chunking",
-  "embedding",
-]);
-
-export type ProjectDocumentProcessingStatus =
-  | "queued"
-  | "parsing"
-  | "chunking"
-  | "embedding"
-  | "ready"
-  | "failed";
+import { ACTIVE_DOCUMENT_PROCESSING_STATUSES } from "@/lib/documents/status";
+import type { DocumentProcessingStatus as ProjectDocumentProcessingStatus } from "@/lib/documents/status";
 
 export const documentListPollIntervalMs = 2000;
 
@@ -39,7 +27,9 @@ export const isActiveDocumentProcessingStatus = (
 ): boolean =>
   status !== undefined &&
   status !== null &&
-  ACTIVE_PROCESSING_STATUSES.has(status);
+  ACTIVE_DOCUMENT_PROCESSING_STATUSES.has(
+    status as ProjectDocumentProcessingStatus
+  );
 
 export const mergeProjectDocumentList = (
   currentDocuments: ProjectDocumentListItem[] | undefined,
