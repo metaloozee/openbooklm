@@ -47,19 +47,11 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { useTRPC } from "@/lib/trpc/client";
 
-const buildDocumentHref = (
-  objectKey: string,
-  options?: {
-    download?: boolean;
-  }
-): string => {
-  const basePath = `/api/documents/${objectKey
+const buildDocumentHref = (objectKey: string): string =>
+  `/api/documents/${objectKey
     .split("/")
     .map((segment) => encodeURIComponent(segment))
     .join("/")}`;
-
-  return options?.download ? `${basePath}?download=1` : basePath;
-};
 
 const getDocumentTypePresentation = (
   filename: string,

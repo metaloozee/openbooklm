@@ -33,10 +33,11 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  SUPPORTED_DOCUMENT_FILE_TYPE_LABELS,
+  SUPPORTED_DOCUMENT_FILE_TYPES_ATTRIBUTE,
+} from "@/lib/documents/file-types";
 import { useTRPC } from "@/lib/trpc/client";
-
-const ACCEPTED_FILE_TYPES = [".pdf", ".txt", ".md", ".docx"].join(",");
-const ACCEPTED_FILE_TYPE_LABELS = ["PDF", "TXT", "MD", "DOCX"];
 
 const getFieldError = (errors: unknown[]): string | null => {
   for (const error of errors) {
@@ -387,7 +388,7 @@ export const ProjectUploadDocumentsDialog = ({
                         name={field.name}
                         type="file"
                         multiple
-                        accept={ACCEPTED_FILE_TYPES}
+                        accept={SUPPORTED_DOCUMENT_FILE_TYPES_ATTRIBUTE}
                         className="sr-only"
                         onBlur={field.handleBlur}
                         onChange={(event) => {
@@ -433,14 +434,16 @@ export const ProjectUploadDocumentsDialog = ({
                         </div>
 
                         <div className="flex flex-wrap gap-2">
-                          {ACCEPTED_FILE_TYPE_LABELS.map((fileTypeLabel) => (
-                            <span
-                              key={fileTypeLabel}
-                              className="inline-flex h-5 items-center border border-border bg-muted/20 px-2 text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase"
-                            >
-                              {fileTypeLabel}
-                            </span>
-                          ))}
+                          {SUPPORTED_DOCUMENT_FILE_TYPE_LABELS.map(
+                            (fileTypeLabel) => (
+                              <span
+                                key={fileTypeLabel}
+                                className="inline-flex h-5 items-center border border-border bg-muted/20 px-2 text-[10px] font-medium tracking-[0.14em] text-muted-foreground uppercase"
+                              >
+                                {fileTypeLabel}
+                              </span>
+                            )
+                          )}
                         </div>
                       </label>
                       <FieldError>{error}</FieldError>

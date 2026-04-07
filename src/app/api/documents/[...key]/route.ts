@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { projectDocument } from "@/lib/db/schema";
+import { getDocumentBlob } from "@/lib/documents/blob-storage";
 
 interface DocumentRouteContext {
   params: Promise<{
@@ -46,6 +47,12 @@ export const GET = async (
     return new Response("Object not found.", { status: 404 });
   }
 
+  const blob = await getDocumentBlob(documentRecord.objectKey);
+
+  if (!blob || blob.statusCode !== 200) {
+    return new Response("Object not found.", { status: 404 });
+  }
+
   const headers = new Headers();
 
   headers.set(
@@ -57,5 +64,5 @@ export const GET = async (
     `attachment; filename*=UTF-8''${encodeURIComponent(documentRecord.originalFilename)}`
   );
 
-  return new Response(null, { headers });
+  return new Response(blob.stream, { headers });
 };

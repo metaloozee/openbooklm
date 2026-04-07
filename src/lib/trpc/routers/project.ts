@@ -3,6 +3,8 @@ import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { project, projectDocument } from "@/lib/db/schema";
+import { getOwnedProject } from "@/lib/documents/ingestion";
+import { searchProjectDocumentChunks } from "@/lib/documents/retrieval";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -17,6 +19,7 @@ const projectNameSchema = z.string().trim().min(1).max(120);
 const projectDocumentNameSchema = z.string().trim().min(1).max(255);
 
 const projectDescriptionSchema = z.string().trim().max(5000);
+const projectSearchQuerySchema = z.string().trim().min(1).max(5000);
 
 const isUniqueProjectSlugError = (error: unknown): boolean => {
   if (
@@ -142,6 +145,35 @@ export const projectRouter = createTRPCRouter({
       return deletedDocument;
     }),
 
+  getDocumentById: protectedProcedure
+    .input(
+      z.object({
+        documentId: z.string().min(1),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+
+      const [foundDocument] = await ctx.db
+        .select()
+        .from(projectDocument)
+        .where(
+          and(
+            eq(projectDocument.id, input.documentId),
+            eq(projectDocument.ownerUserId, ownerUserId)
+          )
+        )
+        .limit(1);
+
+      if (!foundDocument) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Document not found",
+        });
+      }
+
+      return foundDocument;
+    }),
   getProjectById: protectedProcedure
     .input(
       z.object({
@@ -168,6 +200,7 @@ export const projectRouter = createTRPCRouter({
 
       return foundProject;
     }),
+
   getProjectBySlug: protectedProcedure
     .input(
       z.object({
@@ -262,6 +295,37 @@ export const projectRouter = createTRPCRouter({
         .from(project)
         .where(and(...conditions))
         .orderBy(desc(project.updatedAt));
+    }),
+  searchProjectDocuments: protectedProcedure
+    .input(
+      z.object({
+        documentIds: z.array(z.string().min(1)).max(25).optional(),
+        limit: z.number().int().min(1).max(20).optional(),
+        projectId: z.string().min(1),
+        query: projectSearchQuerySchema,
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+      const foundProject = await getOwnedProject({
+        ownerUserId,
+        projectId: input.projectId,
+      });
+
+      if (!foundProject) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      return searchProjectDocumentChunks({
+        documentIds: input.documentIds,
+        limit: input.limit,
+        ownerUserId,
+        projectId: input.projectId,
+        query: input.query,
+      });
     }),
 
   updateProject: protectedProcedure

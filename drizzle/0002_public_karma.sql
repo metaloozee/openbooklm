@@ -1,0 +1,1 @@
+CREATE INDEX "document_embedding_similarity_idx" ON "document_embedding" USING hnsw ("embedding" vector_cosine_ops) WITH (ef_construction=64,m=16);

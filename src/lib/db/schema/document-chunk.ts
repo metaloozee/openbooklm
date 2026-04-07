@@ -22,7 +22,7 @@ export const documentChunk = pgTable(
     documentId: text("document_id")
       .notNull()
       .references(() => projectDocument.id, { onDelete: "cascade" }),
-    embedding: vector("embedding", { dimensions: 1536 }),
+    embedding: vector("embedding", { dimensions: 1024 }),
     id: text("id").primaryKey(),
     ownerUserId: text("owner_user_id")
       .notNull()

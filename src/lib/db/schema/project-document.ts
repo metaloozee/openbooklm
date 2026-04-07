@@ -31,7 +31,7 @@ export const projectDocument = pgTable(
     processingStartedAt: timestamp("processing_started_at", {
       mode: "date",
     }),
-    processingStatus: text("processing_status").default("ready").notNull(),
+    processingStatus: text("processing_status").default("queued").notNull(),
     projectId: text("project_id")
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
