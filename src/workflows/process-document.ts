@@ -1,5 +1,6 @@
 import { mistral } from "@ai-sdk/mistral";
 import { Mistral } from "@mistralai/mistralai";
+import { MistralError } from "@mistralai/mistralai/models/errors";
 import { embedMany } from "ai";
 import { FatalError } from "workflow";
 
@@ -18,6 +19,19 @@ import { env } from "@/lib/env";
 import { normalizeText, generateChunks } from "@/lib/utils";
 
 const EMBEDDING_BATCH_SIZE = 32;
+const DEFAULT_BINARY_CONTENT_TYPE = "application/octet-stream";
+
+const toErrorMessage = (error: unknown): string => {
+  if (error instanceof MistralError) {
+    return `Mistral API error occurred: Status ${error.statusCode} Content-Type "${error.headers.get("content-type") ?? "unknown"}". Body: ${error.body}`;
+  }
+
+  if (error instanceof Error && error.message.length > 0) {
+    return error.message;
+  }
+
+  return "Unknown error";
+};
 
 const getDocumentErrorMessage = (error: unknown): string => {
   if (error instanceof FatalError) {
@@ -146,36 +160,28 @@ const loadDocumentContent = async ({
       return await response.text();
     }
 
-    const uploadedFile = await mistralClient.files.upload({
-      file: {
-        content: Buffer.from(await response.arrayBuffer()),
-        fileName: originalFilename,
+    const binaryContent = Buffer.from(await response.arrayBuffer());
+    const effectiveContentType = contentType ?? DEFAULT_BINARY_CONTENT_TYPE;
+    const base64Payload = binaryContent.toString("base64");
+    const dataUrl = `data:${effectiveContentType};base64,${base64Payload}`;
+
+    const result = await mistralClient.ocr.process({
+      document: {
+        documentUrl: dataUrl,
+        type: "document_url",
       },
-      purpose: "ocr",
+      includeImageBase64: false,
+      model: "mistral-ocr-latest",
     });
 
-    try {
-      const result = await mistralClient.ocr.process({
-        document: {
-          fileId: uploadedFile.id,
-          type: "file",
-        },
-        includeImageBase64: false,
-        model: "mistral-ocr-latest",
-      });
-
-      if (result.pages.length === 0) {
-        throw new FatalError("No pages found in the document");
-      }
-
-      return result.pages.map((page) => page.markdown).join("\n\n");
-    } finally {
-      await mistralClient.files.delete({
-        fileId: uploadedFile.id,
-      });
+    if (result.pages.length === 0) {
+      throw new FatalError("No pages found in the document");
     }
-  } catch {
-    throw new FatalError("Failed to load the document content");
+
+    return result.pages.map((page) => page.markdown).join("\n\n");
+  } catch (error) {
+    const reason = toErrorMessage(error);
+    throw new FatalError(`Failed to load the document content: ${reason}`);
   }
 };
 
@@ -241,8 +247,9 @@ const persistDocumentEmbeddingsStep = async ({
       normalizedText,
       persistedChunks,
     });
-  } catch {
-    throw new FatalError("Failed to persist document embeddings");
+  } catch (error) {
+    const reason = toErrorMessage(error);
+    throw new FatalError(`Failed to persist document embeddings: ${reason}`);
   }
 };
 

@@ -24,6 +24,18 @@ export interface PersistedEmbeddingChunk {
   embedding: number[];
 }
 
+const getPersistenceErrorMessage = (error: unknown): string => {
+  if (error instanceof Error && error.message.length > 0) {
+    if (error.message.includes("different vector dimensions")) {
+      return `${error.message}. Your database vector schema is out of sync with application code. Run drizzle migrations to align vector dimensions.`;
+    }
+
+    return error.message;
+  }
+
+  return "Unknown persistence error";
+};
+
 const sanitizeStorageSegment = (value: string): string => {
   const sanitized = value.trim().replaceAll(STORAGE_SEGMENT_REGEX, "-");
 
@@ -261,13 +273,19 @@ export const persistDocumentEmbeddings = async ({
     projectId: document.projectId,
   });
 
-  await putDocumentBlob(sourceTextObjectKey, normalizedText, {
-    allowOverwrite: true,
-    contentType: OCR_TEXT_CONTENT_TYPE,
-  });
+  try {
+    await putDocumentBlob(sourceTextObjectKey, normalizedText, {
+      allowOverwrite: true,
+      contentType: OCR_TEXT_CONTENT_TYPE,
+    });
+  } catch (error) {
+    throw new Error(
+      `Failed to store source text blob at "${sourceTextObjectKey}": ${getPersistenceErrorMessage(error)}`, { cause: error }
+    );
+  }
 
-  return db.transaction(async (tx) => {
-    await tx
+  try {
+    await db
       .delete(documentChunk)
       .where(eq(documentChunk.documentId, document.id));
 
@@ -287,7 +305,7 @@ export const persistDocumentEmbeddings = async ({
       };
     });
 
-    const insertedChunks = await tx
+    const insertedChunks = await db
       .insert(documentChunk)
       .values(chunkRows)
       .returning({
@@ -305,9 +323,16 @@ export const persistDocumentEmbeddings = async ({
       vectorId: chunk.vectorId,
     }));
 
-    await tx.insert(documentEmbedding).values(embeddingRows);
+    try {
+      await db.insert(documentEmbedding).values(embeddingRows);
+    } catch (embeddingError) {
+      await db
+        .delete(documentChunk)
+        .where(eq(documentChunk.documentId, document.id));
+      throw embeddingError;
+    }
 
-    const [updatedDocument] = await tx
+    const [updatedDocument] = await db
       .update(projectDocument)
       .set({
         chunkCount: chunkRows.length,
@@ -326,9 +351,13 @@ export const persistDocumentEmbeddings = async ({
       .returning();
 
     if (!updatedDocument) {
-      throw new Error("Document not found");
+      throw new Error("Document not found during final status update");
     }
 
     return updatedDocument;
-  });
+  } catch (error) {
+    throw new Error(
+      `Failed to write document chunks/embeddings for document "${document.id}": ${getPersistenceErrorMessage(error)}`, { cause: error }
+    );
+  }
 };
