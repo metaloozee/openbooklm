@@ -34,29 +34,22 @@ export const AccountSummaryCard = ({
   updatedAt: string;
 }) => (
   <Card className="border border-dashed border-border/80 bg-muted/20">
-    <CardHeader className="gap-3 border-b border-dashed border-border/80 pb-5">
+    <CardHeader className="gap-2 border-b border-dashed border-border/80 pb-4">
       <Badge variant="outline" className="tracking-[0.18em] uppercase">
         Account
       </Badge>
       <div className="space-y-1">
-        <h2 className="font-heading text-base font-medium">
-          What Stays Fixed Here
-        </h2>
-        <CardDescription className="max-w-sm text-sm text-muted-foreground">
-          Your sign-in provider manages core identity details like email. This
-          page is for preferences, not account recovery.
+        <h2 className="font-heading text-base font-medium">Account Summary</h2>
+        <CardDescription className="text-sm text-muted-foreground">
+          Email is managed by your sign-in provider.
         </CardDescription>
       </div>
     </CardHeader>
-    <CardContent className="space-y-4 pt-5">
-      <div className="rounded-none border border-dashed border-border/80 bg-background/80 p-4">
+    <CardContent className="space-y-4 pt-4">
+      <div>
         <Badge variant={emailVerified ? "default" : "secondary"}>
           {emailVerified ? "Verified Email" : "Email Not Verified"}
         </Badge>
-        <p className="mt-3 text-sm text-muted-foreground">
-          Need to change the address attached to this account? Update it through
-          <span translate="no"> Google</span>, then sign in again.
-        </p>
       </div>
 
       <dl className="space-y-4">
