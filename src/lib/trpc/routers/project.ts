@@ -3,9 +3,11 @@ import { del } from "@vercel/blob";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
+import { buildGroundedAnswerContext } from "@/lib/ai/build-grounded-answer-context";
 import { project, projectDocument } from "@/lib/db/schema";
 import { getOwnedProject } from "@/lib/documents/ingestion";
 import { searchProjectDocumentChunks } from "@/lib/documents/retrieval";
+import { getUserPersonalization } from "@/lib/settings/get-user-personalization";
 
 import { createTRPCRouter, protectedProcedure } from "../init";
 
@@ -308,6 +310,50 @@ export const projectRouter = createTRPCRouter({
         .from(project)
         .where(and(...conditions))
         .orderBy(desc(project.updatedAt));
+    }),
+  prepareGroundedAnswerContext: protectedProcedure
+    .input(
+      z.object({
+        documentIds: z.array(z.string().min(1)).max(25).optional(),
+        limit: z.number().int().min(1).max(20).optional(),
+        projectId: z.string().min(1),
+        query: projectSearchQuerySchema,
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const ownerUserId = ctx.session.user.id;
+      const foundProject = await getOwnedProject({
+        ownerUserId,
+        projectId: input.projectId,
+      });
+
+      if (!foundProject) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Project not found",
+        });
+      }
+
+      const [personalization, retrievedChunks] = await Promise.all([
+        getUserPersonalization({ userId: ownerUserId }),
+        searchProjectDocumentChunks({
+          documentIds: input.documentIds,
+          limit: input.limit,
+          ownerUserId,
+          projectId: input.projectId,
+          query: input.query,
+        }),
+      ]);
+
+      return {
+        personalization,
+        promptContext: buildGroundedAnswerContext({
+          personalization,
+          retrievedChunks,
+          userQuestion: input.query,
+        }),
+        retrievedChunks,
+      };
     }),
   searchProjectDocuments: protectedProcedure
     .input(
