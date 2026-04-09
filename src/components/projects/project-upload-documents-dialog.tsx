@@ -14,7 +14,6 @@ import { toast } from "sonner";
 
 import { mergeProjectDocumentList } from "@/components/projects/project-document-list-shared";
 import type { ProjectDocumentListItem } from "@/components/projects/project-document-list-shared";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,7 +27,6 @@ import {
 import {
   Field,
   FieldContent,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -248,7 +246,7 @@ export const ProjectUploadDocumentsDialog = ({
   const uploadDocumentsMutation = useMutation({
     mutationFn: uploadDocuments,
     onError: (error) => {
-      toast.error(error.message || "Unable to upload documents.");
+      toast.error(error.message || "Unable to upload documents");
     },
     onSuccess: async (result) => {
       if (projectDocumentsQueryOptions && result.uploadedCount > 0) {
@@ -264,20 +262,20 @@ export const ProjectUploadDocumentsDialog = ({
         result.uploadedDocuments.length - processingDocumentsCount;
 
       if (result.failed.length === 0 && failedToStartCount === 0) {
-        toast.success("Documents uploaded.", {
+        toast.success("Documents uploaded", {
           description: `${processingDocumentsCount} document(s) uploaded and background processing started.`,
         });
         return;
       }
 
       if (result.uploadedCount > 0) {
-        toast.message("Uploads finished.", {
+        toast.message("Uploads finished", {
           description: `${processingDocumentsCount} processing, ${failedToStartCount} failed to start background work, ${result.failed.length} upload failed.`,
         });
         return;
       }
 
-      toast.error("No documents uploaded.", {
+      toast.error("No documents uploaded", {
         description: result.failed[0]?.error ?? "Unable to upload documents.",
       });
     },
@@ -296,12 +294,12 @@ export const ProjectUploadDocumentsDialog = ({
     defaultValues: getDefaultValues(),
     onSubmit: async ({ value }) => {
       if (value.files.length === 0) {
-        toast.error("Add at least one document before continuing.");
+        toast.error("Add at least one document before continuing");
         return;
       }
 
       if (!projectId) {
-        toast.error("Project details are still loading.");
+        toast.error("Project details are still loading");
         return;
       }
 
@@ -335,65 +333,41 @@ export const ProjectUploadDocumentsDialog = ({
     >
       <DialogTrigger asChild>
         <Button
+          variant="outline"
+          size="sm"
           className={triggerClassName}
           disabled={disabled || uploadDocumentsMutation.isPending}
-          size="sm"
-          variant="outline"
         >
           <UploadIcon aria-hidden="true" />
           Upload Documents
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-xl"
+        className="sm:max-w-md"
         showCloseButton={!uploadDocumentsMutation.isPending}
       >
-        <DialogHeader className="gap-3 border-b border-dashed border-border pb-5 pr-8">
-          <Badge className="tracking-[0.18em] uppercase" variant="outline">
-            Upload Documents
-          </Badge>
-          <div className="space-y-1">
-            <DialogTitle className="text-base">Add Source Material</DialogTitle>
-            <DialogDescription className="max-w-lg text-sm text-muted-foreground">
-              Upload the files this project should eventually answer from. We
-              will store them first, then background processing prepares them
-              for grounded search.
-            </DialogDescription>
-          </div>
+        <DialogHeader>
+          <DialogTitle>Upload Documents</DialogTitle>
+          <DialogDescription>
+            Add source files to your project library.
+          </DialogDescription>
         </DialogHeader>
 
         <form
-          className="space-y-5"
+          className="space-y-3"
           onSubmit={(event) => {
             event.preventDefault();
             event.stopPropagation();
             void form.handleSubmit();
           }}
         >
-          <div className="rounded-none border border-dashed border-border bg-muted/20 p-4">
-            <p className="text-[10px] font-medium tracking-[0.22em] text-muted-foreground uppercase">
-              Before you upload
-            </p>
-            <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-              <li>
-                • Add the files you actually want the project to cite later.
-              </li>
-              <li>
-                • Uploads start background processing after the files land.
-              </li>
-              <li>
-                • You can upload more documents again whenever you need to.
-              </li>
-            </ul>
-          </div>
-
           <FieldGroup>
             <form.Field
               name="files"
               validators={{
                 onBlur: ({ value }) => {
                   if (value.length === 0) {
-                    return "Select at least one file.";
+                    return "Select at least one file";
                   }
                 },
               }}
@@ -403,7 +377,7 @@ export const ProjectUploadDocumentsDialog = ({
                 const fileCount = field.state.value.length;
                 const summaryText =
                   fileCount === 0
-                    ? "No files selected."
+                    ? "No files selected"
                     : `${fileCount} selected • ${formatBytes(totalFileSize(field.state.value))}`;
 
                 return (
@@ -411,32 +385,29 @@ export const ProjectUploadDocumentsDialog = ({
                     <FieldLabel htmlFor={field.name}>Documents</FieldLabel>
                     <FieldContent>
                       <Input
+                        id={field.name}
+                        name={field.name}
+                        type="file"
+                        multiple
                         accept={SUPPORTED_DOCUMENT_FILE_TYPES_ATTRIBUTE}
                         className="sr-only"
-                        id={field.name}
-                        multiple
-                        name={field.name}
                         onBlur={field.handleBlur}
                         onChange={(event) => {
                           const selected = [...(event.target.files ?? [])];
                           field.handleChange(selected);
                           event.currentTarget.value = "";
                         }}
-                        type="file"
                       />
-                      <div className="space-y-3 rounded-none border border-dashed border-border bg-background p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div className="min-w-0 space-y-1">
-                            <p className="text-sm text-foreground">
-                              {summaryText}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              Supported: {acceptedFileTypesText}
-                            </p>
-                          </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs text-muted-foreground">
+                            {summaryText}
+                          </p>
                           <label
                             htmlFor={field.name}
                             className="inline-flex h-7 cursor-pointer items-center justify-center gap-1 rounded-none border border-border bg-background px-2.5 text-xs font-medium whitespace-nowrap hover:bg-muted focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50"
+                            role="button"
+                            tabIndex={0}
                             onKeyDown={(event) => {
                               if (event.key === "Enter" || event.key === " ") {
                                 event.preventDefault();
@@ -446,8 +417,6 @@ export const ProjectUploadDocumentsDialog = ({
                                 }
                               }
                             }}
-                            role="button"
-                            tabIndex={0}
                           >
                             <UploadIcon
                               aria-hidden="true"
@@ -457,13 +426,9 @@ export const ProjectUploadDocumentsDialog = ({
                           </label>
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          PDF, TXT, MD, and DOCX work best for this workflow.
+                          Supported: {acceptedFileTypesText}
                         </p>
                       </div>
-                      <FieldDescription>
-                        Choose the source files this project should search
-                        through later.
-                      </FieldDescription>
                       <FieldError>{error}</FieldError>
                     </FieldContent>
                   </Field>
@@ -475,30 +440,34 @@ export const ProjectUploadDocumentsDialog = ({
               {(selectedFiles) => {
                 const fileSummaryText =
                   selectedFiles.length === 0
-                    ? "Choose files to preview what will be uploaded."
+                    ? "No files selected"
                     : `${selectedFiles.length} file(s), ${formatBytes(totalFileSize(selectedFiles))} total`;
 
                 return (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <p className="text-xs text-muted-foreground">
                       {fileSummaryText}
                     </p>
 
-                    {selectedFiles.length === 0 ? null : (
-                      <ul className="divide-y divide-border border border-dashed border-border bg-background">
+                    {selectedFiles.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Choose files to preview what will be uploaded.
+                      </p>
+                    ) : (
+                      <ul className="divide-y divide-border">
                         {selectedFiles.map((file, index) => {
                           const { Icon, label } = getDocumentVisual(file.name);
 
                           return (
                             <li
                               key={`${file.name}-${file.size}-${index}`}
-                              className="flex items-start justify-between gap-3 p-3"
+                              className="flex items-start justify-between gap-2 py-2"
                             >
-                              <div className="flex min-w-0 items-start gap-3">
-                                <div className="flex size-8 shrink-0 items-center justify-center border border-dashed border-border bg-muted/20">
+                              <div className="flex min-w-0 items-start gap-2">
+                                <div className="flex size-7 shrink-0 items-center justify-center">
                                   <Icon
                                     aria-hidden="true"
-                                    className="size-4 text-muted-foreground"
+                                    className="size-3.5 text-muted-foreground"
                                   />
                                 </div>
                                 <div className="min-w-0 space-y-1">
@@ -513,6 +482,9 @@ export const ProjectUploadDocumentsDialog = ({
                                 </div>
                               </div>
                               <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
                                 aria-label={`Remove ${file.name}`}
                                 onClick={() => {
                                   form.setFieldValue(
@@ -522,9 +494,6 @@ export const ProjectUploadDocumentsDialog = ({
                                     )
                                   );
                                 }}
-                                size="icon-xs"
-                                type="button"
-                                variant="ghost"
                               >
                                 <XIcon
                                   aria-hidden="true"
@@ -542,19 +511,20 @@ export const ProjectUploadDocumentsDialog = ({
             </form.Subscribe>
           </FieldGroup>
 
-          <DialogFooter className="flex flex-col items-start gap-3 border-t border-dashed border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
-            <p aria-live="polite" className="text-xs text-muted-foreground">
-              {uploadDocumentsMutation.isPending
-                ? "Uploading documents…"
-                : "Ready to upload documents."}
-            </p>
-            <Button disabled={uploadDocumentsMutation.isPending} type="submit">
+          <DialogFooter className="pt-1">
+            <Button type="submit" disabled={uploadDocumentsMutation.isPending}>
               <UploadIcon aria-hidden="true" />
               {uploadDocumentsMutation.isPending
                 ? "Uploading…"
                 : "Upload Documents"}
             </Button>
           </DialogFooter>
+
+          <p aria-live="polite" className="sr-only">
+            {uploadDocumentsMutation.isPending
+              ? "Uploading documents…"
+              : "Ready to upload documents."}
+          </p>
         </form>
       </DialogContent>
     </Dialog>
