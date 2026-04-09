@@ -8,4 +8,5 @@ export * from "./document-embedding";
 export * from "./project";
 export * from "./project-document";
 export * from "./relations";
+export * from "./user-settings";
 export {};

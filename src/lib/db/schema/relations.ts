@@ -5,14 +5,16 @@ import { documentChunk } from "./document-chunk";
 import { documentEmbedding } from "./document-embedding";
 import { project } from "./project";
 import { projectDocument } from "./project-document";
+import { userSettings } from "./user-settings";
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   accounts: many(account),
   documentChunks: many(documentChunk),
   documentEmbeddings: many(documentEmbedding),
   projectDocuments: many(projectDocument),
   projects: many(project),
   sessions: many(session),
+  settings: one(userSettings),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -95,3 +97,10 @@ export const documentEmbeddingRelations = relations(
     }),
   })
 );
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(user, {
+    fields: [userSettings.userId],
+    references: [user.id],
+  }),
+}));
