@@ -6,6 +6,7 @@ import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +20,7 @@ import {
 import {
   Field,
   FieldContent,
+  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
@@ -61,10 +63,10 @@ export const NewProjectDialog = ({
   const createProjectMutation = useMutation(
     trpc.project.createProject.mutationOptions({
       onError: (error) => {
-        toast.error(error.message || "Unable to create project");
+        toast.error(error.message || "Unable to create project.");
       },
       onSuccess: async () => {
-        toast.success("Project created");
+        toast.success("Project created.");
         await onProjectCreated?.();
       },
     })
@@ -128,35 +130,53 @@ export const NewProjectDialog = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="sm:max-w-md"
+        className="sm:max-w-xl"
         showCloseButton={!createProjectMutation.isPending}
       >
-        <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
-          <DialogDescription>
-            Start a new project workspace for your documents, chats, and notes.
-          </DialogDescription>
+        <DialogHeader className="gap-3 border-b border-dashed border-border pb-5 pr-8">
+          <Badge variant="outline" className="tracking-[0.18em] uppercase">
+            New Project
+          </Badge>
+          <div className="space-y-1">
+            <DialogTitle className="text-base">
+              Start a New Workspace
+            </DialogTitle>
+            <DialogDescription className="max-w-lg text-sm text-muted-foreground">
+              A project keeps one topic, one client, or one research thread in
+              one place so your documents stay easy to find later.
+            </DialogDescription>
+          </div>
         </DialogHeader>
 
         <form
-          className="space-y-4"
+          className="space-y-5"
           onSubmit={(event) => {
             event.preventDefault();
             event.stopPropagation();
             void form.handleSubmit();
           }}
         >
+          <div className="rounded-none border border-dashed border-border bg-muted/20 p-4">
+            <p className="text-[10px] font-medium tracking-[0.22em] text-muted-foreground uppercase">
+              Good naming rule
+            </p>
+            <p className="mt-2 text-sm text-foreground">
+              Name the project after the question you want to keep separate —
+              for example a client, a deal, or a research theme.
+            </p>
+          </div>
+
           <FieldGroup>
             <form.Field
               name="name"
               validators={{
                 onBlur: ({ value }) => {
                   if (value.trim().length === 0) {
-                    return "Project name is required";
+                    return "Project name is required.";
                   }
 
                   if (value.trim().length > 120) {
-                    return "Project name must be 120 characters or fewer";
+                    return "Project name must be 120 characters or fewer.";
                   }
                 },
               }}
@@ -184,6 +204,10 @@ export const NewProjectDialog = ({
                           }
                         }}
                       />
+                      <FieldDescription>
+                        This is the plain-language title you will scan in the
+                        dashboard.
+                      </FieldDescription>
                       <FieldError>{error}</FieldError>
                     </FieldContent>
                   </Field>
@@ -196,11 +220,11 @@ export const NewProjectDialog = ({
               validators={{
                 onBlur: ({ value }) => {
                   if (value.trim().length === 0) {
-                    return "Slug is required";
+                    return "Slug is required.";
                   }
 
                   if (!SLUG_REGEX.test(value.trim())) {
-                    return "Use lowercase letters, numbers, and hyphens only";
+                    return "Use lowercase letters, numbers, and hyphens only.";
                   }
                 },
               }}
@@ -210,12 +234,14 @@ export const NewProjectDialog = ({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>Slug</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Project Link</FieldLabel>
                     <FieldContent>
                       <Input
                         id={field.name}
                         name={field.name}
+                        autoCapitalize="none"
                         autoComplete="off"
+                        autoCorrect="off"
                         placeholder="e.g. research-sprint…"
                         spellCheck={false}
                         value={field.state.value}
@@ -224,6 +250,10 @@ export const NewProjectDialog = ({
                           field.handleChange(toSlug(event.target.value));
                         }}
                       />
+                      <FieldDescription>
+                        This becomes the clean URL for the workspace. Keep it
+                        short and readable.
+                      </FieldDescription>
                       <FieldError>{error}</FieldError>
                     </FieldContent>
                   </Field>
@@ -236,7 +266,7 @@ export const NewProjectDialog = ({
               validators={{
                 onBlur: ({ value }) => {
                   if (value.trim().length > 5000) {
-                    return "Description must be 5000 characters or fewer";
+                    return "Description must be 5000 characters or fewer.";
                   }
                 },
               }}
@@ -246,21 +276,23 @@ export const NewProjectDialog = ({
 
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Description (Optional)
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Short Note</FieldLabel>
                     <FieldContent>
                       <Textarea
                         id={field.name}
                         name={field.name}
                         autoComplete="off"
-                        placeholder="What is this project about…"
+                        placeholder="What will live in this project…"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(event) => {
                           field.handleChange(event.target.value);
                         }}
                       />
+                      <FieldDescription>
+                        Optional, but useful when you want future-you to know
+                        what belongs here.
+                      </FieldDescription>
                       <FieldError>{error}</FieldError>
                     </FieldContent>
                   </Field>
@@ -269,7 +301,10 @@ export const NewProjectDialog = ({
             </form.Field>
           </FieldGroup>
 
-          <DialogFooter className="pt-1" showCloseButton>
+          <DialogFooter className="flex flex-col items-start gap-3 border-t border-dashed border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <p aria-live="polite" className="text-xs text-muted-foreground">
+              {politeStatusText}
+            </p>
             <form.Subscribe
               selector={(state) => ({
                 canSubmit: state.canSubmit,
@@ -292,10 +327,6 @@ export const NewProjectDialog = ({
               )}
             </form.Subscribe>
           </DialogFooter>
-
-          <p aria-live="polite" className="sr-only">
-            {politeStatusText}
-          </p>
         </form>
       </DialogContent>
     </Dialog>
